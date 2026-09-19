@@ -26,9 +26,32 @@ public partial class App : Application
     private Window? _dummyHwndHost;
 
     private readonly Dictionary<Guid, StickyNoteWindow> _activeNoteWindows = new();
-    private NotesHubWindow? _hubWindow;
-
     private bool _ownsMutex = false;
+
+    public static App? Instance => Current as App;
+
+    public IReadOnlyCollection<StickyNoteWindow> ActiveNoteWindows => _activeNoteWindows.Values;
+
+    public List<Win32Api.RECT> GetOtherNoteRects(Guid excludeNoteId)
+    {
+        return GetOtherNoteRects(new[] { excludeNoteId });
+    }
+
+    public List<Win32Api.RECT> GetOtherNoteRects(IEnumerable<Guid> excludeNoteIds)
+    {
+        var excludeSet = new HashSet<Guid>(excludeNoteIds);
+        var result = new List<Win32Api.RECT>();
+        foreach (var kvp in _activeNoteWindows)
+        {
+            if (excludeSet.Contains(kvp.Key)) continue;
+            var win = kvp.Value;
+            if (win.IsVisible)
+            {
+                result.Add(win.GetWindowScreenRect());
+            }
+        }
+        return result;
+    }
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -73,12 +96,26 @@ public partial class App : Application
         _settingsService = new SettingsService();
         _storageService = new NoteStorageService();
 
+        MemoryOptimizer.Initialize();
         InitDummyHwndHost();
         InitGlobalHotkeys();
         InitTrayManager();
 
         // Restore active notes on the desktop at their exact saved coordinates
         RestoreAllDesktopNotes();
+
+        // Check for updates asynchronously on startup
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(2500); // Allow desktop notes to render smoothly before checking
+            await UpdateService.CheckForUpdatesAsync(isManualCheck: false, notifyCallback: (title, msg) =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    _trayManager?.ShowBalloon(title, msg, ToolTipIcon.Info);
+                });
+            });
+        });
     }
 
     private void InitDummyHwndHost()
@@ -111,13 +148,6 @@ public partial class App : Application
                 () => Dispatcher.Invoke(CreateNewStickyNote)
             );
 
-            // Win + Alt + H = Open Hub
-            _hotKeyManager.Register(
-                Win32Api.MOD_WIN | Win32Api.MOD_ALT,
-                Keys.H,
-                () => Dispatcher.Invoke(ToggleNotesHub)
-            );
-
             // Win + Alt + D = Toggle Show / Hide All Desktop Notes
             _hotKeyManager.Register(
                 Win32Api.MOD_WIN | Win32Api.MOD_ALT,
@@ -136,7 +166,7 @@ public partial class App : Application
         _trayManager = new TrayManager(
             _settingsService,
             onNewNote: () => Dispatcher.Invoke(CreateNewStickyNote),
-            onOpenHub: () => Dispatcher.Invoke(ToggleNotesHub),
+            onBringAllToFront: () => Dispatcher.Invoke(BringAllNotesToFront),
             onToggleHideAll: () => Dispatcher.Invoke(ToggleHideAllNotes),
             onArrangeNotes: () => Dispatcher.Invoke(ArrangeNotesOnDesktop),
             onOpenSettings: () => Dispatcher.Invoke(OpenSettingsDialog),
@@ -149,19 +179,36 @@ public partial class App : Application
     private void RestoreAllDesktopNotes()
     {
         var activeNotes = _storageService.Notes.Where(n => !n.IsDeleted).ToList();
+        if (activeNotes.Count == 0)
+        {
+            CreateNewStickyNote();
+            return;
+        }
+
         foreach (var note in activeNotes)
         {
-            SpawnStickyNoteWindow(note);
+            bool shouldBringFront = (note.PinMode == NotePinMode.AlwaysOnTop);
+            SpawnStickyNoteWindow(note, bringToFront: shouldBringFront);
         }
 
         UpdateTrayTooltip();
     }
 
-    private void SpawnStickyNoteWindow(NoteItem note)
+    private void SpawnStickyNoteWindow(NoteItem note, bool bringToFront = false)
     {
         if (_activeNoteWindows.ContainsKey(note.Id))
         {
-            _activeNoteWindows[note.Id].Activate();
+            var existingWin = _activeNoteWindows[note.Id];
+            existingWin.Show();
+            if (bringToFront)
+            {
+                existingWin.Activate();
+                existingWin.DesktopWindowManager.BringToFront();
+            }
+            else if (note.PinMode == NotePinMode.DesktopStuck)
+            {
+                existingWin.DesktopWindowManager.SendToDesktopBottom();
+            }
             return;
         }
 
@@ -171,15 +218,15 @@ public partial class App : Application
             _settingsService,
             onSpawnNewNote: n => Dispatcher.Invoke(() =>
             {
-                SpawnStickyNoteWindow(n);
-                _hubWindow?.RefreshNotesList();
+                SpawnStickyNoteWindow(n, bringToFront: true);
             }),
             onClosedCallback: w => Dispatcher.Invoke(() =>
             {
                 _activeNoteWindows.Remove(w.Note.Id);
                 UpdateTrayTooltip();
-                _hubWindow?.RefreshNotesList();
-            })
+                MemoryOptimizer.TrimMemory();
+            }),
+            startInForeground: bringToFront
         );
 
         _activeNoteWindows[note.Id] = win;
@@ -187,6 +234,15 @@ public partial class App : Application
         if (!_settingsService.Settings.HideAllNotes)
         {
             win.Show();
+            if (bringToFront)
+            {
+                win.Activate();
+                win.DesktopWindowManager.BringToFront();
+            }
+            else if (note.PinMode == NotePinMode.DesktopStuck)
+            {
+                win.DesktopWindowManager.SendToDesktopBottom();
+            }
         }
 
         UpdateTrayTooltip();
@@ -221,39 +277,36 @@ public partial class App : Application
         };
 
         _storageService.AddNote(newNote);
-        SpawnStickyNoteWindow(newNote);
+        SpawnStickyNoteWindow(newNote, bringToFront: true);
 
         if (_activeNoteWindows.TryGetValue(newNote.Id, out var win))
         {
+            win.DesktopWindowManager.BringToFront();
             win.TxtContent.Focus();
         }
-
-        _hubWindow?.RefreshNotesList();
     }
 
-    public void ToggleNotesHub()
+    public void BringAllNotesToFront()
     {
-        if (_hubWindow == null || !_hubWindow.IsLoaded)
+        var activeNotes = _storageService.Notes.Where(n => !n.IsDeleted).ToList();
+        if (activeNotes.Count == 0)
         {
-            _hubWindow = new NotesHubWindow(
-                _storageService,
-                _settingsService,
-                onSpawnNewNote: n => Dispatcher.Invoke(() => SpawnStickyNoteWindow(n)),
-                onLocateNote: id => Dispatcher.Invoke(() => LocateNote(id)),
-                onArrangeNotes: () => Dispatcher.Invoke(ArrangeNotesOnDesktop),
-                onOpenSettings: () => Dispatcher.Invoke(OpenSettingsDialog)
-            );
+            CreateNewStickyNote();
+            return;
         }
 
-        if (_hubWindow.IsVisible)
+        foreach (var note in activeNotes)
         {
-            _hubWindow.Hide();
-        }
-        else
-        {
-            _hubWindow.Show();
-            _hubWindow.Activate();
-            _hubWindow.RefreshNotesList();
+            if (_activeNoteWindows.TryGetValue(note.Id, out var win))
+            {
+                win.Show();
+                win.Activate();
+                win.DesktopWindowManager.BringToFront();
+            }
+            else
+            {
+                SpawnStickyNoteWindow(note, bringToFront: true);
+            }
         }
     }
 
@@ -263,6 +316,7 @@ public partial class App : Application
         {
             win.Show();
             win.Activate();
+            win.DesktopWindowManager.BringToFront();
             win.TxtContent.Focus();
         }
         else
@@ -270,7 +324,7 @@ public partial class App : Application
             var note = _storageService.Notes.FirstOrDefault(n => n.Id == id && !n.IsDeleted);
             if (note != null)
             {
-                SpawnStickyNoteWindow(note);
+                SpawnStickyNoteWindow(note, bringToFront: true);
             }
         }
     }
@@ -336,11 +390,12 @@ public partial class App : Application
             _trayManager.RebuildContextMenu();
             _hotKeyManager?.Dispose();
             InitGlobalHotkeys();
+            MemoryOptimizer.TrimMemory();
         });
 
-        if (_hubWindow != null && _hubWindow.IsVisible)
+        if (_activeNoteWindows.Count > 0)
         {
-            dlg.Owner = _hubWindow;
+            dlg.Owner = _activeNoteWindows.Values.FirstOrDefault();
         }
 
         dlg.ShowDialog();
@@ -375,3 +430,4 @@ public partial class App : Application
         base.OnExit(e);
     }
 }
+

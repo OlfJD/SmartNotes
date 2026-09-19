@@ -33,6 +33,9 @@ public static class Win32Api
 
     // Window Messages
     public const int WM_WINDOWPOSCHANGING = 0x0046;
+    public const int WM_MOVING = 0x0216;
+    public const int WM_ENTERSIZEMOVE = 0x0231;
+    public const int WM_EXITSIZEMOVE = 0x0232;
     public const int WM_ACTIVATE = 0x0006;
     public const int WM_ACTIVATEAPP = 0x001C;
     public const int WM_KILLFOCUS = 0x0008;
@@ -41,6 +44,11 @@ public static class Win32Api
     public const int WM_SYSCOMMAND = 0x0112;
 
     public const int WA_INACTIVE = 0;
+
+    // Virtual-Key Codes
+    public const int VK_SHIFT = 0x10;
+    public const int VK_CONTROL = 0x11;
+    public const int VK_MENU = 0x12; // Alt key
 
     // Hotkey Modifiers
     public const uint MOD_ALT = 0x0001;
@@ -62,6 +70,39 @@ public static class Win32Api
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    public struct POINT
+    {
+        public int x;
+        public int y;
+
+        public POINT(int x, int y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RECT
+    {
+        public int left;
+        public int top;
+        public int right;
+        public int bottom;
+
+        public int Width => right - left;
+        public int Height => bottom - top;
+
+        public RECT(int l, int t, int r, int b)
+        {
+            left = l;
+            top = t;
+            right = r;
+            bottom = b;
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     public struct WINDOWPOS
     {
         public IntPtr hwnd;
@@ -72,6 +113,12 @@ public static class Win32Api
         public int cy;
         public uint flags;
     }
+
+    [DllImport("user32.dll")]
+    public static extern bool GetCursorPos(out POINT lpPoint);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
     [DllImport("user32.dll", SetLastError = true)]
     public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
@@ -102,6 +149,9 @@ public static class Win32Api
 
     [DllImport("user32.dll")]
     public static extern bool ReleaseCapture();
+
+    [DllImport("user32.dll")]
+    public static extern short GetAsyncKeyState(int vKey);
 
     [DllImport("user32.dll")]
     public static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);

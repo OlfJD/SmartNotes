@@ -123,10 +123,11 @@
                              FontSize="16.5"
                              FontWeight="Bold"
                              CaretBrush="#F59E0B"
+                             Cursor="IBeam"
                              Padding="0"
                              TextChanged="TxtTitle_TextChanged"
-                             GotFocus="Input_GotFocus"
-                             LostFocus="Input_LostFocus"/>
+                             GotFocus="TxtTitle_GotFocus"
+                             LostFocus="TxtTitle_LostFocus"/>
                     <TextBlock x:Name="TxtTitlePlaceholder"
                                Text="Title (optional)..."
                                Foreground="#7888A4"
@@ -153,10 +154,11 @@
                              TextWrapping="Wrap"
                              VerticalScrollBarVisibility="Auto"
                              CaretBrush="#F59E0B"
+                             Cursor="IBeam"
                              Padding="2"
                              TextChanged="TxtContent_TextChanged"
-                             GotFocus="Input_GotFocus"
-                             LostFocus="Input_LostFocus"/>
+                             GotFocus="TxtContent_GotFocus"
+                             LostFocus="TxtContent_LostFocus"/>
                     <TextBlock x:Name="TxtContentPlaceholder"
                                Text="Type your note here..."
                                Foreground="#64748B"
@@ -209,7 +211,7 @@
                                             </CheckBox>
 
                                             <!-- Task Text -->
-                                            <TextBox Grid.Column="1" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="TaskText_Changed" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" VerticalAlignment="Center" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
+                                            <TextBox Grid.Column="1" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="TaskText_Changed" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" VerticalAlignment="Center" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
 
                                             <!-- Delete Task Item Button -->
                                             <Button Grid.Column="2" Style="{StaticResource IconButton}" Width="24" Height="24" Click="BtnDeleteTask_Click" ToolTip="Delete task" Padding="3">
@@ -223,15 +225,15 @@
                     </ScrollViewer>
 
                     <!-- Add Item Row (2.5px thick border) -->
-                    <Border Grid.Row="1" Background="#161D2E" CornerRadius="9" BorderBrush="#303E5C" BorderThickness="2.5" Padding="8,4">
+                    <Border x:Name="NewTaskContainer" Grid.Row="1" Background="#161D2E" CornerRadius="9" BorderBrush="#303E5C" BorderThickness="2.5" Padding="8,4" Cursor="IBeam" MouseLeftButtonDown="NewTaskContainer_MouseLeftButtonDown">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="TxtNewTask" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" VerticalAlignment="Center" KeyDown="TxtNewTask_KeyDown" TextChanged="TxtNewTask_TextChanged" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
-                            <TextBlock x:Name="TxtNewTaskPlaceholder" Text="+ Add new task (Press Enter)..." Foreground="#64748B" FontSize="14.5" IsHitTestVisible="False" VerticalAlignment="Center" Margin="2,0,0,0"/>
-                            <Button Grid.Column="1" Style="{StaticResource IconButton}" Width="26" Height="26" Click="BtnAddTask_Click" ToolTip="Add task">
+                            <TextBox x:Name="TxtNewTask" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" Cursor="IBeam" VerticalAlignment="Stretch" VerticalContentAlignment="Center" KeyDown="TxtNewTask_KeyDown" TextChanged="TxtNewTask_TextChanged" GotFocus="TxtNewTask_GotFocus" LostFocus="TxtNewTask_LostFocus"/>
+                            <TextBlock x:Name="TxtNewTaskPlaceholder" Text="Add new task (Press Enter)..." Foreground="#64748B" FontSize="14.5" IsHitTestVisible="False" VerticalAlignment="Center" Margin="2,0,0,0"/>
+                            <Button Grid.Column="1" Style="{StaticResource IconButton}" Width="26" Height="26" Click="BtnAddTask_Click" ToolTip="Add task" Cursor="Hand">
                                 <controls:LucideIcon IconKey="plus" Size="15" StrokeThickness="2.8" Foreground="{StaticResource NeonEmeraldGlowBrush}"/>
                             </Button>
                         </Grid>
@@ -264,7 +266,7 @@
                                             </Grid.ColumnDefinitions>
 
                                             <!-- Snippet Text Box -->
-                                            <TextBox Grid.Column="0" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="CopyItemText_Changed" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" VerticalAlignment="Center" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
+                                            <TextBox Grid.Column="0" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="CopyItemText_Changed" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" Cursor="IBeam" VerticalAlignment="Center" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
 
                                             <!-- Dedicated Copy Button on the right in the same line -->
                                             <Button Grid.Column="1" Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnCopyRow_Click" ToolTip="Copy this line to clipboard" Margin="4,0,2,0" Padding="4">
@@ -283,15 +285,15 @@
                     </ScrollViewer>
 
                     <!-- Add Copy Item Row -->
-                    <Border Grid.Row="1" Background="#161D2E" CornerRadius="9" BorderBrush="#303E5C" BorderThickness="2.5" Padding="8,4">
+                    <Border x:Name="NewCopyItemContainer" Grid.Row="1" Background="#161D2E" CornerRadius="9" BorderBrush="#303E5C" BorderThickness="2.5" Padding="8,4" Cursor="IBeam" MouseLeftButtonDown="NewCopyItemContainer_MouseLeftButtonDown">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="TxtNewCopyItem" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" VerticalAlignment="Center" KeyDown="TxtNewCopyItem_KeyDown" TextChanged="TxtNewCopyItem_TextChanged" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
-                            <TextBlock x:Name="TxtNewCopyItemPlaceholder" Text="+ Add new copy item (Press Enter)..." Foreground="#64748B" FontSize="14.5" IsHitTestVisible="False" VerticalAlignment="Center" Margin="2,0,0,0"/>
-                            <Button Grid.Column="1" Style="{StaticResource IconButton}" Width="26" Height="26" Click="BtnAddCopyItem_Click" ToolTip="Add copy item">
+                            <TextBox x:Name="TxtNewCopyItem" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" Cursor="IBeam" VerticalAlignment="Stretch" VerticalContentAlignment="Center" KeyDown="TxtNewCopyItem_KeyDown" TextChanged="TxtNewCopyItem_TextChanged" GotFocus="TxtNewCopyItem_GotFocus" LostFocus="TxtNewCopyItem_LostFocus"/>
+                            <TextBlock x:Name="TxtNewCopyItemPlaceholder" Text="Add new copy item (Press Enter)..." Foreground="#64748B" FontSize="14.5" IsHitTestVisible="False" VerticalAlignment="Center" Margin="2,0,0,0"/>
+                            <Button Grid.Column="1" Style="{StaticResource IconButton}" Width="26" Height="26" Click="BtnAddCopyItem_Click" ToolTip="Add copy item" Cursor="Hand">
                                 <controls:LucideIcon IconKey="plus" Size="15" StrokeThickness="2.8" Foreground="{StaticResource NeonCyanBrush}"/>
                             </Button>
                         </Grid>
@@ -299,12 +301,20 @@
                 </Grid>
             </Grid>
 
-            <!-- 4. BOTTOM FOOTER (Modified Time, Status, Lock Badge) -->
+            <!-- 4. BOTTOM FOOTER (Modified Time, Typing Indicator, Lock Badge) -->
             <Border Grid.Row="3" Background="Transparent" Padding="14,0,10,6" VerticalAlignment="Bottom">
                 <Grid>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock x:Name="TxtPinIndicator" Text="📌 Stuck to Desktop" FontSize="12" FontWeight="SemiBold" Foreground="#A8B5CD" Margin="0,0,12,0"/>
-                        <TextBlock x:Name="TxtModifiedTime" Text="Just now" FontSize="12" Foreground="#64748B"/>
+                        
+                        <!-- Default Modified Timestamp -->
+                        <TextBlock x:Name="TxtModifiedTime" Text="Just now" FontSize="12" Foreground="#64748B" VerticalAlignment="Center"/>
+
+                        <!-- Live Typing & Save Status Indicator -->
+                        <StackPanel x:Name="TypingIndicatorContainer" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
+                            <controls:LucideIcon x:Name="IconTypingStatus" IconKey="pen-line" Size="12" StrokeThickness="2.4" Foreground="#F59E0B" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtTypingStatus" Text="Typing..." FontSize="12" FontWeight="SemiBold" Foreground="#F59E0B" VerticalAlignment="Center"/>
+                        </StackPanel>
                     </StackPanel>
 
                     <!-- Lock Badge if locked -->
@@ -315,39 +325,133 @@
                 </Grid>
             </Border>
 
-            <!-- COLOR PALETTE POPUP (3px Thick Border) -->
-            <Popup x:Name="ColorPopup" StaysOpen="False" AllowsTransparency="True" PlacementTarget="{Binding ElementName=BtnColorPicker}" Placement="Bottom" PopupAnimation="Fade">
-                <Border Background="#141926" BorderBrush="#303E5C" BorderThickness="2.5" CornerRadius="12" Padding="10" Margin="0,4,0,0">
+            <!-- COLOR PALETTE POPUP (Obsidian Theme with Classic 2D Drawing-App Color Picker) -->
+            <Popup x:Name="ColorPopup" StaysOpen="False" AllowsTransparency="True" PlacementTarget="{Binding ElementName=BtnColorPicker}" Placement="Bottom" PopupAnimation="Fade" Opened="ColorPopup_Opened">
+                <Border Background="#101522" BorderBrush="#2F3E5E" BorderThickness="2.5" CornerRadius="14" Padding="12" Margin="0,4,0,0">
                     <Border.Effect>
-                        <DropShadowEffect BlurRadius="18" ShadowDepth="5" Opacity="0.6" Color="#000000"/>
+                        <DropShadowEffect BlurRadius="20" ShadowDepth="6" Opacity="0.7" Color="#000000"/>
                     </Border.Effect>
-                    <WrapPanel Width="170">
-                        <!-- Swatches: Amber, Emerald, Violet, Cyan, Rose, Obsidian, Gold, Mint -->
-                        <Button Style="{StaticResource IconButton}" Margin="3" Tag="Amber" Click="ColorSwatch_Click" ToolTip="Radiant Amber">
-                            <Border Width="28" Height="28" CornerRadius="14" Background="#F59E0B" BorderBrush="#FDE68A" BorderThickness="2"/>
-                        </Button>
-                        <Button Style="{StaticResource IconButton}" Margin="3" Tag="Emerald" Click="ColorSwatch_Click" ToolTip="Neon Emerald">
-                            <Border Width="28" Height="28" CornerRadius="14" Background="#10B981" BorderBrush="#A7F3D0" BorderThickness="2"/>
-                        </Button>
-                        <Button Style="{StaticResource IconButton}" Margin="3" Tag="Violet" Click="ColorSwatch_Click" ToolTip="Cyber Violet">
-                            <Border Width="28" Height="28" CornerRadius="14" Background="#8B5CF6" BorderBrush="#DDD6FE" BorderThickness="2"/>
-                        </Button>
-                        <Button Style="{StaticResource IconButton}" Margin="3" Tag="Cyan" Click="ColorSwatch_Click" ToolTip="Electric Cyan">
-                            <Border Width="28" Height="28" CornerRadius="14" Background="#06B6D4" BorderBrush="#A5F3FC" BorderThickness="2"/>
-                        </Button>
-                        <Button Style="{StaticResource IconButton}" Margin="3" Tag="Rose" Click="ColorSwatch_Click" ToolTip="Coral Rose">
-                            <Border Width="28" Height="28" CornerRadius="14" Background="#F43F5E" BorderBrush="#FECDD3" BorderThickness="2"/>
-                        </Button>
-                        <Button Style="{StaticResource IconButton}" Margin="3" Tag="Obsidian" Click="ColorSwatch_Click" ToolTip="Stealth Obsidian">
-                            <Border Width="28" Height="28" CornerRadius="14" Background="#3B82F6" BorderBrush="#93C5FD" BorderThickness="2"/>
-                        </Button>
-                        <Button Style="{StaticResource IconButton}" Margin="3" Tag="Gold" Click="ColorSwatch_Click" ToolTip="Classic Sticky Gold">
-                            <Border Width="28" Height="28" CornerRadius="14" Background="#EAB308" BorderBrush="#FEF08A" BorderThickness="2"/>
-                        </Button>
-                        <Button Style="{StaticResource IconButton}" Margin="3" Tag="Mint" Click="ColorSwatch_Click" ToolTip="Fresh Mint">
-                            <Border Width="28" Height="28" CornerRadius="14" Background="#14B8A6" BorderBrush="#99F6E4" BorderThickness="2"/>
-                        </Button>
-                    </WrapPanel>
+                    <StackPanel Width="220">
+                        <!-- Top Header: Title & Quick Presets -->
+                        <TextBlock Text="Quick Neon Themes" FontSize="11" FontWeight="Bold" Foreground="#8898B4" Margin="2,0,0,6"/>
+
+                        <!-- 8 Presets in a clean 4x2 UniformGrid with ZERO dead space -->
+                        <UniformGrid Columns="4" Margin="0,0,0,10">
+                            <Button Style="{StaticResource IconButton}" Margin="2" Tag="Amber" Click="ColorSwatch_Click" ToolTip="Radiant Amber">
+                                <Border Width="26" Height="26" CornerRadius="13" Background="#F59E0B" BorderBrush="#FDE68A" BorderThickness="2"/>
+                            </Button>
+                            <Button Style="{StaticResource IconButton}" Margin="2" Tag="Emerald" Click="ColorSwatch_Click" ToolTip="Neon Emerald">
+                                <Border Width="26" Height="26" CornerRadius="13" Background="#10B981" BorderBrush="#A7F3D0" BorderThickness="2"/>
+                            </Button>
+                            <Button Style="{StaticResource IconButton}" Margin="2" Tag="Violet" Click="ColorSwatch_Click" ToolTip="Cyber Violet">
+                                <Border Width="26" Height="26" CornerRadius="13" Background="#8B5CF6" BorderBrush="#DDD6FE" BorderThickness="2"/>
+                            </Button>
+                            <Button Style="{StaticResource IconButton}" Margin="2" Tag="Cyan" Click="ColorSwatch_Click" ToolTip="Electric Cyan">
+                                <Border Width="26" Height="26" CornerRadius="13" Background="#06B6D4" BorderBrush="#A5F3FC" BorderThickness="2"/>
+                            </Button>
+                            <Button Style="{StaticResource IconButton}" Margin="2" Tag="Rose" Click="ColorSwatch_Click" ToolTip="Coral Rose">
+                                <Border Width="26" Height="26" CornerRadius="13" Background="#F43F5E" BorderBrush="#FECDD3" BorderThickness="2"/>
+                            </Button>
+                            <Button Style="{StaticResource IconButton}" Margin="2" Tag="Obsidian" Click="ColorSwatch_Click" ToolTip="Stealth Obsidian">
+                                <Border Width="26" Height="26" CornerRadius="13" Background="#3B82F6" BorderBrush="#93C5FD" BorderThickness="2"/>
+                            </Button>
+                            <Button Style="{StaticResource IconButton}" Margin="2" Tag="Gold" Click="ColorSwatch_Click" ToolTip="Classic Sticky Gold">
+                                <Border Width="26" Height="26" CornerRadius="13" Background="#EAB308" BorderBrush="#FEF08A" BorderThickness="2"/>
+                            </Button>
+                            <Button Style="{StaticResource IconButton}" Margin="2" Tag="Mint" Click="ColorSwatch_Click" ToolTip="Fresh Mint">
+                                <Border Width="26" Height="26" CornerRadius="13" Background="#14B8A6" BorderBrush="#99F6E4" BorderThickness="2"/>
+                            </Button>
+                        </UniformGrid>
+
+                        <Separator Background="#222D42" Margin="0,0,0,10"/>
+
+                        <!-- Classic 2D Saturation / Value Gradient Canvas -->
+                        <TextBlock Text="Custom Palette Canvas" FontSize="11" FontWeight="Bold" Foreground="#8898B4" Margin="2,0,0,6"/>
+
+                        <Border Width="220" Height="120" CornerRadius="8" ClipToBounds="True" BorderBrush="#2C3B58" BorderThickness="1.5" Margin="0,0,0,8" Cursor="Cross">
+                            <Grid x:Name="SatValPickerGrid" Background="Transparent" MouseLeftButtonDown="SatValPicker_MouseDown" MouseMove="SatValPicker_MouseMove" MouseLeftButtonUp="SatValPicker_MouseUp">
+                                <!-- Base pure hue rectangle -->
+                                <Rectangle x:Name="HueBaseRect" Fill="#FF0000"/>
+
+                                <!-- Horizontal white gradient (Saturation: 0 to 1) -->
+                                <Rectangle>
+                                    <Rectangle.Fill>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop Color="#FFFFFFFF" Offset="0.0"/>
+                                            <GradientStop Color="#00FFFFFF" Offset="1.0"/>
+                                        </LinearGradientBrush>
+                                    </Rectangle.Fill>
+                                </Rectangle>
+
+                                <!-- Vertical black gradient (Value: 1 to 0) -->
+                                <Rectangle>
+                                    <Rectangle.Fill>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="#00000000" Offset="0.0"/>
+                                            <GradientStop Color="#FF000000" Offset="1.0"/>
+                                        </LinearGradientBrush>
+                                    </Rectangle.Fill>
+                                </Rectangle>
+
+                                <!-- Draggable Crosshair Thumb -->
+                                <Canvas x:Name="SatValCanvas" IsHitTestVisible="False">
+                                    <Ellipse x:Name="SatValThumb" Width="14" Height="14" Margin="-7,-7,0,0"
+                                             Stroke="#FFFFFF" StrokeThickness="2.5" Fill="Transparent">
+                                        <Ellipse.Effect>
+                                            <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.9" Color="#000000"/>
+                                        </Ellipse.Effect>
+                                    </Ellipse>
+                                </Canvas>
+                            </Grid>
+                        </Border>
+
+                        <!-- Classic Hue Rainbow Spectrum Bar -->
+                        <Border Width="220" Height="14" CornerRadius="7" ClipToBounds="True" BorderBrush="#2C3B58" BorderThickness="1.5" Margin="0,0,0,10" Cursor="Hand">
+                            <Grid x:Name="HueBarGrid" Background="Transparent" MouseLeftButtonDown="HueBar_MouseDown" MouseMove="HueBar_MouseMove" MouseLeftButtonUp="HueBar_MouseUp">
+                                <Rectangle>
+                                    <Rectangle.Fill>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop Color="#FF0000" Offset="0.0"/>
+                                            <GradientStop Color="#FFFF00" Offset="0.17"/>
+                                            <GradientStop Color="#00FF00" Offset="0.33"/>
+                                            <GradientStop Color="#00FFFF" Offset="0.50"/>
+                                            <GradientStop Color="#0000FF" Offset="0.67"/>
+                                            <GradientStop Color="#FF00FF" Offset="0.83"/>
+                                            <GradientStop Color="#FF0000" Offset="1.0"/>
+                                        </LinearGradientBrush>
+                                    </Rectangle.Fill>
+                                </Rectangle>
+
+                                <!-- Draggable Hue Thumb -->
+                                <Canvas x:Name="HueCanvas" IsHitTestVisible="False">
+                                    <Border x:Name="HueThumb" Width="8" Height="18" Margin="-4,-2,0,0"
+                                            CornerRadius="4" Background="#FFFFFF" BorderBrush="#000000" BorderThickness="1.5">
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.7" Color="#000000"/>
+                                        </Border.Effect>
+                                    </Border>
+                                </Canvas>
+                            </Grid>
+                        </Border>
+
+                        <!-- Bottom Controls: Swatch, Hex Input, Apply Button -->
+                        <Grid Width="220">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Live Color Preview Swatch -->
+                            <Border Grid.Column="0" x:Name="CustomColorPreview" Width="30" Height="30" CornerRadius="6" Background="#FF5500" BorderBrush="#FFFFFF" BorderThickness="2" Margin="0,0,8,0"/>
+
+                            <!-- Hex Input Box -->
+                            <TextBox Grid.Column="1" x:Name="TxtCustomHex" Text="#FF5500" Background="#141B2B" BorderBrush="#2F3E5D" BorderThickness="1.5" Foreground="#F8FAFC" FontSize="13" FontWeight="Bold" Padding="6,4" VerticalContentAlignment="Center" CaretBrush="#F59E0B" Cursor="IBeam" Margin="0,0,8,0" TextChanged="TxtCustomHex_TextChanged"/>
+
+                            <!-- Apply Button -->
+                            <Button Grid.Column="2" Style="{StaticResource PrimaryButton}" Height="30" Content="Apply" Click="BtnApplyCustomColor_Click" FontSize="12" FontWeight="Bold" Padding="12,0"/>
+                        </Grid>
+                    </StackPanel>
                 </Border>
             </Popup>
 

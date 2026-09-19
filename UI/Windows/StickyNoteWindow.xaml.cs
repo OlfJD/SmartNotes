@@ -6,6 +6,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Microsoft.Win32;
@@ -27,23 +28,37 @@ public partial class StickyNoteWindow : Window
     private NoteItem _note;
     private bool _isLoaded = false;
     private DispatcherTimer? _saveDebounceTimer;
+    private DispatcherTimer? _savedStatusResetTimer;
+    private SolidColorBrush _currentGlowBrush = new((Color)ColorConverter.ConvertFromString("#F59E0B"));
     private ObservableCollection<TodoCheckItem> _checklistItems = new();
     private ObservableCollection<CopySnippetItem> _copyItems = new();
 
+    private double _currentHue = 25.0; // 0 to 360
+    private double _currentSat = 0.90; // 0 to 1
+    private double _currentVal = 0.95; // 0 to 1
+    private bool _isDraggingSatVal = false;
+    private bool _isDraggingHue = false;
+    private bool _suppressHexChanged = false;
+
+    private readonly bool _startInForeground;
+
     public NoteItem Note => _note;
+    public DesktopWindowManager DesktopWindowManager => _desktopWindowManager;
 
     public StickyNoteWindow(
         NoteItem note,
         NoteStorageService storageService,
         SettingsService settingsService,
         Action<NoteItem> onSpawnNewNote,
-        Action<StickyNoteWindow> onClosedCallback)
+        Action<StickyNoteWindow> onClosedCallback,
+        bool startInForeground = false)
     {
         _note = note;
         _storageService = storageService;
         _settingsService = settingsService;
         _onSpawnNewNote = onSpawnNewNote;
         _onClosedCallback = onClosedCallback;
+        _startInForeground = startInForeground;
         _desktopWindowManager = new DesktopWindowManager(this);
 
         InitializeComponent();
@@ -67,9 +82,8 @@ public partial class StickyNoteWindow : Window
         Loaded += OnWindowLoaded;
         LocationChanged += OnWindowPositionChanged;
         SizeChanged += OnWindowSizeChanged;
-        Activated += (s, e) => _desktopWindowManager.SetInteracting(true);
         Deactivated += (s, e) => _desktopWindowManager.SetInteracting(false);
-        PreviewMouseDown += (s, e) => _desktopWindowManager.SetInteracting(true);
+        PreviewMouseDown += (s, e) => _desktopWindowManager.BringToFront();
     }
 
     private void InitDebounceTimer()
@@ -89,6 +103,11 @@ public partial class StickyNoteWindow : Window
     {
         WindowBlurHelper.ApplyModernWindowStyles(this);
         _desktopWindowManager.ApplyPinMode(_note.PinMode);
+        if (_startInForeground || _note.PinMode == NotePinMode.AlwaysOnTop)
+        {
+            _desktopWindowManager.BringToFront();
+            TxtContent.Focus();
+        }
         _isLoaded = true;
     }
 
@@ -137,6 +156,8 @@ public partial class StickyNoteWindow : Window
             var textPrimaryBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.TextPrimaryHex));
             var textMutedBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.TextMutedHex));
 
+            _currentGlowBrush = glowBrush;
+
             NoteCardBorder.Background = bgBrush;
             NoteCardBorder.BorderBrush = borderBrush;
             HeaderBorder.Background = headerBgBrush;
@@ -147,8 +168,10 @@ public partial class StickyNoteWindow : Window
 
             TxtTitle.Foreground = textPrimaryBrush;
             TxtContent.Foreground = textPrimaryBrush;
-            TxtTitle.CaretBrush = glowBrush;
-            TxtContent.CaretBrush = glowBrush;
+            TxtTitle.CaretBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.GlowHex));
+            TxtContent.CaretBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.GlowHex));
+            TxtNewTask.CaretBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.GlowHex));
+            TxtNewCopyItem.CaretBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.GlowHex));
             IconPlus.Foreground = glowBrush;
         }
         catch { }
@@ -252,14 +275,83 @@ public partial class StickyNoteWindow : Window
         }
     }
 
-    private void RequestSave()
+    private void ShowTypingIndicator()
     {
         if (!_isLoaded) return;
+        _savedStatusResetTimer?.Stop();
+
+        TxtModifiedTime.Visibility = Visibility.Collapsed;
+        TypingIndicatorContainer.Visibility = Visibility.Visible;
+        IconTypingStatus.IconKey = "pen-line";
+        IconTypingStatus.Foreground = _currentGlowBrush;
+        TxtTypingStatus.Text = "Typing...";
+        TxtTypingStatus.Foreground = _currentGlowBrush;
+    }
+
+    private void ShowSavedIndicator()
+    {
+        if (!_isLoaded) return;
+        _savedStatusResetTimer?.Stop();
+
+        TxtModifiedTime.Visibility = Visibility.Collapsed;
+        TypingIndicatorContainer.Visibility = Visibility.Visible;
+        IconTypingStatus.IconKey = "check";
+        var emeraldBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#10B981"));
+        IconTypingStatus.Foreground = emeraldBrush;
+        TxtTypingStatus.Text = "Saved";
+        TxtTypingStatus.Foreground = emeraldBrush;
+
+        _savedStatusResetTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(1200)
+        };
+        _savedStatusResetTimer.Tick += (s, e) =>
+        {
+            _savedStatusResetTimer.Stop();
+            TypingIndicatorContainer.Visibility = Visibility.Collapsed;
+            TxtModifiedTime.Visibility = Visibility.Visible;
+            UpdateModifiedTime();
+        };
+        _savedStatusResetTimer.Start();
+    }
+
+    private void RequestSave(bool isTyping = true)
+    {
+        if (!_isLoaded) return;
+        if (isTyping)
+        {
+            ShowTypingIndicator();
+        }
         _saveDebounceTimer?.Stop();
         _saveDebounceTimer?.Start();
     }
 
-    private void SaveNoteState()
+    public Win32Api.RECT GetWindowScreenRect()
+    {
+        var hwnd = new WindowInteropHelper(this).Handle;
+        if (hwnd != IntPtr.Zero && Win32Api.GetWindowRect(hwnd, out var rect))
+        {
+            return rect;
+        }
+
+        var source = PresentationSource.FromVisual(this);
+        if (source?.CompositionTarget != null)
+        {
+            var matrix = source.CompositionTarget.TransformToDevice;
+            var topLeft = matrix.Transform(new Point(Left, Top));
+            var bottomRight = matrix.Transform(new Point(Left + Width, Top + Height));
+            return new Win32Api.RECT((int)topLeft.X, (int)topLeft.Y, (int)bottomRight.X, (int)bottomRight.Y);
+        }
+
+        return new Win32Api.RECT(
+            (int)Left,
+            (int)Top,
+            (int)(Left + Width),
+            (int)(Top + Height)
+        );
+    }
+
+    public void SaveNoteState()
     {
         _note.Title = TxtTitle.Text;
         _note.Content = TxtContent.Text;
@@ -275,7 +367,7 @@ public partial class StickyNoteWindow : Window
         _note.ModifiedAt = DateTime.Now;
 
         _storageService.UpdateNote(_note);
-        UpdateModifiedTime();
+        ShowSavedIndicator();
     }
 
     // Window Dragging
@@ -283,42 +375,74 @@ public partial class StickyNoteWindow : Window
     {
         if (e.ButtonState == MouseButtonState.Pressed && !_note.IsLocked)
         {
-            _desktopWindowManager.SetInteracting(true);
+            _desktopWindowManager.BringToFront();
+            _desktopWindowManager.StartDrag();
             try
             {
                 DragMove();
             }
             catch { }
-            RequestSave();
+            _desktopWindowManager.EndDrag();
+            RequestSave(isTyping: false);
         }
     }
 
     private void OnWindowPositionChanged(object? sender, EventArgs e)
     {
-        RequestSave();
+        RequestSave(isTyping: false);
     }
 
     private void OnWindowSizeChanged(object sender, SizeChangedEventArgs e)
     {
-        RequestSave();
+        RequestSave(isTyping: false);
     }
 
     // User interactions / Text Input
     private void TxtTitle_TextChanged(object sender, TextChangedEventArgs e)
     {
         TxtTitlePlaceholder.Visibility = string.IsNullOrEmpty(TxtTitle.Text) ? Visibility.Visible : Visibility.Collapsed;
-        RequestSave();
+        RequestSave(isTyping: true);
     }
 
     private void TxtContent_TextChanged(object sender, TextChangedEventArgs e)
     {
         TxtContentPlaceholder.Visibility = string.IsNullOrEmpty(TxtContent.Text) ? Visibility.Visible : Visibility.Collapsed;
-        RequestSave();
+        RequestSave(isTyping: true);
+    }
+
+    private void TxtTitle_GotFocus(object sender, RoutedEventArgs e)
+    {
+        _desktopWindowManager.BringToFront();
+        TxtTitlePlaceholder.Visibility = Visibility.Collapsed;
+    }
+
+    private void TxtTitle_LostFocus(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrEmpty(TxtTitle.Text))
+        {
+            TxtTitlePlaceholder.Visibility = Visibility.Visible;
+        }
+        SaveNoteState();
+    }
+
+    private void TxtContent_GotFocus(object sender, RoutedEventArgs e)
+    {
+        _desktopWindowManager.BringToFront();
+        TxtContentPlaceholder.Visibility = Visibility.Collapsed;
+    }
+
+    private void TxtContent_LostFocus(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrEmpty(TxtContent.Text))
+        {
+            TxtContentPlaceholder.Visibility = Visibility.Visible;
+        }
+        SaveNoteState();
     }
 
     private void Input_GotFocus(object sender, RoutedEventArgs e)
     {
-        _desktopWindowManager.SetInteracting(true);
+        _desktopWindowManager.BringToFront();
     }
 
     private void Input_LostFocus(object sender, RoutedEventArgs e)
@@ -379,13 +503,38 @@ public partial class StickyNoteWindow : Window
     // Header Action Buttons
     private void BtnNewNote_Click(object sender, RoutedEventArgs e)
     {
+        // Smart placement: spawn docked to the right of current note
+        double screenRight = SystemParameters.WorkArea.Right;
+        double screenBottom = SystemParameters.WorkArea.Bottom;
+
+        double targetX = Left + Width + 14;
+        double targetY = Top;
+
+        // If it goes off-screen to the right, place to the left or cascade downward
+        if (targetX + Width > screenRight)
+        {
+            if (Left - Width - 14 >= SystemParameters.WorkArea.Left)
+            {
+                targetX = Left - Width - 14;
+            }
+            else
+            {
+                targetX = Math.Max(SystemParameters.WorkArea.Left + 20, Left + 30);
+                targetY = Top + 35;
+                if (targetY + Height > screenBottom)
+                {
+                    targetY = Math.Max(SystemParameters.WorkArea.Top + 20, Top - 35);
+                }
+            }
+        }
+
         var newNote = new NoteItem
         {
             Id = Guid.NewGuid(),
             Title = "",
             Content = "",
-            X = Left + 28,
-            Y = Top + 28,
+            X = targetX,
+            Y = targetY,
             Width = Width,
             Height = Height,
             ColorKey = _note.ColorKey,
@@ -412,20 +561,238 @@ public partial class StickyNoteWindow : Window
         ColorPopup.IsOpen = !ColorPopup.IsOpen;
     }
 
+    private void ColorPopup_Opened(object? sender, EventArgs e)
+    {
+        // Parse current theme into HSV
+        var theme = NoteColorTheme.Get(_note.ColorKey);
+        try
+        {
+            var color = (Color)ColorConverter.ConvertFromString(theme.PrimaryHex);
+            RgbToHsv(color, out _currentHue, out _currentSat, out _currentVal);
+        }
+        catch
+        {
+            _currentHue = 25.0;
+            _currentSat = 0.90;
+            _currentVal = 0.95;
+        }
+
+        Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
+        {
+            UpdateSatValDisplay();
+            UpdateHueDisplay();
+            UpdateColorFromHsv();
+        });
+    }
+
     private void ColorSwatch_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is string colorKey)
         {
             ApplyTheme(colorKey);
             ColorPopup.IsOpen = false;
-            RequestSave();
+            RequestSave(isTyping: false);
+        }
+    }
+
+    // 2D Saturation / Value Picker Events
+    private void SatValPicker_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.LeftButton == MouseButtonState.Pressed)
+        {
+            _isDraggingSatVal = true;
+            SatValPickerGrid.CaptureMouse();
+            UpdateSatValFromPoint(e.GetPosition(SatValPickerGrid));
+        }
+    }
+
+    private void SatValPicker_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (_isDraggingSatVal && e.LeftButton == MouseButtonState.Pressed)
+        {
+            UpdateSatValFromPoint(e.GetPosition(SatValPickerGrid));
+        }
+    }
+
+    private void SatValPicker_MouseUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_isDraggingSatVal)
+        {
+            _isDraggingSatVal = false;
+            SatValPickerGrid.ReleaseMouseCapture();
+        }
+    }
+
+    private void UpdateSatValFromPoint(Point p)
+    {
+        double w = Math.Max(1, SatValPickerGrid.ActualWidth);
+        double h = Math.Max(1, SatValPickerGrid.ActualHeight);
+
+        _currentSat = Math.Clamp(p.X / w, 0.0, 1.0);
+        _currentVal = Math.Clamp(1.0 - (p.Y / h), 0.0, 1.0);
+
+        UpdateSatValDisplay();
+        UpdateColorFromHsv();
+    }
+
+    private void UpdateSatValDisplay()
+    {
+        double w = Math.Max(1, SatValPickerGrid.ActualWidth);
+        double h = Math.Max(1, SatValPickerGrid.ActualHeight);
+
+        Canvas.SetLeft(SatValThumb, _currentSat * w);
+        Canvas.SetTop(SatValThumb, (1.0 - _currentVal) * h);
+
+        var pureHueColor = HsvToRgb(_currentHue, 1.0, 1.0);
+        HueBaseRect.Fill = new SolidColorBrush(pureHueColor);
+    }
+
+    // Hue Bar Events
+    private void HueBar_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.LeftButton == MouseButtonState.Pressed)
+        {
+            _isDraggingHue = true;
+            HueBarGrid.CaptureMouse();
+            UpdateHueFromPoint(e.GetPosition(HueBarGrid));
+        }
+    }
+
+    private void HueBar_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (_isDraggingHue && e.LeftButton == MouseButtonState.Pressed)
+        {
+            UpdateHueFromPoint(e.GetPosition(HueBarGrid));
+        }
+    }
+
+    private void HueBar_MouseUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_isDraggingHue)
+        {
+            _isDraggingHue = false;
+            HueBarGrid.ReleaseMouseCapture();
+        }
+    }
+
+    private void UpdateHueFromPoint(Point p)
+    {
+        double w = Math.Max(1, HueBarGrid.ActualWidth);
+        double ratio = Math.Clamp(p.X / w, 0.0, 1.0);
+        _currentHue = ratio * 360.0;
+        if (_currentHue >= 360.0) _currentHue = 0.0;
+
+        UpdateHueDisplay();
+        UpdateSatValDisplay();
+        UpdateColorFromHsv();
+    }
+
+    private void UpdateHueDisplay()
+    {
+        double w = Math.Max(1, HueBarGrid.ActualWidth);
+        Canvas.SetLeft(HueThumb, (_currentHue / 360.0) * w);
+    }
+
+    private void UpdateColorFromHsv()
+    {
+        var color = HsvToRgb(_currentHue, _currentSat, _currentVal);
+        string hex = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+
+        _suppressHexChanged = true;
+        if (TxtCustomHex != null) TxtCustomHex.Text = hex;
+        _suppressHexChanged = false;
+
+        if (CustomColorPreview != null)
+        {
+            CustomColorPreview.Background = new SolidColorBrush(color);
+        }
+    }
+
+    private void TxtCustomHex_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_suppressHexChanged || CustomColorPreview == null || TxtCustomHex == null) return;
+        string hex = TxtCustomHex.Text.Trim();
+        if (!hex.StartsWith("#")) hex = "#" + hex;
+        if (hex.Length == 7)
+        {
+            try
+            {
+                var color = (Color)ColorConverter.ConvertFromString(hex);
+                CustomColorPreview.Background = new SolidColorBrush(color);
+                RgbToHsv(color, out _currentHue, out _currentSat, out _currentVal);
+                UpdateSatValDisplay();
+                UpdateHueDisplay();
+            }
+            catch { }
+        }
+    }
+
+    private void BtnApplyCustomColor_Click(object sender, RoutedEventArgs e)
+    {
+        string hex = TxtCustomHex.Text.Trim();
+        if (!hex.StartsWith("#")) hex = "#" + hex;
+        ApplyTheme(hex);
+        ColorPopup.IsOpen = false;
+        RequestSave(isTyping: false);
+    }
+
+    private static Color HsvToRgb(double hue, double saturation, double value)
+    {
+        int hi = Convert.ToInt32(Math.Floor(hue / 60)) % 6;
+        double f = hue / 60 - Math.Floor(hue / 60);
+
+        value = value * 255;
+        byte v = Convert.ToByte(Math.Clamp(value, 0, 255));
+        byte p = Convert.ToByte(Math.Clamp(value * (1 - saturation), 0, 255));
+        byte q = Convert.ToByte(Math.Clamp(value * (1 - f * saturation), 0, 255));
+        byte t = Convert.ToByte(Math.Clamp(value * (1 - (1 - f) * saturation), 0, 255));
+
+        return hi switch
+        {
+            0 => Color.FromRgb(v, t, p),
+            1 => Color.FromRgb(q, v, p),
+            2 => Color.FromRgb(p, v, t),
+            3 => Color.FromRgb(p, q, v),
+            4 => Color.FromRgb(t, p, v),
+            _ => Color.FromRgb(v, p, q)
+        };
+    }
+
+    private static void RgbToHsv(Color color, out double hue, out double saturation, out double value)
+    {
+        double r = color.R / 255.0;
+        double g = color.G / 255.0;
+        double b = color.B / 255.0;
+
+        double max = Math.Max(r, Math.Max(g, b));
+        double min = Math.Min(r, Math.Min(g, b));
+        double delta = max - min;
+
+        value = max;
+        saturation = max == 0 ? 0 : delta / max;
+
+        if (delta == 0)
+        {
+            hue = 0;
+        }
+        else if (max == r)
+        {
+            hue = (60 * ((g - b) / delta) + 360) % 360;
+        }
+        else if (max == g)
+        {
+            hue = (60 * ((b - r) / delta) + 120) % 360;
+        }
+        else
+        {
+            hue = (60 * ((r - g) / delta) + 240) % 360;
         }
     }
 
     private void BtnLock_Click(object sender, RoutedEventArgs e)
     {
         UpdateLockUI(!_note.IsLocked);
-        RequestSave();
+        RequestSave(isTyping: false);
     }
 
     private void BtnMore_Click(object sender, RoutedEventArgs e)
@@ -473,12 +840,34 @@ public partial class StickyNoteWindow : Window
             menu.Items.Add(new Separator());
         }
 
+        // Settings & Preferences
+        menu.Items.Add(CreateMenuItem("Settings & Preferences...", OpenSettings));
+
+        // Check for Updates
+        menu.Items.Add(CreateMenuItem("Check for Updates...", () =>
+        {
+            _ = UpdateService.CheckForUpdatesAsync(isManualCheck: true);
+        }));
+
+        menu.Items.Add(new Separator());
+
         // Delete Note
         menu.Items.Add(CreateMenuItem("Delete Note", DeleteNote));
 
         menu.PlacementTarget = BtnMore;
         menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
         menu.IsOpen = true;
+    }
+
+    private void OpenSettings()
+    {
+        var dlg = new SettingsDialog(_settingsService, () =>
+        {
+            ApplyTheme(_note.ColorKey);
+            MemoryOptimizer.TrimMemory();
+        });
+        dlg.Owner = this;
+        dlg.ShowDialog();
     }
 
     private MenuItem CreateMenuItem(string header, Action action)
@@ -611,6 +1000,27 @@ public partial class StickyNoteWindow : Window
     }
 
     // Checklist Item Events
+    private void NewTaskContainer_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        _desktopWindowManager.BringToFront();
+        TxtNewTask.Focus();
+        e.Handled = true;
+    }
+
+    private void TxtNewTask_GotFocus(object sender, RoutedEventArgs e)
+    {
+        _desktopWindowManager.BringToFront();
+        TxtNewTaskPlaceholder.Visibility = Visibility.Collapsed;
+    }
+
+    private void TxtNewTask_LostFocus(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrEmpty(TxtNewTask.Text))
+        {
+            TxtNewTaskPlaceholder.Visibility = Visibility.Visible;
+        }
+    }
+
     private void TxtNewTask_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Enter)
@@ -623,6 +1033,10 @@ public partial class StickyNoteWindow : Window
     private void TxtNewTask_TextChanged(object sender, TextChangedEventArgs e)
     {
         TxtNewTaskPlaceholder.Visibility = string.IsNullOrEmpty(TxtNewTask.Text) ? Visibility.Visible : Visibility.Collapsed;
+        if (!string.IsNullOrEmpty(TxtNewTask.Text))
+        {
+            ShowTypingIndicator();
+        }
     }
 
     private void BtnAddTask_Click(object sender, RoutedEventArgs e)
@@ -640,18 +1054,18 @@ public partial class StickyNoteWindow : Window
             TxtNewTask.Text = "";
             TxtNewTaskPlaceholder.Visibility = Visibility.Visible;
             TxtNewTask.Focus();
-            RequestSave();
+            RequestSave(isTyping: false);
         }
     }
 
     private void CheckItem_Click(object sender, RoutedEventArgs e)
     {
-        RequestSave();
+        RequestSave(isTyping: false);
     }
 
     private void TaskText_Changed(object sender, TextChangedEventArgs e)
     {
-        RequestSave();
+        RequestSave(isTyping: true);
     }
 
     private void BtnDeleteTask_Click(object sender, RoutedEventArgs e)
@@ -659,11 +1073,32 @@ public partial class StickyNoteWindow : Window
         if (sender is Button btn && btn.DataContext is TodoCheckItem item)
         {
             _checklistItems.Remove(item);
-            RequestSave();
+            RequestSave(isTyping: false);
         }
     }
 
     // Copy Compartment Item Events
+    private void NewCopyItemContainer_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        _desktopWindowManager.BringToFront();
+        TxtNewCopyItem.Focus();
+        e.Handled = true;
+    }
+
+    private void TxtNewCopyItem_GotFocus(object sender, RoutedEventArgs e)
+    {
+        _desktopWindowManager.BringToFront();
+        TxtNewCopyItemPlaceholder.Visibility = Visibility.Collapsed;
+    }
+
+    private void TxtNewCopyItem_LostFocus(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrEmpty(TxtNewCopyItem.Text))
+        {
+            TxtNewCopyItemPlaceholder.Visibility = Visibility.Visible;
+        }
+    }
+
     private void BtnCopyRow_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.DataContext is CopySnippetItem item)
@@ -705,7 +1140,7 @@ public partial class StickyNoteWindow : Window
 
     private void CopyItemText_Changed(object sender, TextChangedEventArgs e)
     {
-        RequestSave();
+        RequestSave(isTyping: true);
     }
 
     private void BtnDeleteCopyItem_Click(object sender, RoutedEventArgs e)
@@ -713,7 +1148,7 @@ public partial class StickyNoteWindow : Window
         if (sender is Button btn && btn.DataContext is CopySnippetItem item)
         {
             _copyItems.Remove(item);
-            RequestSave();
+            RequestSave(isTyping: false);
         }
     }
 
@@ -729,6 +1164,10 @@ public partial class StickyNoteWindow : Window
     private void TxtNewCopyItem_TextChanged(object sender, TextChangedEventArgs e)
     {
         TxtNewCopyItemPlaceholder.Visibility = string.IsNullOrEmpty(TxtNewCopyItem.Text) ? Visibility.Visible : Visibility.Collapsed;
+        if (!string.IsNullOrEmpty(TxtNewCopyItem.Text))
+        {
+            ShowTypingIndicator();
+        }
     }
 
     private void BtnAddCopyItem_Click(object sender, RoutedEventArgs e)
@@ -746,7 +1185,7 @@ public partial class StickyNoteWindow : Window
             TxtNewCopyItem.Text = "";
             TxtNewCopyItemPlaceholder.Visibility = Visibility.Visible;
             TxtNewCopyItem.Focus();
-            RequestSave();
+            RequestSave(isTyping: false);
         }
     }
 }
