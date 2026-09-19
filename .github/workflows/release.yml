@@ -1,0 +1,47 @@
+name: Publish Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          include-prerelease: true
+
+      - name: Restore and Publish Release Binaries
+        run: |
+          dotnet publish SmartNotes.csproj -c Release -o release_output
+
+      - name: Archive Release ZIP
+        shell: pwsh
+        run: |
+          $tag = if ($env:GITHUB_REF_NAME) { $env:GITHUB_REF_NAME } else { "v1.1.3" }
+          $zipName = "SmartNotes-$tag-win-x64.zip"
+          Compress-Archive -Path "release_output\*" -DestinationPath $zipName -Force
+          Write-Output "ZIP_NAME=$zipName" >> $env:GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: SmartNotes ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: |
+            SmartNotes-*.zip
+          generate_release_notes: true
