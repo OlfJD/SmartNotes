@@ -14,7 +14,7 @@
 
 <br/>
 
-<img src="Assets/preview.png" alt="SmartNotes Desktop Preview" width="850" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.5);" />
+<img src="Assets/preview.png" alt="SmartNotes Desktop Preview" width="800" />
 
 </div>
 
