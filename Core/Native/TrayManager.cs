@@ -11,7 +11,7 @@ public class TrayManager : IDisposable
     private readonly NotifyIcon _notifyIcon;
     private readonly SettingsService _settingsService;
     private readonly Action _onNewNote;
-    private readonly Action _onOpenHub;
+    private readonly Action _onBringAllToFront;
     private readonly Action _onToggleHideAll;
     private readonly Action _onArrangeNotes;
     private readonly Action _onOpenSettings;
@@ -20,7 +20,7 @@ public class TrayManager : IDisposable
     public TrayManager(
         SettingsService settingsService,
         Action onNewNote,
-        Action onOpenHub,
+        Action onBringAllToFront,
         Action onToggleHideAll,
         Action onArrangeNotes,
         Action onOpenSettings,
@@ -28,7 +28,7 @@ public class TrayManager : IDisposable
     {
         _settingsService = settingsService;
         _onNewNote = onNewNote;
-        _onOpenHub = onOpenHub;
+        _onBringAllToFront = onBringAllToFront;
         _onToggleHideAll = onToggleHideAll;
         _onArrangeNotes = onArrangeNotes;
         _onOpenSettings = onOpenSettings;
@@ -69,12 +69,12 @@ public class TrayManager : IDisposable
 
         RebuildContextMenu();
 
-        _notifyIcon.DoubleClick += (s, e) => _onOpenHub();
+        _notifyIcon.DoubleClick += (s, e) => _onBringAllToFront();
         _notifyIcon.MouseClick += (s, e) =>
         {
             if (e.Button == MouseButtons.Left)
             {
-                _onOpenHub();
+                _onBringAllToFront();
             }
         };
     }
@@ -87,7 +87,6 @@ public class TrayManager : IDisposable
         newNoteItem.Font = new Font(menu.Font, FontStyle.Bold);
         menu.Items.Add(newNoteItem);
 
-        menu.Items.Add("Notes Hub (Manager)", null, (s, e) => _onOpenHub());
         menu.Items.Add(new ToolStripSeparator());
 
         string hideText = _settingsService.Settings.HideAllNotes ? "Show All Notes" : "Hide All Notes";
@@ -106,6 +105,10 @@ public class TrayManager : IDisposable
         menu.Items.Add(startupItem);
 
         menu.Items.Add("Settings...", null, (s, e) => _onOpenSettings());
+        menu.Items.Add("Check for Updates...", null, (s, e) =>
+        {
+            _ = UpdateService.CheckForUpdatesAsync(isManualCheck: true);
+        });
         menu.Items.Add(new ToolStripSeparator());
 
         menu.Items.Add("Exit SmartNotes", null, (s, e) => _onExit());

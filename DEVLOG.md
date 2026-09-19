@@ -81,7 +81,24 @@ When `PinMode == NotePinMode.DesktopStuck`:
 - **Resolved WinForms & WPF Namespace Ambiguities**:
   - Created `GlobalUsings.cs` to cleanly alias WPF `Button`, `TextBox`, `CheckBox`, `MenuItem`, `Color`, `Brushes`, `MessageBox`, and `Clipboard`, preventing compiler conflicts when linking WinForms `NotifyIcon`.
 
-### Version 1.1.1
+### Version 1.1.1 - Linked Group Movement & Stack Leader Mechanics
+- **Classic 2D Drawing-App Color Picker & Popup Redesign**:
+  - Replaced the single-slider color picker with a professional 2D Saturation / Value gradient canvas + Hue spectrum bar (identical to Figma, Photoshop, Paint.NET, and Procreate).
+  - Eliminates awkward empty space on the right of the palette popup with a clean $220\text{px}$ symmetrical layout.
+  - Interactive crosshair target thumb on the 2D canvas allows full 0-100% saturation and brightness adjustment with live mouse dragging.
+  - Rainbow spectrum track enables fluid 0-360° hue selection with instant real-time swatch preview, Hex code input (`#RRGGBB`), and 8 neon presets in a centered $4\times 2$ grid.
+- **Topmost Stack Leader Drag Handle (`NoteClusterEngine.GetStackLeader`)**:
+  - In any connected stack or cluster of docked notes, only the **highest point (topmost note)** acts as the leader handle to drag the entire cluster.
+  - **Natural Single-Note Peeling / Separation**: Dragging any lower or subordinate note in the stack performs normally, moving *only* that single note and allowing users to effortlessly pull, peel, and separate notes away from the group with standard dragging (zero modifier keys required).
+- **Strict Exterior Edge Docking (`NoteClusterEngine.AreNotesAdjacent`)**:
+  - Refined adjacency algorithms to evaluate strict exterior perimeter contact ($6\text{px}$ threshold with $\ge 20\text{px}$ collinear overlap), completely ignoring internal overlaps or stacked Z-order intersections.
+- **Breakaway Modifier Support**:
+  - `Alt` or `Ctrl` key remains supported as an instant breakaway override when dragging any note.
+- **New Note Spawn Z-Order & Smart Adjacent Placement**:
+  - Resolved issue where newly spawned notes (`[ + ]` button) were placed underneath existing notes due to `OnWindowLoaded` overriding `BringToFront()` with `HWND_BOTTOM`.
+  - New notes now spawn in front with active focus (`startInForeground = true`), docked immediately adjacent to the right of the active note (or cascaded if reaching screen bounds).
+- **Physical Pixel & High-DPI Coordinate Alignment**:
+  - Replaced DIP bounding calculations with native Win32 `GetWindowRect` and `TransformFromDevice` matrices, guaranteeing precise edge contact detection and jitter-free multi-window translation across all monitor scale factors (100%, 125%, 150%, 200%).
 - **Resize Grip Inward Repositioning & Obsidian Styling**:
   - Added dedicated `ResizeGrip` styling in `DarkTheme.xaml` with `Margin="0,0,10,10"`, shifting the bottom-right resize symbol 10px up and 10px left cleanly inside the window's rounded corner geometry.
   - Implemented crisp vector diagonal grip lines (`1.5px` stroke with round caps) matching the obsidian muted text palette (`#7888A4`) and neon amber hover glow.
@@ -120,12 +137,52 @@ When `PinMode == NotePinMode.DesktopStuck`:
     2. **Dedicated `[ 📋 ]` Copy button directly on the right in the same line**. Clicking it instantly copies that line's text to the clipboard and animates the icon to a green neon checkmark (`✓`) for 1.2 seconds.
     3. `[ ✕ ]` Delete button.
   - Added bottom input field `[ + Add new copy item (Press Enter)... ]` with green `[ + ]` button to rapidly append new snippet rows.
-- **Checklist Input & Plus Button Click Fixes**:
-  - **Click-swallowing bug resolved**: Removed premature `_desktopWindowManager.SetInteracting(false)` call from `Input_LostFocus`, which was triggering `HWND_BOTTOM` and deactivating the window before mouse clicks on `BtnAddTask` or checkboxes could complete.
-  - **Placeholder overlap fixed**: Attached `TextChanged` event handlers to both `TxtNewTask` and `TxtNewCopyItem` to dynamically show/hide the prompt placeholder when typing.
-  - Added keyboard `Enter` submission support on entry inputs, automatically focusing the input field for continuous, seamless item entry.
+### Version 1.1.0 - The Magnetic Sticking & Docking Update (2026-09-19)
+- **Magnetic Sticky Note Snapping & Docking (`MagneticSnapEngine.cs`)**:
+  - Implemented real-time hardware-accelerated magnetic snapping via Win32 `WM_MOVING` (0x0216) window message hooks.
+  - When dragging any sticky note near another note on the desktop, notes magnetically "click" and snap together:
+    - **Edge Sticking**: Snaps Left-to-Right, Right-to-Left, Top-to-Bottom, and Bottom-to-Top flush.
+    - **Edge Alignment**: Top-to-Top, Bottom-to-Bottom, Left-to-Left, and Right-to-Right edge alignments.
+    - **Center Guideline Snapping**: Centers automatically align along both Horizontal and Vertical center axes.
+    - **Desktop Screen Edge Snapping**: Snaps to monitor work area boundaries (Left, Top, Right, Bottom).
+  - **Fluid Breakaway / Unsnapping**: Calculating magnetic displacement relative to the physical mouse cursor position (`GetCursorPos`) ensures that pulling the cursor slightly past the snap threshold (22px) smoothly releases and unsnaps the note with zero sticking or trapping.
+- **Desktop Sticking & HWND_BOTTOM Z-Order Architecture**:
+  - Notes configured in `DesktopStuck` mode remain permanently on the desktop wallpaper (`HWND_BOTTOM`), never occluding open applications on startup or when working in other programs.
+  - Interactive activation brings the active note forward during typing/dragging and immediately restores bottom placement upon focus loss.
+- **Custom Neon Color Picker**:
+  - Added a 9th custom rainbow gradient circle with built-in 0–360° Hue slider, Hex code input (`#RRGGBB`), real-time swatch preview, and dynamic obsidian palette generation (`NoteColorTheme.FromCustomHex`).
+- **Live Typing & Auto-Save Indicator**:
+  - Added new `LucideIcon_pen-line` vector geometry resource in `LucideIcons.xaml`.
+  - Added dynamic `TypingIndicatorContainer` to `StickyNoteWindow.xaml` bottom footer row.
+  - Displays `✏️ Typing...` matching the active neon theme glow accent while typing, and transitions smoothly to `✓ Saved` upon completion.
+- **Interactive Entry Box Focus & Caret Fixes**:
+  - Blinking glowing caret (`|`) enabled across all text and entry boxes with unfrozen brushes.
+  - Placeholders automatically hide upon focusing any entry box (`GotFocus`) and reappear only on `LostFocus` if empty.
+- **RAM Optimization & Safe Resource Management**:
+  - Removed separate `NotesHubWindow` background manager, saving system resources.
+  - Embedded Settings directly into every note's 3-dot menu (`BtnMore`) for instant access without a separate dashboard window.
+  - Replaced aggressive working-set purging with safe idle garbage collection cycles.
 
-
+### Version 1.1.3 - Stack Leader Docking, 2D Drawing Color Picker & Auto-Updater (2026-09-20)
+- **Automatic GitHub Update Engine (`UpdateService.cs`)**:
+  - Automatically queries `https://api.github.com/repos/OlfJD/SmartNotes/releases/latest` on application startup.
+  - Compares semantic versioning (`latestVer > CurrentVersion`) and prompts the user with an intuitive update modal and release notes.
+  - Performs 1-click downloading, temporary extraction, non-blocking batch script swap, and automated process restart.
+  - Added manual "Check for Updates..." triggers in both the System Tray context menu (`TrayManager.cs`) and Note 3-dot overflow menu (`StickyNoteWindow.xaml.cs`).
+- **Topmost Stack Leader Drag Handle (`NoteClusterEngine.cs`)**:
+  - Docked notes form dynamic spatial clusters based on physical edge adjacency.
+  - Only the **highest note (Stack Leader)** moves the entire cluster when dragged by its header bar.
+  - Lower and middle notes peel and detach away independently with standard cursor movement, eliminating cluster locking traps.
+- **Classic 2D Saturation / Value Color Canvas + Hue Spectrum**:
+  - Replaced single-slider color picker with a professional 2D Saturation/Value gradient canvas and 1D Hue spectrum track.
+  - Real-time crosshair drag tracking, live swatch preview, #Hex input, and 8 centered Obsidian neon presets.
+- **Smart Note Placement & Z-Order Fix**:
+  - New notes (`+`) spawn in the foreground adjacent to the active note without getting obscured behind existing windows.
+- **High-DPI Coordinate Normalization & 5px Vector Borders**:
+  - Replaced DIP calculations with Win32 physical pixel rectangles, ensuring jitter-free docking on multi-monitor setups with mixed DPI scaling.
+  - Thickened outer window frame to 5px with anti-artifact inner overlap, completely eliminating black pixels outside rounded corners.
+- **GitHub Preview Banner & Documentation**:
+  - Added full visual preview screenshot (`Assets/preview.png`) to `README.md` showcasing Note Modes and Stack Leader docking mechanics.
 
 
 

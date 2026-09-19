@@ -125,10 +125,86 @@ public class NoteColorTheme
 
     public static NoteColorTheme Get(string? key)
     {
-        if (string.IsNullOrEmpty(key) || !Themes.TryGetValue(key, out var theme))
+        if (string.IsNullOrEmpty(key))
         {
             return Themes["Amber"];
         }
-        return theme;
+
+        if (Themes.TryGetValue(key, out var theme))
+        {
+            return theme;
+        }
+
+        if (key.StartsWith("#") || (key.Length == 6 && IsHex(key)))
+        {
+            return FromCustomHex(key.StartsWith("#") ? key : $"#{key}");
+        }
+
+        return Themes["Amber"];
+    }
+
+    public static NoteColorTheme FromCustomHex(string hex)
+    {
+        try
+        {
+            string cleanHex = hex.Trim().TrimStart('#');
+            if (cleanHex.Length == 6)
+            {
+                byte r = Convert.ToByte(cleanHex.Substring(0, 2), 16);
+                byte g = Convert.ToByte(cleanHex.Substring(2, 2), 16);
+                byte b = Convert.ToByte(cleanHex.Substring(4, 2), 16);
+
+                string primary = $"#{r:X2}{g:X2}{b:X2}";
+                string glow = $"#{Math.Min(255, r + 40):X2}{Math.Min(255, g + 40):X2}{Math.Min(255, b + 40):X2}";
+                
+                // Obsidian dark tinted background & header
+                byte bgR = (byte)Math.Clamp((int)(r * 0.10 + 10), 10, 35);
+                byte bgG = (byte)Math.Clamp((int)(g * 0.10 + 10), 10, 35);
+                byte bgB = (byte)Math.Clamp((int)(b * 0.10 + 14), 14, 40);
+                string bg = $"#{bgR:X2}{bgG:X2}{bgB:X2}";
+
+                byte hR = (byte)Math.Clamp((int)(r * 0.16 + 14), 14, 48);
+                byte hG = (byte)Math.Clamp((int)(g * 0.16 + 14), 14, 48);
+                byte hB = (byte)Math.Clamp((int)(b * 0.16 + 18), 18, 55);
+                string headerBg = $"#{hR:X2}{hG:X2}{hB:X2}";
+
+                byte bdR = (byte)Math.Clamp((int)(r * 0.40 + 20), 20, 120);
+                byte bdG = (byte)Math.Clamp((int)(g * 0.40 + 20), 20, 120);
+                byte bdB = (byte)Math.Clamp((int)(b * 0.40 + 24), 24, 130);
+                string border = $"#{bdR:X2}{bdG:X2}{bdB:X2}";
+
+                byte tmR = (byte)Math.Min(255, (r + 255) / 2);
+                byte tmG = (byte)Math.Min(255, (g + 255) / 2);
+                byte tmB = (byte)Math.Min(255, (b + 255) / 2);
+                string textMuted = $"#{tmR:X2}{tmG:X2}{tmB:X2}";
+
+                return new NoteColorTheme
+                {
+                    Key = primary,
+                    Name = $"Custom ({primary})",
+                    PrimaryHex = primary,
+                    GlowHex = glow,
+                    BgHex = bg,
+                    HeaderBgHex = headerBg,
+                    BorderHex = border,
+                    TextPrimaryHex = "#F8FAFC",
+                    TextMutedHex = textMuted,
+                    AccentHex = primary
+                };
+            }
+        }
+        catch { }
+
+        return Themes["Amber"];
+    }
+
+    private static bool IsHex(string str)
+    {
+        foreach (char c in str)
+        {
+            if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')))
+                return false;
+        }
+        return true;
     }
 }
