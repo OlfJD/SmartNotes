@@ -1,0 +1,94 @@
+using System;
+using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Input;
+using SmartNotes.Core.Models;
+using SmartNotes.Core.Native;
+using SmartNotes.Core.Services;
+
+namespace SmartNotes.UI.Windows;
+
+public partial class SettingsDialog : Window
+{
+    private readonly SettingsService _settingsService;
+    private readonly Action _onSettingsSaved;
+
+    public SettingsDialog(SettingsService settingsService, Action onSettingsSaved)
+    {
+        _settingsService = settingsService;
+        _onSettingsSaved = onSettingsSaved;
+
+        InitializeComponent();
+
+        Loaded += OnWindowLoaded;
+    }
+
+    private void OnWindowLoaded(object sender, RoutedEventArgs e)
+    {
+        WindowBlurHelper.ApplyModernWindowStyles(this);
+        LoadValues();
+    }
+
+    private void LoadValues()
+    {
+        var s = _settingsService.Settings;
+        ChkStartup.IsChecked = s.LaunchOnStartup;
+        ChkDesktopStuck.IsChecked = s.KeepBehindAllWindows;
+        ChkHotkeys.IsChecked = s.EnableGlobalHotkeys;
+
+        // Populate Colors
+        CmbDefaultColor.ItemsSource = new List<string> { "Amber", "Emerald", "Violet", "Cyan", "Rose", "Obsidian", "Gold", "Mint" };
+        CmbDefaultColor.SelectedItem = s.DefaultColorKey;
+
+        // Populate Font Sizes
+        CmbDefaultFontSize.ItemsSource = new List<string> { "12 pt", "14 pt (Default)", "16 pt", "18 pt", "20 pt" };
+        int idx = s.DefaultFontSize switch
+        {
+            12.0 => 0,
+            16.0 => 2,
+            18.0 => 3,
+            20.0 => 4,
+            _ => 1
+        };
+        CmbDefaultFontSize.SelectedIndex = idx;
+    }
+
+    private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ButtonState == MouseButtonState.Pressed)
+        {
+            try { DragMove(); } catch { }
+        }
+    }
+
+    private void SaveBtn_Click(object sender, RoutedEventArgs e)
+    {
+        var s = _settingsService.Settings;
+        s.LaunchOnStartup = ChkStartup.IsChecked == true;
+        s.KeepBehindAllWindows = ChkDesktopStuck.IsChecked == true;
+        s.EnableGlobalHotkeys = ChkHotkeys.IsChecked == true;
+
+        if (CmbDefaultColor.SelectedItem is string color)
+        {
+            s.DefaultColorKey = color;
+        }
+
+        s.DefaultFontSize = CmbDefaultFontSize.SelectedIndex switch
+        {
+            0 => 12.0,
+            2 => 16.0,
+            3 => 18.0,
+            4 => 20.0,
+            _ => 14.0
+        };
+
+        _settingsService.Save();
+        _onSettingsSaved();
+        Close();
+    }
+
+    private void CloseBtn_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+}
