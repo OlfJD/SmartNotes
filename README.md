@@ -1,12 +1,30 @@
-# SmartNotes - Sleek Desktop Sticky Notes for Windows
+<div align="center">
 
-A lightweight, modern, obsidian-dark sticky notes application designed to live permanently on your Windows desktop surface beneath all open programs, games, and active applications.
+# 📝 SmartNotes
 
-Engineered with the same signature design language as **MacroMaster** and **SoundSwitcher** — featuring translucent obsidian glass styling, vivid neon accents, crisp Lucide vector icons, high-DPI typography, checklist modes, and rock-solid Win32 desktop sticking.
+**Sleek Desktop Sticky Notes for Windows with Win32 Permanent Layer Sticking**
+
+[![Download Latest Release](https://img.shields.io/badge/Download-Latest_Release_(Windows)-06B6D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/OlfJD/SmartNotes/releases/latest/download/SmartNotes-v1.0.0-win-x64.zip)
+[![GitHub Release](https://img.shields.io/github/v/release/OlfJD/SmartNotes?style=for-the-badge&color=10B981)](https://github.com/OlfJD/SmartNotes/releases/latest)
+[![Platform](https://img.shields.io/badge/Platform-Windows_10_%2F_11-3B82F6?style=for-the-badge&logo=windows)](https://github.com/OlfJD/SmartNotes)
+
+### 📥 [👉 Click Here to Download SmartNotes for Windows (.zip)](https://github.com/OlfJD/SmartNotes/releases/latest/download/SmartNotes-v1.0.0-win-x64.zip)
+
+*(No installation required — just extract and run!)*
+
+</div>
 
 ---
 
-### Key Features
+## ⚡ Quick Start for Users
+
+1. **[Download the Latest Release (.zip)](https://github.com/OlfJD/SmartNotes/releases/latest/download/SmartNotes-v1.0.0-win-x64.zip)**.
+2. **Extract** the ZIP folder anywhere on your PC (e.g. `Desktop` or `Documents`).
+3. Double-click **`SmartNotes.exe`** (or `Launch SmartNotes.bat`) to start!
+
+---
+
+## ✨ Features
 
 - **Permanent Desktop Layer Sticking (Below All Applications)**:
   - Notes live on the desktop wallpaper level (`HWND_BOTTOM`).
@@ -19,7 +37,7 @@ Engineered with the same signature design language as **MacroMaster** and **Soun
   - Changes save continuously in the background to `%APPDATA%\SmartNotes\notes.json`.
 
 - **Autostart with Windows**:
-  - Automatically launches on system boot via Windows Registry (`HKCU\Software\Microsoft\Windows\CurrentVersion\Run\SmartNotes`).
+  - Optional autostart on system boot via Windows Registry.
   - Restores all active notes across single or multi-monitor setups.
 
 - **Interactive Checklist & Markdown / Text Modes**:
@@ -50,12 +68,3 @@ Engineered with the same signature design language as **MacroMaster** and **Soun
 
 - **System Tray Integration**:
   - Lives in the Windows notification area tray with quick right-click menu: New Note, Notes Hub, Show/Hide, Tile/Arrange, Startup Toggle, and Settings.
-
----
-
-### How to Run
-
-1. Double-click [**`SmartNotes.exe`**](file:///C:/Users/Levi/Desktop/SmartNotes/SmartNotes.exe) or run [**`Launch SmartNotes.bat`**](file:///C:/Users/Levi/Desktop/SmartNotes/Launch%20SmartNotes.bat).
-2. Your desktop sticky notes will appear on your desktop wallpaper.
-3. Click **`+`** in any note header to spawn a new note, click **🎨** to change themes, or press **`Win+Alt+N`** from anywhere in Windows!
-4. Access the **Notes Hub** at any time from the system tray icon or by pressing **`Win+Alt+H`**.
