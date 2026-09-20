@@ -15,9 +15,14 @@ public class NoteStorageService
     );
     private static readonly string NotesFilePath = Path.Combine(AppFolder, "notes.json");
     private static readonly string BackupsFolder = Path.Combine(AppFolder, "backups");
+    private static readonly string TrashFolder = Path.Combine(AppFolder, "trash");
+
+    public static readonly TimeSpan TrashRetentionPeriod = TimeSpan.FromHours(48);
 
     private readonly List<NoteItem> _notes = new();
     private readonly object _lock = new();
+
+    public string TrashDirectoryPath => TrashFolder;
 
     public IReadOnlyList<NoteItem> Notes
     {
@@ -42,13 +47,30 @@ public class NoteStorageService
             _notes.Clear();
             try
             {
+                Directory.CreateDirectory(AppFolder);
+                Directory.CreateDirectory(TrashFolder);
+
+                // Auto-purge any deleted files older than 48 hours
+                PurgeExpiredTrash();
+
                 if (File.Exists(NotesFilePath))
                 {
                     string json = File.ReadAllText(NotesFilePath);
                     var list = JsonSerializer.Deserialize<List<NoteItem>>(json);
                     if (list != null && list.Count > 0)
                     {
-                        _notes.AddRange(list);
+                        foreach (var item in list)
+                        {
+                            // Migrate legacy inline deleted notes into dedicated 48h trash folder
+                            if (item.IsDeleted)
+                            {
+                                SaveToTrash(item);
+                            }
+                            else
+                            {
+                                _notes.Add(item);
+                            }
+                        }
                     }
                 }
             }
@@ -58,7 +80,7 @@ public class NoteStorageService
             }
 
             // If completely empty, create initial welcome notes demonstrating capabilities!
-            if (_notes.Count == 0)
+            if (_notes.Count == 0 && GetDeletedNotes().Count == 0)
             {
                 CreateDefaultWelcomeNotes();
                 Save();
@@ -123,42 +145,205 @@ public class NoteStorageService
             var existing = _notes.FirstOrDefault(n => n.Id == id);
             if (existing != null)
             {
+                _notes.Remove(existing);
+                Save();
+
                 if (permanent)
                 {
-                    _notes.Remove(existing);
+                    DeleteFromTrash(id);
                 }
                 else
                 {
                     existing.IsDeleted = true;
                     existing.DeletedAt = DateTime.Now;
+                    SaveToTrash(existing);
                 }
-                Save();
+            }
+            else if (permanent)
+            {
+                DeleteFromTrash(id);
             }
         }
     }
 
-    public void RestoreNote(Guid id)
+    private void SaveToTrash(NoteItem note)
+    {
+        try
+        {
+            Directory.CreateDirectory(TrashFolder);
+            string filePath = Path.Combine(TrashFolder, $"note_{note.Id:N}.json");
+            string json = JsonSerializer.Serialize(note, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(filePath, json);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error saving note to trash: {ex.Message}");
+        }
+    }
+
+    private void DeleteFromTrash(Guid id)
+    {
+        try
+        {
+            string filePath = Path.Combine(TrashFolder, $"note_{id:N}.json");
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+        }
+        catch { }
+    }
+
+    public IReadOnlyList<NoteItem> GetDeletedNotes()
+    {
+        var result = new List<NoteItem>();
+        try
+        {
+            PurgeExpiredTrash();
+
+            if (Directory.Exists(TrashFolder))
+            {
+                var files = Directory.GetFiles(TrashFolder, "note_*.json");
+                foreach (var file in files)
+                {
+                    try
+                    {
+                        string json = File.ReadAllText(file);
+                        var item = JsonSerializer.Deserialize<NoteItem>(json);
+                        if (item != null)
+                        {
+                            result.Add(item);
+                        }
+                    }
+                    catch { }
+                }
+            }
+        }
+        catch { }
+
+        return result.OrderByDescending(n => n.DeletedAt ?? DateTime.MinValue).ToList();
+    }
+
+    public NoteItem? RestoreNoteFromTrash(Guid id)
     {
         lock (_lock)
         {
-            var existing = _notes.FirstOrDefault(n => n.Id == id);
-            if (existing != null)
+            try
             {
-                existing.IsDeleted = false;
-                existing.DeletedAt = null;
-                existing.ModifiedAt = DateTime.Now;
-                Save();
+                string filePath = Path.Combine(TrashFolder, $"note_{id:N}.json");
+                if (File.Exists(filePath))
+                {
+                    string json = File.ReadAllText(filePath);
+                    var note = JsonSerializer.Deserialize<NoteItem>(json);
+                    if (note != null)
+                    {
+                        note.IsDeleted = false;
+                        note.DeletedAt = null;
+                        note.ModifiedAt = DateTime.Now;
+
+                        if (!_notes.Any(n => n.Id == note.Id))
+                        {
+                            _notes.Add(note);
+                            Save();
+                        }
+
+                        File.Delete(filePath);
+                        return note;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error restoring note: {ex.Message}");
+            }
+
+            return null;
+        }
+    }
+
+    public List<NoteItem> RestoreAllTrash()
+    {
+        var restored = new List<NoteItem>();
+        var deleted = GetDeletedNotes();
+        foreach (var item in deleted)
+        {
+            var note = RestoreNoteFromTrash(item.Id);
+            if (note != null)
+            {
+                restored.Add(note);
             }
         }
+        return restored;
+    }
+
+    public void PurgeExpiredTrash()
+    {
+        try
+        {
+            if (!Directory.Exists(TrashFolder)) return;
+
+            var files = Directory.GetFiles(TrashFolder, "note_*.json");
+            var now = DateTime.Now;
+
+            foreach (var file in files)
+            {
+                try
+                {
+                    string json = File.ReadAllText(file);
+                    var item = JsonSerializer.Deserialize<NoteItem>(json);
+                    if (item != null)
+                    {
+                        var deletedAt = item.DeletedAt ?? File.GetCreationTime(file);
+                        if (now - deletedAt > TrashRetentionPeriod)
+                        {
+                            File.Delete(file);
+                        }
+                    }
+                    else if (now - File.GetLastWriteTime(file) > TrashRetentionPeriod)
+                    {
+                        File.Delete(file);
+                    }
+                }
+                catch
+                {
+                    if (now - File.GetLastWriteTime(file) > TrashRetentionPeriod)
+                    {
+                        try { File.Delete(file); } catch { }
+                    }
+                }
+            }
+        }
+        catch { }
     }
 
     public void ClearTrash()
     {
-        lock (_lock)
+        try
         {
-            _notes.RemoveAll(n => n.IsDeleted);
-            Save();
+            if (Directory.Exists(TrashFolder))
+            {
+                var files = Directory.GetFiles(TrashFolder, "note_*.json");
+                foreach (var file in files)
+                {
+                    try { File.Delete(file); } catch { }
+                }
+            }
         }
+        catch { }
+    }
+
+    public void OpenTrashFolderInExplorer()
+    {
+        try
+        {
+            Directory.CreateDirectory(TrashFolder);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = TrashFolder,
+                UseShellExecute = true
+            });
+        }
+        catch { }
     }
 
     public string ExportAllToJson()

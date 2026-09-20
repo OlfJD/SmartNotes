@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Microsoft.Win32;
 
 namespace SmartNotes.Core.Services;
@@ -8,12 +9,36 @@ public static class AutoStartManager
     private const string StartupRegistryKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
     private const string AppName = "SmartNotes";
 
+    public static string GetExecutablePath()
+    {
+        string? procPath = Environment.ProcessPath;
+        if (!string.IsNullOrEmpty(procPath) && Path.GetExtension(procPath).Equals(".exe", StringComparison.OrdinalIgnoreCase) && !Path.GetFileName(procPath).Equals("dotnet.exe", StringComparison.OrdinalIgnoreCase))
+        {
+            return procPath;
+        }
+
+        string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        string directExe = Path.Combine(baseDir, "SmartNotes.exe");
+        if (File.Exists(directExe)) return directExe;
+
+        DirectoryInfo? parent = Directory.GetParent(baseDir);
+        while (parent != null)
+        {
+            string candidate = Path.Combine(parent.FullName, "SmartNotes.exe");
+            if (File.Exists(candidate)) return candidate;
+            parent = parent.Parent;
+        }
+
+        return directExe;
+    }
+
     public static bool IsStartupEnabled()
     {
         try
         {
             using var key = Registry.CurrentUser.OpenSubKey(StartupRegistryKey, false);
-            return key?.GetValue(AppName) != null;
+            var val = key?.GetValue(AppName)?.ToString();
+            return !string.IsNullOrWhiteSpace(val);
         }
         catch
         {
@@ -21,19 +46,22 @@ public static class AutoStartManager
         }
     }
 
-    public static void SetStartup(bool enable)
+    public static void SyncStartupRegistration(bool shouldEnable)
     {
         try
         {
             using var key = Registry.CurrentUser.OpenSubKey(StartupRegistryKey, true);
             if (key == null) return;
 
-            if (enable)
+            string currentExe = GetExecutablePath();
+            string expectedVal = $"\"{currentExe}\"";
+
+            if (shouldEnable)
             {
-                string exePath = Environment.ProcessPath ?? "";
-                if (!string.IsNullOrEmpty(exePath))
+                var currentVal = key.GetValue(AppName)?.ToString();
+                if (!string.Equals(currentVal?.Trim('\"'), currentExe, StringComparison.OrdinalIgnoreCase))
                 {
-                    key.SetValue(AppName, $"\"{exePath}\"");
+                    key.SetValue(AppName, expectedVal);
                 }
             }
             else
@@ -48,5 +76,10 @@ public static class AutoStartManager
         {
             System.Diagnostics.Debug.WriteLine($"Error configuring startup: {ex.Message}");
         }
+    }
+
+    public static void SetStartup(bool enable)
+    {
+        SyncStartupRegistration(enable);
     }
 }

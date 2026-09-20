@@ -59,7 +59,8 @@ public partial class App : Application
         {
             try
             {
-                File.WriteAllText("crash.log", $"[AppDomain UnhandledException] {ev.ExceptionObject}");
+                string crashPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "crash.log");
+                File.WriteAllText(crashPath, $"[AppDomain UnhandledException] {ev.ExceptionObject}");
             }
             catch { }
         };
@@ -68,7 +69,8 @@ public partial class App : Application
         {
             try
             {
-                File.WriteAllText("crash.log", $"[DispatcherUnhandledException] {ev.Exception}\n{ev.Exception.StackTrace}");
+                string crashPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "crash.log");
+                File.WriteAllText(crashPath, $"[DispatcherUnhandledException] {ev.Exception}\n{ev.Exception.StackTrace}");
             }
             catch { }
         };
@@ -170,7 +172,13 @@ public partial class App : Application
             onToggleHideAll: () => Dispatcher.Invoke(ToggleHideAllNotes),
             onArrangeNotes: () => Dispatcher.Invoke(ArrangeNotesOnDesktop),
             onOpenSettings: () => Dispatcher.Invoke(OpenSettingsDialog),
-            onExit: () => Dispatcher.Invoke(ExitApplication)
+            onExit: () => Dispatcher.Invoke(ExitApplication),
+            getDeletedNotes: () => _storageService.GetDeletedNotes(),
+            onRestoreNote: id => Dispatcher.Invoke(() => RestoreNoteFromTrash(id)),
+            onRestoreAllNotes: () => Dispatcher.Invoke(RestoreAllNotesFromTrash),
+            onEmptyTrash: () => Dispatcher.Invoke(EmptyTrash),
+            onOpenTrashFolder: () => _storageService.OpenTrashFolderInExplorer(),
+            onTrimMemory: () => Dispatcher.Invoke(() => MemoryOptimizer.TrimMemory())
         );
 
         UpdateTrayTooltip();
@@ -224,6 +232,7 @@ public partial class App : Application
             {
                 _activeNoteWindows.Remove(w.Note.Id);
                 UpdateTrayTooltip();
+                _trayManager?.RebuildContextMenu();
                 MemoryOptimizer.TrimMemory();
             }),
             startInForeground: bringToFront
@@ -385,7 +394,7 @@ public partial class App : Application
 
     public void OpenSettingsDialog()
     {
-        var dlg = new SettingsDialog(_settingsService, () =>
+        var dlg = new SettingsDialog(_settingsService, _storageService, () =>
         {
             _trayManager.RebuildContextMenu();
             _hotKeyManager?.Dispose();
@@ -399,6 +408,40 @@ public partial class App : Application
         }
 
         dlg.ShowDialog();
+    }
+
+    public void RestoreNoteFromTrash(Guid id)
+    {
+        var restored = _storageService.RestoreNoteFromTrash(id);
+        if (restored != null)
+        {
+            SpawnStickyNoteWindow(restored, bringToFront: true);
+            string title = string.IsNullOrWhiteSpace(restored.Title) ? restored.SnippetPreview : restored.Title;
+            if (title.Length > 25) title = title.Substring(0, 22) + "...";
+            _trayManager.ShowBalloon("SmartNotes", $"Restored note \"{title}\" to desktop!", ToolTipIcon.Info);
+            _trayManager.RebuildContextMenu();
+        }
+    }
+
+    public void RestoreAllNotesFromTrash()
+    {
+        var restored = _storageService.RestoreAllTrash();
+        foreach (var note in restored)
+        {
+            SpawnStickyNoteWindow(note, bringToFront: true);
+        }
+        if (restored.Count > 0)
+        {
+            _trayManager.ShowBalloon("SmartNotes", $"Restored {restored.Count} note{(restored.Count == 1 ? "" : "s")} to desktop!", ToolTipIcon.Info);
+        }
+        _trayManager.RebuildContextMenu();
+    }
+
+    public void EmptyTrash()
+    {
+        _storageService.ClearTrash();
+        _trayManager.ShowBalloon("SmartNotes", "Trash folder emptied.", ToolTipIcon.Info);
+        _trayManager.RebuildContextMenu();
     }
 
     private void UpdateTrayTooltip()

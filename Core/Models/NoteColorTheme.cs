@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Windows.Media;
 
 namespace SmartNotes.Core.Models;
 
@@ -14,6 +17,42 @@ public class NoteColorTheme
     public string TextPrimaryHex { get; set; } = "#FFFBEB";
     public string TextMutedHex { get; set; } = "#FDE68A";
     public string AccentHex { get; set; } = "#F59E0B";
+
+    // Pre-frozen cached brushes to save memory and boost WPF rendering
+    private SolidColorBrush? _bgBrush;
+    private SolidColorBrush? _headerBgBrush;
+    private SolidColorBrush? _borderBrush;
+    private SolidColorBrush? _primaryBrush;
+    private SolidColorBrush? _glowBrush;
+    private SolidColorBrush? _textPrimaryBrush;
+    private SolidColorBrush? _textMutedBrush;
+
+    public SolidColorBrush BgBrush => _bgBrush ??= CreateFrozenBrush(BgHex);
+    public SolidColorBrush HeaderBgBrush => _headerBgBrush ??= CreateFrozenBrush(HeaderBgHex);
+    public SolidColorBrush BorderBrush => _borderBrush ??= CreateFrozenBrush(BorderHex);
+    public SolidColorBrush PrimaryBrush => _primaryBrush ??= CreateFrozenBrush(PrimaryHex);
+    public SolidColorBrush GlowBrush => _glowBrush ??= CreateFrozenBrush(GlowHex);
+    public SolidColorBrush TextPrimaryBrush => _textPrimaryBrush ??= CreateFrozenBrush(TextPrimaryHex);
+    public SolidColorBrush TextMutedBrush => _textMutedBrush ??= CreateFrozenBrush(TextMutedHex);
+
+    public static SolidColorBrush CreateFrozenBrush(string hex)
+    {
+        try
+        {
+            var color = (Color)ColorConverter.ConvertFromString(hex);
+            var brush = new SolidColorBrush(color);
+            brush.Freeze();
+            return brush;
+        }
+        catch
+        {
+            var fallback = new SolidColorBrush(Colors.White);
+            fallback.Freeze();
+            return fallback;
+        }
+    }
+
+    private static readonly ConcurrentDictionary<string, NoteColorTheme> CustomThemesCache = new();
 
     public static readonly Dictionary<string, NoteColorTheme> Themes = new()
     {
@@ -150,11 +189,16 @@ public class NoteColorTheme
             string cleanHex = hex.Trim().TrimStart('#');
             if (cleanHex.Length == 6)
             {
+                string primary = $"#{cleanHex.ToUpperInvariant()}";
+                if (CustomThemesCache.TryGetValue(primary, out var cached))
+                {
+                    return cached;
+                }
+
                 byte r = Convert.ToByte(cleanHex.Substring(0, 2), 16);
                 byte g = Convert.ToByte(cleanHex.Substring(2, 2), 16);
                 byte b = Convert.ToByte(cleanHex.Substring(4, 2), 16);
 
-                string primary = $"#{r:X2}{g:X2}{b:X2}";
                 string glow = $"#{Math.Min(255, r + 40):X2}{Math.Min(255, g + 40):X2}{Math.Min(255, b + 40):X2}";
                 
                 // Obsidian dark tinted background & header
@@ -178,7 +222,7 @@ public class NoteColorTheme
                 byte tmB = (byte)Math.Min(255, (b + 255) / 2);
                 string textMuted = $"#{tmR:X2}{tmG:X2}{tmB:X2}";
 
-                return new NoteColorTheme
+                var created = new NoteColorTheme
                 {
                     Key = primary,
                     Name = $"Custom ({primary})",
@@ -191,6 +235,9 @@ public class NoteColorTheme
                     TextMutedHex = textMuted,
                     AccentHex = primary
                 };
+
+                CustomThemesCache[primary] = created;
+                return created;
             }
         }
         catch { }
