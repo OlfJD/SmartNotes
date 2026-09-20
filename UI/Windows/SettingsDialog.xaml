@@ -133,7 +133,7 @@
                     <!-- Group 3: Default Style -->
                     <TextBlock Text="DEFAULT NOTE APPEARANCE" FontSize="12.5" FontWeight="Bold" Foreground="{StaticResource NeonEmeraldGlowBrush}" Margin="0,0,0,10"/>
                     
-                    <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="2.5" CornerRadius="12" Padding="16">
+                    <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="2.5" CornerRadius="12" Padding="16" Margin="0,0,0,18">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -149,6 +149,49 @@
 
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Default Font Size" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFF" VerticalAlignment="Center"/>
                             <ComboBox x:Name="CmbDefaultFontSize" Grid.Row="1" Grid.Column="1" Height="38"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Group 4: Trash & 48h Recovery -->
+                    <TextBlock Text="TEMPORARY TRASH &amp; RECOVERY (48H RETENTION)" FontSize="12.5" FontWeight="Bold" Foreground="{StaticResource NeonVioletGlowBrush}" Margin="0,0,0,10"/>
+                    
+                    <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="2.5" CornerRadius="12" Padding="16" Margin="0,0,0,18">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="48-Hour Temporary Trash Retention" FontSize="15.5" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                    <TextBlock x:Name="TxtTrashStatus" Text="Deleted notes are kept for 48 hours in your local trash folder before permanent purge." FontSize="13.5" Foreground="#7888A4" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <Border Grid.Column="1" Background="#1A1528" BorderBrush="#3D2B60" BorderThickness="1.5" CornerRadius="8" Padding="10,4" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtTrashCount" Text="0 Notes in Trash" FontSize="13.5" FontWeight="Bold" Foreground="{StaticResource NeonVioletGlowBrush}"/>
+                                </Border>
+                            </Grid>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                <Button x:Name="BtnOpenTrash" Style="{StaticResource GlowButton}" Content="📁 Open Trash Folder in Explorer" Padding="14,6" Margin="0,0,10,0" Click="BtnOpenTrash_Click"/>
+                                <Button x:Name="BtnEmptyTrash" Style="{StaticResource GlowButton}" Content="🗑️ Empty Trash Now" Padding="14,6" Click="BtnEmptyTrash_Click"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Group 5: Memory Optimization & Footprint -->
+                    <TextBlock Text="MEMORY &amp; PERFORMANCE" FontSize="12.5" FontWeight="Bold" Foreground="{StaticResource NeonAmberGlowBrush}" Margin="0,0,0,10"/>
+                    
+                    <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="2.5" CornerRadius="12" Padding="16">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="RAM Footprint Optimization" FontSize="15.5" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                <TextBlock x:Name="TxtRamStatus" Text="Working Set: Calculating..." FontSize="13.5" Foreground="#7888A4" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <Button x:Name="BtnOptimizeRam" Grid.Column="1" Style="{StaticResource PrimaryAmberButton}" Content="⚡ Optimize RAM Now" Padding="16,8" VerticalAlignment="Center" Click="BtnOptimizeRam_Click"/>
                         </Grid>
                     </Border>
                 </StackPanel>

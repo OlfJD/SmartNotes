@@ -39,8 +39,8 @@ public class SettingsService
             System.Diagnostics.Debug.WriteLine($"Error loading settings: {ex.Message}");
         }
 
-        // Sync startup setting with actual registry status
-        Settings.LaunchOnStartup = AutoStartManager.IsStartupEnabled();
+        // Self-heal and sync startup setting with current binary location
+        AutoStartManager.SyncStartupRegistration(Settings.LaunchOnStartup);
     }
 
     public void Save()
@@ -50,7 +50,7 @@ public class SettingsService
             Directory.CreateDirectory(AppFolder);
             string json = JsonSerializer.Serialize(Settings, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(SettingsPath, json);
-            AutoStartManager.SetStartup(Settings.LaunchOnStartup);
+            AutoStartManager.SyncStartupRegistration(Settings.LaunchOnStartup);
         }
         catch (Exception ex)
         {

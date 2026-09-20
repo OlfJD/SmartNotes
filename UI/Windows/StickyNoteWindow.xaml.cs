@@ -25,11 +25,16 @@ public partial class StickyNoteWindow : Window
     private readonly Action<StickyNoteWindow> _onClosedCallback;
     private readonly DesktopWindowManager _desktopWindowManager;
 
+    private static readonly SolidColorBrush AmberBrush = NoteColorTheme.CreateFrozenBrush("#F59E0B");
+    private static readonly SolidColorBrush EmeraldBrush = NoteColorTheme.CreateFrozenBrush("#10B981");
+    private static readonly SolidColorBrush CyanBrush = NoteColorTheme.CreateFrozenBrush("#06B6D4");
+    private static readonly SolidColorBrush MutedBrush = NoteColorTheme.CreateFrozenBrush("#A8B5CD");
+
     private NoteItem _note;
     private bool _isLoaded = false;
     private DispatcherTimer? _saveDebounceTimer;
     private DispatcherTimer? _savedStatusResetTimer;
-    private SolidColorBrush _currentGlowBrush = new((Color)ColorConverter.ConvertFromString("#F59E0B"));
+    private SolidColorBrush _currentGlowBrush = AmberBrush;
     private ObservableCollection<TodoCheckItem> _checklistItems = new();
     private ObservableCollection<CopySnippetItem> _copyItems = new();
 
@@ -148,31 +153,23 @@ public partial class StickyNoteWindow : Window
 
         try
         {
-            var bgBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.BgHex));
-            var headerBgBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.HeaderBgHex));
-            var borderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.BorderHex));
-            var primaryBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.PrimaryHex));
-            var glowBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.GlowHex));
-            var textPrimaryBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.TextPrimaryHex));
-            var textMutedBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.TextMutedHex));
+            _currentGlowBrush = theme.GlowBrush;
 
-            _currentGlowBrush = glowBrush;
+            NoteCardBorder.Background = theme.BgBrush;
+            NoteCardBorder.BorderBrush = theme.BorderBrush;
+            HeaderBorder.Background = theme.HeaderBgBrush;
+            HeaderBorder.BorderBrush = theme.BorderBrush;
+            LeftCompartmentBorder.BorderBrush = theme.BorderBrush;
+            ModeCompartmentBorder.BorderBrush = theme.BorderBrush;
+            ToolsCompartmentBorder.BorderBrush = theme.BorderBrush;
 
-            NoteCardBorder.Background = bgBrush;
-            NoteCardBorder.BorderBrush = borderBrush;
-            HeaderBorder.Background = headerBgBrush;
-            HeaderBorder.BorderBrush = borderBrush;
-            LeftCompartmentBorder.BorderBrush = borderBrush;
-            ModeCompartmentBorder.BorderBrush = borderBrush;
-            ToolsCompartmentBorder.BorderBrush = borderBrush;
-
-            TxtTitle.Foreground = textPrimaryBrush;
-            TxtContent.Foreground = textPrimaryBrush;
-            TxtTitle.CaretBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.GlowHex));
-            TxtContent.CaretBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.GlowHex));
-            TxtNewTask.CaretBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.GlowHex));
-            TxtNewCopyItem.CaretBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.GlowHex));
-            IconPlus.Foreground = glowBrush;
+            TxtTitle.Foreground = theme.TextPrimaryBrush;
+            TxtContent.Foreground = theme.TextPrimaryBrush;
+            TxtTitle.CaretBrush = theme.GlowBrush;
+            TxtContent.CaretBrush = theme.GlowBrush;
+            TxtNewTask.CaretBrush = theme.GlowBrush;
+            TxtNewCopyItem.CaretBrush = theme.GlowBrush;
+            IconPlus.Foreground = theme.GlowBrush;
         }
         catch { }
     }
@@ -186,14 +183,9 @@ public partial class StickyNoteWindow : Window
         ChecklistModeContainer.Visibility = (mode == NoteViewMode.Checklist) ? Visibility.Visible : Visibility.Collapsed;
         CopyModeContainer.Visibility = (mode == NoteViewMode.CopyCompartments) ? Visibility.Visible : Visibility.Collapsed;
 
-        var amberBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F59E0B"));
-        var emeraldBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#10B981"));
-        var cyanBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#06B6D4"));
-        var mutedBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#A8B5CD"));
-
-        IconTextMode.Foreground = (mode == NoteViewMode.Text) ? amberBrush : mutedBrush;
-        IconChecklistMode.Foreground = (mode == NoteViewMode.Checklist) ? emeraldBrush : mutedBrush;
-        IconCopyMode.Foreground = (mode == NoteViewMode.CopyCompartments) ? cyanBrush : mutedBrush;
+        IconTextMode.Foreground = (mode == NoteViewMode.Text) ? AmberBrush : MutedBrush;
+        IconChecklistMode.Foreground = (mode == NoteViewMode.Checklist) ? EmeraldBrush : MutedBrush;
+        IconCopyMode.Foreground = (mode == NoteViewMode.CopyCompartments) ? CyanBrush : MutedBrush;
 
         BtnTextMode.ToolTip = (mode == NoteViewMode.Text) ? "Active: Plain Text Mode" : "Switch to Plain Text Mode";
         BtnChecklistMode.ToolTip = (mode == NoteViewMode.Checklist) ? "Active: Checklist Mode" : "Switch to Checklist Mode";
@@ -210,21 +202,21 @@ public partial class StickyNoteWindow : Window
             case NotePinMode.DesktopStuck:
                 TxtPinIndicator.Text = "📌 Stuck to Desktop";
                 IconPin.IconKey = "pin";
-                IconPin.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#10B981"));
+                IconPin.Foreground = EmeraldBrush;
                 BtnPinMode.ToolTip = "Mode: Stuck to Desktop (Behind all apps). Click to Float Always on Top";
                 break;
 
             case NotePinMode.AlwaysOnTop:
                 TxtPinIndicator.Text = "📌 Always on Top";
                 IconPin.IconKey = "pin";
-                IconPin.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F59E0B"));
+                IconPin.Foreground = AmberBrush;
                 BtnPinMode.ToolTip = "Mode: Always on Top (Floating). Click to Stick to Desktop";
                 break;
 
             case NotePinMode.Normal:
                 TxtPinIndicator.Text = "📌 Normal Window";
                 IconPin.IconKey = "pin-off";
-                IconPin.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#A8B5CD"));
+                IconPin.Foreground = MutedBrush;
                 BtnPinMode.ToolTip = "Mode: Normal Window. Click to Stick to Desktop";
                 break;
         }
@@ -241,14 +233,14 @@ public partial class StickyNoteWindow : Window
         if (isLocked)
         {
             IconLock.IconKey = "lock";
-            IconLock.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F59E0B"));
+            IconLock.Foreground = AmberBrush;
             LockBadge.Visibility = Visibility.Visible;
             BtnLock.ToolTip = "Note is Locked (Click to Unlock)";
         }
         else
         {
             IconLock.IconKey = "unlock";
-            IconLock.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#A8B5CD"));
+            IconLock.Foreground = MutedBrush;
             LockBadge.Visibility = Visibility.Collapsed;
             BtnLock.ToolTip = "Lock note position & text";
         }
@@ -296,10 +288,9 @@ public partial class StickyNoteWindow : Window
         TxtModifiedTime.Visibility = Visibility.Collapsed;
         TypingIndicatorContainer.Visibility = Visibility.Visible;
         IconTypingStatus.IconKey = "check";
-        var emeraldBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#10B981"));
-        IconTypingStatus.Foreground = emeraldBrush;
+        IconTypingStatus.Foreground = EmeraldBrush;
         TxtTypingStatus.Text = "Saved";
-        TxtTypingStatus.Foreground = emeraldBrush;
+        TxtTypingStatus.Foreground = EmeraldBrush;
 
         _savedStatusResetTimer = new DispatcherTimer
         {
@@ -861,7 +852,7 @@ public partial class StickyNoteWindow : Window
 
     private void OpenSettings()
     {
-        var dlg = new SettingsDialog(_settingsService, () =>
+        var dlg = new SettingsDialog(_settingsService, _storageService, () =>
         {
             ApplyTheme(_note.ColorKey);
             MemoryOptimizer.TrimMemory();
@@ -997,6 +988,7 @@ public partial class StickyNoteWindow : Window
         _storageService.DeleteNote(_note.Id, permanent: false);
         _onClosedCallback(this);
         Close();
+        MemoryOptimizer.TrimMemory();
     }
 
     // Checklist Item Events
@@ -1113,7 +1105,7 @@ public partial class StickyNoteWindow : Window
                     string oldKey = icon.IconKey;
                     Brush oldBrush = icon.Foreground;
                     icon.IconKey = "check";
-                    icon.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#10B981"));
+                    icon.Foreground = EmeraldBrush;
                     btn.ToolTip = "Copied! ✓";
 
                     var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(1200) };
