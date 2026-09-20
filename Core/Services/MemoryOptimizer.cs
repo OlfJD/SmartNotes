@@ -13,6 +13,9 @@ public static class MemoryOptimizer
     [DllImport("kernel32.dll", EntryPoint = "SetProcessWorkingSetSize", ExactSpelling = true, SetLastError = true, CallingConvention = CallingConvention.StdCall)]
     private static extern bool SetProcessWorkingSetSize(IntPtr hProcess, IntPtr dwMinimumWorkingSetSize, IntPtr dwMaximumWorkingSetSize);
 
+    [DllImport("psapi.dll", SetLastError = true)]
+    private static extern bool EmptyWorkingSet(IntPtr hProcess);
+
     public static void Initialize()
     {
         _trimTimer = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
@@ -55,6 +58,7 @@ public static class MemoryOptimizer
             {
                 using var process = Process.GetCurrentProcess();
                 SetProcessWorkingSetSize(process.Handle, (IntPtr)(-1), (IntPtr)(-1));
+                EmptyWorkingSet(process.Handle);
             }
         }
         catch { }
