@@ -38,6 +38,8 @@ public partial class SettingsDialog : Window
         RefreshRamStatus();
     }
 
+    private bool _suppressSliderEvents = false;
+
     private void LoadValues()
     {
         var s = _settingsService.Settings;
@@ -45,6 +47,19 @@ public partial class SettingsDialog : Window
         ChkDesktopStuck.IsChecked = s.KeepBehindAllWindows;
         ChkUnfocusedTransparency.IsChecked = s.EnableUnfocusedTransparency;
         ChkHotkeys.IsChecked = s.EnableGlobalHotkeys;
+
+        _suppressSliderEvents = true;
+        try
+        {
+            SliderUnfocusedOpacity.Value = Math.Round(s.UnfocusedOpacity * 100);
+            TxtUnfocusedOpacityPercent.Text = $"{(int)SliderUnfocusedOpacity.Value}%";
+            PnlUnfocusedOpacitySlider.Opacity = s.EnableUnfocusedTransparency ? 1.0 : 0.4;
+            SliderUnfocusedOpacity.IsEnabled = s.EnableUnfocusedTransparency;
+        }
+        finally
+        {
+            _suppressSliderEvents = false;
+        }
 
         // Populate Colors
         CmbDefaultColor.ItemsSource = new List<string> { "Amber", "Emerald", "Violet", "Cyan", "Rose", "Obsidian", "Gold", "Mint" };
@@ -61,6 +76,22 @@ public partial class SettingsDialog : Window
             _ => 1
         };
         CmbDefaultFontSize.SelectedIndex = idx;
+    }
+
+    private void ChkUnfocusedTransparency_Click(object sender, RoutedEventArgs e)
+    {
+        bool isChecked = ChkUnfocusedTransparency.IsChecked == true;
+        PnlUnfocusedOpacitySlider.Opacity = isChecked ? 1.0 : 0.4;
+        SliderUnfocusedOpacity.IsEnabled = isChecked;
+    }
+
+    private void SliderUnfocusedOpacity_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (_suppressSliderEvents) return;
+        if (TxtUnfocusedOpacityPercent != null)
+        {
+            TxtUnfocusedOpacityPercent.Text = $"{(int)SliderUnfocusedOpacity.Value}%";
+        }
     }
 
     private void RefreshTrashStatus()
@@ -120,6 +151,7 @@ public partial class SettingsDialog : Window
         s.LaunchOnStartup = ChkStartup.IsChecked == true;
         s.KeepBehindAllWindows = ChkDesktopStuck.IsChecked == true;
         s.EnableUnfocusedTransparency = ChkUnfocusedTransparency.IsChecked == true;
+        s.UnfocusedOpacity = Math.Clamp(SliderUnfocusedOpacity.Value / 100.0, 0.15, 0.90);
         s.EnableGlobalHotkeys = ChkHotkeys.IsChecked == true;
 
         if (CmbDefaultColor.SelectedItem is string color)

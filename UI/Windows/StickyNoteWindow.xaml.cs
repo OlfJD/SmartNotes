@@ -58,6 +58,7 @@ public partial class StickyNoteWindow : Window
     private bool _isDraggingSatVal = false;
     private bool _isDraggingHue = false;
     private bool _suppressHexChanged = false;
+    private bool _suppressTransparencyEvents = false;
 
     private readonly bool _startInForeground;
 
@@ -597,6 +598,40 @@ public partial class StickyNoteWindow : Window
             _currentVal = 0.95;
         }
 
+        _suppressTransparencyEvents = true;
+        try
+        {
+            if (SliderActiveOpacity != null)
+            {
+                SliderActiveOpacity.Value = Math.Round(_userConfiguredOpacity * 100);
+            }
+            if (TxtActiveOpacityPercent != null)
+            {
+                TxtActiveOpacityPercent.Text = $"{(int)Math.Round(_userConfiguredOpacity * 100)}%";
+            }
+            if (ChkUnfocusedDim != null)
+            {
+                ChkUnfocusedDim.IsChecked = _settingsService.Settings.EnableUnfocusedTransparency;
+            }
+            if (SliderUnfocusedOpacity != null)
+            {
+                SliderUnfocusedOpacity.Value = Math.Round(_settingsService.Settings.UnfocusedOpacity * 100);
+                SliderUnfocusedOpacity.IsEnabled = _settingsService.Settings.EnableUnfocusedTransparency;
+            }
+            if (TxtUnfocusedOpacityPercent != null)
+            {
+                TxtUnfocusedOpacityPercent.Text = $"{(int)Math.Round(_settingsService.Settings.UnfocusedOpacity * 100)}%";
+            }
+            if (UnfocusedOpacityControlsPanel != null)
+            {
+                UnfocusedOpacityControlsPanel.Opacity = _settingsService.Settings.EnableUnfocusedTransparency ? 1.0 : 0.4;
+            }
+        }
+        finally
+        {
+            _suppressTransparencyEvents = false;
+        }
+
         Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
         {
             UpdateSatValDisplay();
@@ -827,12 +862,26 @@ public partial class StickyNoteWindow : Window
         menu.Items.Add(fontMenu);
 
         // Opacity Submenu
-        var opacityMenu = new MenuItem { Header = $"Opacity ({(int)(Opacity * 100)}%)" };
+        var opacityMenu = new MenuItem { Header = $"Opacity ({(int)(_userConfiguredOpacity * 100)}%)" };
         opacityMenu.Items.Add(CreateMenuItem("100% Solid", () => SetNoteOpacity(1.0)));
         opacityMenu.Items.Add(CreateMenuItem("90% Crisp", () => SetNoteOpacity(0.9)));
         opacityMenu.Items.Add(CreateMenuItem("80% Glass", () => SetNoteOpacity(0.8)));
         opacityMenu.Items.Add(CreateMenuItem("65% Translucent", () => SetNoteOpacity(0.65)));
         opacityMenu.Items.Add(CreateMenuItem("50% Stealth", () => SetNoteOpacity(0.5)));
+        opacityMenu.Items.Add(new Separator());
+
+        bool isDimEnabled = _settingsService.Settings.EnableUnfocusedTransparency;
+        var toggleDimItem = new MenuItem
+        {
+            Header = isDimEnabled ? "✓ Dim When Unfocused (Enabled)" : "Dim When Unfocused (Disabled)"
+        };
+        toggleDimItem.Click += (s, e) =>
+        {
+            _settingsService.Settings.EnableUnfocusedTransparency = !isDimEnabled;
+            _settingsService.Save();
+            App.Instance?.NotifyTransparencySettingsChanged();
+        };
+        opacityMenu.Items.Add(toggleDimItem);
         menu.Items.Add(opacityMenu);
 
         menu.Items.Add(new Separator());
@@ -911,10 +960,75 @@ public partial class StickyNoteWindow : Window
         RequestSave();
     }
 
+    private void SliderActiveOpacity_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (_suppressTransparencyEvents || !_isLoaded) return;
+
+        double val = Math.Clamp(SliderActiveOpacity.Value / 100.0, 0.3, 1.0);
+        _userConfiguredOpacity = val;
+        _note.Opacity = val;
+
+        if (TxtActiveOpacityPercent != null)
+        {
+            TxtActiveOpacityPercent.Text = $"{(int)SliderActiveOpacity.Value}%";
+        }
+
+        ApplyFocusOpacity(IsActive);
+        RequestSave(isTyping: false);
+    }
+
+    private void ChkUnfocusedDim_Click(object sender, RoutedEventArgs e)
+    {
+        if (_suppressTransparencyEvents || !_isLoaded) return;
+
+        bool isEnabled = ChkUnfocusedDim.IsChecked == true;
+        _settingsService.Settings.EnableUnfocusedTransparency = isEnabled;
+        _settingsService.Save();
+
+        if (UnfocusedOpacityControlsPanel != null)
+        {
+            UnfocusedOpacityControlsPanel.Opacity = isEnabled ? 1.0 : 0.4;
+        }
+        if (SliderUnfocusedOpacity != null)
+        {
+            SliderUnfocusedOpacity.IsEnabled = isEnabled;
+        }
+
+        App.Instance?.NotifyTransparencySettingsChanged();
+    }
+
+    private void SliderUnfocusedOpacity_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (_suppressTransparencyEvents || !_isLoaded) return;
+
+        double factor = Math.Clamp(SliderUnfocusedOpacity.Value / 100.0, 0.15, 0.90);
+        _settingsService.Settings.UnfocusedOpacity = factor;
+        _settingsService.Save();
+
+        if (TxtUnfocusedOpacityPercent != null)
+        {
+            TxtUnfocusedOpacityPercent.Text = $"{(int)SliderUnfocusedOpacity.Value}%";
+        }
+
+        App.Instance?.NotifyTransparencySettingsChanged();
+    }
+
     private void SetNoteOpacity(double opacity)
     {
         _userConfiguredOpacity = Math.Clamp(opacity, 0.3, 1.0);
         _note.Opacity = _userConfiguredOpacity;
+
+        if (SliderActiveOpacity != null && !_suppressTransparencyEvents)
+        {
+            _suppressTransparencyEvents = true;
+            SliderActiveOpacity.Value = Math.Round(_userConfiguredOpacity * 100);
+            if (TxtActiveOpacityPercent != null)
+            {
+                TxtActiveOpacityPercent.Text = $"{(int)SliderActiveOpacity.Value}%";
+            }
+            _suppressTransparencyEvents = false;
+        }
+
         ApplyFocusOpacity(IsActive);
         RequestSave();
     }

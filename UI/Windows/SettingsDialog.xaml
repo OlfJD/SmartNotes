@@ -92,8 +92,21 @@
                                     <TextBlock Text="Transparent When Unfocused" FontSize="15.5" FontWeight="SemiBold" Foreground="#FFFFFF"/>
                                     <TextBlock Text="Automatically make notes translucent when working in other applications" FontSize="13.5" Foreground="#7888A4" Margin="0,2,0,0"/>
                                 </StackPanel>
-                                <CheckBox x:Name="ChkUnfocusedTransparency" Grid.Column="1" Style="{StaticResource ModernSwitch}" IsChecked="True" VerticalAlignment="Center"/>
+                                <CheckBox x:Name="ChkUnfocusedTransparency" Grid.Column="1" Style="{StaticResource ModernSwitch}" IsChecked="True" VerticalAlignment="Center" Click="ChkUnfocusedTransparency_Click"/>
                             </Grid>
+
+                            <!-- Unfocused Opacity Factor Slider in Settings -->
+                            <StackPanel x:Name="PnlUnfocusedOpacitySlider" Margin="0,12,0,0">
+                                <Grid Margin="0,0,0,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Unfocused Inactivity Opacity" FontSize="14" FontWeight="SemiBold" Foreground="#A8B5CD"/>
+                                    <TextBlock x:Name="TxtUnfocusedOpacityPercent" Grid.Column="1" Text="55%" FontSize="14" FontWeight="Bold" Foreground="{StaticResource NeonAmberGlowBrush}"/>
+                                </Grid>
+                                <Slider x:Name="SliderUnfocusedOpacity" Minimum="15" Maximum="90" Value="55" SmallChange="5" LargeChange="10" ValueChanged="SliderUnfocusedOpacity_ValueChanged"/>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 
