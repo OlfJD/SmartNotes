@@ -214,7 +214,7 @@ When `PinMode == NotePinMode.DesktopStuck`:
   - Dynamic binary path resolution with automatic registry synchronization on settings load/save.
   - Hardened crash logging to `AppDomain.CurrentDomain.BaseDirectory` / `%APPDATA%`, preventing working directory permission failures when Windows boots from `C:\Windows\System32`.
 
-### Version 1.1.5 - Multi-Directional 8-Way Window Resizing & Unfocused Auto-Transparency (2026-09-21)
+### Version 1.1.5 - Multi-Directional 8-Way Window Resizing, Unfocused Auto-Transparency & Appearance Controls (2026-09-21)
 - **8-Way Multi-Directional Window Resizing Overlays (`StickyNoteWindow.xaml`, `StickyNoteWindow.xaml.cs`, `Win32Api.cs`)**:
   - Added dedicated perimeter hit-zones (`ResizeOverlayGrid`) on all 4 borders (`Top`, `Bottom`, `Left`, `Right`) and 4 corners (`TopLeft`, `TopRight`, `BottomLeft`, `BottomRight`).
   - Integrated native Win32 `WM_SYSCOMMAND` + `SC_SIZE` (`0xF001` - `0xF008`) modal resizing loops via `ReleaseCapture` and `SendMessage`.
@@ -226,4 +226,11 @@ When `PinMode == NotePinMode.DesktopStuck`:
   - Returning focus instantly and smoothly restores full opaque/configured opacity.
   - Hovering mouse over an unfocused note temporarily brightens the note for reading without requiring input activation.
   - `SaveNoteState()` maintains `_userConfiguredOpacity` separately to ensure saving while unfocused never permanently lowers the note's base opacity.
-  - Added a "Transparent When Unfocused" toggle switch in **Settings & Preferences** under Desktop & System.
+- **Integrated Transparency & Dimming Customization Controls (`StickyNoteWindow.xaml`, `SettingsDialog.xaml`, `DarkTheme.xaml`)**:
+  - Integrated dedicated **"Transparency & Dimming"** section directly inside the **Colors & Themes Popup**:
+    - **Note Opacity Slider**: Directly tune active note opacity (30% - 100%) with live percentage readout.
+    - **Dim When Unfocused Switch**: Quickly toggle unfocused auto-dimming on/off per note context.
+    - **Unfocused Opacity Slider**: Tune inactive dim factor (15% - 90%) with instant live preview across all desktop notes.
+  - Added Unfocused Opacity slider to **Settings & Preferences** modal.
+  - Added Dim When Unfocused toggle in note header **More Options (`...`)** `Opacity` submenu.
+  - Built custom vector `ModernSlider` style in `DarkTheme.xaml`.
