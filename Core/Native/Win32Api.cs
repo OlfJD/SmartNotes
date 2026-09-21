@@ -43,6 +43,17 @@ public static class Win32Api
     public const int WM_NCHITTEST = 0x0084;
     public const int WM_SYSCOMMAND = 0x0112;
 
+    // SysCommand Size Subcommands
+    public const int SC_SIZE = 0xF000;
+    public const int SC_SIZE_LEFT = 1;
+    public const int SC_SIZE_RIGHT = 2;
+    public const int SC_SIZE_TOP = 3;
+    public const int SC_SIZE_TOPLEFT = 4;
+    public const int SC_SIZE_TOPRIGHT = 5;
+    public const int SC_SIZE_BOTTOM = 6;
+    public const int SC_SIZE_BOTTOMLEFT = 7;
+    public const int SC_SIZE_BOTTOMRIGHT = 8;
+
     public const int WA_INACTIVE = 0;
 
     // Virtual-Key Codes

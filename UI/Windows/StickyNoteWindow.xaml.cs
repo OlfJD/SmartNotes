@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using SmartNotes.Core.Models;
@@ -16,6 +17,18 @@ using SmartNotes.Core.Services;
 using SmartNotes.UI.Controls;
 
 namespace SmartNotes.UI.Windows;
+
+public enum ResizeDirection
+{
+    Left = 1,
+    Right = 2,
+    Top = 3,
+    TopLeft = 4,
+    TopRight = 5,
+    Bottom = 6,
+    BottomLeft = 7,
+    BottomRight = 8
+}
 
 public partial class StickyNoteWindow : Window
 {
@@ -32,6 +45,7 @@ public partial class StickyNoteWindow : Window
 
     private NoteItem _note;
     private bool _isLoaded = false;
+    private double _userConfiguredOpacity = 1.0;
     private DispatcherTimer? _saveDebounceTimer;
     private DispatcherTimer? _savedStatusResetTimer;
     private SolidColorBrush _currentGlowBrush = AmberBrush;
@@ -78,7 +92,8 @@ public partial class StickyNoteWindow : Window
         Top = Math.Clamp(_note.Y, vTop, Math.Max(vTop, vTop + vHeight - 120));
         Width = Math.Max(220, _note.Width);
         Height = Math.Max(180, _note.Height);
-        Opacity = Math.Clamp(_note.Opacity, 0.3, 1.0);
+        _userConfiguredOpacity = Math.Clamp(_note.Opacity, 0.3, 1.0);
+        Opacity = _userConfiguredOpacity;
 
         InitDebounceTimer();
         ApplyTheme(_note.ColorKey);
@@ -87,8 +102,17 @@ public partial class StickyNoteWindow : Window
         Loaded += OnWindowLoaded;
         LocationChanged += OnWindowPositionChanged;
         SizeChanged += OnWindowSizeChanged;
-        Deactivated += (s, e) => _desktopWindowManager.SetInteracting(false);
-        PreviewMouseDown += (s, e) => _desktopWindowManager.BringToFront();
+        Activated += (s, e) => ApplyFocusOpacity(true);
+        Deactivated += (s, e) =>
+        {
+            _desktopWindowManager.SetInteracting(false);
+            ApplyFocusOpacity(false);
+        };
+        PreviewMouseDown += (s, e) =>
+        {
+            _desktopWindowManager.BringToFront();
+            ApplyFocusOpacity(true);
+        };
     }
 
     private void InitDebounceTimer()
@@ -114,6 +138,7 @@ public partial class StickyNoteWindow : Window
             TxtContent.Focus();
         }
         _isLoaded = true;
+        ApplyFocusOpacity(IsActive || _startInForeground);
     }
 
     private void ApplyNoteData()
@@ -229,6 +254,10 @@ public partial class StickyNoteWindow : Window
         TxtContent.IsReadOnly = isLocked;
         TxtNewTask.IsEnabled = !isLocked;
         TxtNewCopyItem.IsEnabled = !isLocked;
+        if (ResizeOverlayGrid != null)
+        {
+            ResizeOverlayGrid.IsHitTestVisible = !isLocked;
+        }
 
         if (isLocked)
         {
@@ -353,7 +382,7 @@ public partial class StickyNoteWindow : Window
         _note.Y = Top;
         _note.Width = Width;
         _note.Height = Height;
-        _note.Opacity = Opacity;
+        _note.Opacity = _userConfiguredOpacity;
         _note.FontSize = TxtContent.FontSize;
         _note.ModifiedAt = DateTime.Now;
 
@@ -855,6 +884,7 @@ public partial class StickyNoteWindow : Window
         var dlg = new SettingsDialog(_settingsService, _storageService, () =>
         {
             ApplyTheme(_note.ColorKey);
+            ApplyFocusOpacity(IsActive);
             MemoryOptimizer.TrimMemory();
         });
         dlg.Owner = this;
@@ -883,8 +913,79 @@ public partial class StickyNoteWindow : Window
 
     private void SetNoteOpacity(double opacity)
     {
-        Opacity = opacity;
+        _userConfiguredOpacity = Math.Clamp(opacity, 0.3, 1.0);
+        _note.Opacity = _userConfiguredOpacity;
+        ApplyFocusOpacity(IsActive);
         RequestSave();
+    }
+
+    public void ApplyFocusOpacity(bool isFocused)
+    {
+        if (!_isLoaded) return;
+
+        double targetOpacity;
+        if (isFocused || !_settingsService.Settings.EnableUnfocusedTransparency)
+        {
+            targetOpacity = Math.Clamp(_userConfiguredOpacity, 0.3, 1.0);
+        }
+        else
+        {
+            double unfocusedFactor = _settingsService.Settings.UnfocusedOpacity;
+            targetOpacity = Math.Clamp(_userConfiguredOpacity * unfocusedFactor, 0.25, 0.9);
+        }
+
+        var anim = new DoubleAnimation
+        {
+            To = targetOpacity,
+            Duration = TimeSpan.FromMilliseconds(180),
+            EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+        };
+        BeginAnimation(UIElement.OpacityProperty, anim);
+    }
+
+    private void Window_MouseEnter(object sender, MouseEventArgs e)
+    {
+        if (!IsActive && _settingsService.Settings.EnableUnfocusedTransparency)
+        {
+            double hoverOpacity = Math.Clamp(_userConfiguredOpacity * 0.85, 0.4, 1.0);
+            var anim = new DoubleAnimation
+            {
+                To = hoverOpacity,
+                Duration = TimeSpan.FromMilliseconds(120),
+                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+            };
+            BeginAnimation(UIElement.OpacityProperty, anim);
+        }
+    }
+
+    private void Window_MouseLeave(object sender, MouseEventArgs e)
+    {
+        if (!IsActive && _settingsService.Settings.EnableUnfocusedTransparency)
+        {
+            ApplyFocusOpacity(false);
+        }
+    }
+
+    private void ResizeEdge_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ButtonState == MouseButtonState.Pressed && !_note.IsLocked)
+        {
+            if (sender is FrameworkElement fe && Enum.TryParse<ResizeDirection>(fe.Tag?.ToString(), out var dir))
+            {
+                e.Handled = true;
+                StartWindowResize(dir);
+            }
+        }
+    }
+
+    private void StartWindowResize(ResizeDirection direction)
+    {
+        var hwnd = new WindowInteropHelper(this).Handle;
+        if (hwnd == IntPtr.Zero) return;
+
+        _desktopWindowManager.BringToFront();
+        Win32Api.ReleaseCapture();
+        Win32Api.SendMessage(hwnd, Win32Api.WM_SYSCOMMAND, (IntPtr)(Win32Api.SC_SIZE + (int)direction), IntPtr.Zero);
     }
 
     public void CopyAllContent()

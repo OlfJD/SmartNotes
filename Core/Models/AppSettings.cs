@@ -17,4 +17,6 @@ public class AppSettings
     public bool HideAllNotes { get; set; } = false;
     public bool ConfirmDelete { get; set; } = false;
     public bool KeepBehindAllWindows { get; set; } = true;
+    public bool EnableUnfocusedTransparency { get; set; } = true;
+    public double UnfocusedOpacity { get; set; } = 0.55;
 }

@@ -79,6 +79,21 @@
                                 </StackPanel>
                                 <CheckBox x:Name="ChkDesktopStuck" Grid.Column="1" Style="{StaticResource ModernSwitch}" IsChecked="True" VerticalAlignment="Center"/>
                             </Grid>
+
+                            <Separator/>
+
+                            <!-- Unfocused Transparency Toggle -->
+                            <Grid Margin="0,14,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="Transparent When Unfocused" FontSize="15.5" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                    <TextBlock Text="Automatically make notes translucent when working in other applications" FontSize="13.5" Foreground="#7888A4" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <CheckBox x:Name="ChkUnfocusedTransparency" Grid.Column="1" Style="{StaticResource ModernSwitch}" IsChecked="True" VerticalAlignment="Center"/>
+                            </Grid>
                         </StackPanel>
                     </Border>
 

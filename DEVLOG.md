@@ -213,3 +213,17 @@ When `PinMode == NotePinMode.DesktopStuck`:
 - **Self-Healing Windows Autostart Registration & System32 Working Directory Hardening**:
   - Dynamic binary path resolution with automatic registry synchronization on settings load/save.
   - Hardened crash logging to `AppDomain.CurrentDomain.BaseDirectory` / `%APPDATA%`, preventing working directory permission failures when Windows boots from `C:\Windows\System32`.
+
+### Version 1.1.5 - Multi-Directional 8-Way Window Resizing & Unfocused Auto-Transparency (2026-09-21)
+- **8-Way Multi-Directional Window Resizing Overlays (`StickyNoteWindow.xaml`, `StickyNoteWindow.xaml.cs`, `Win32Api.cs`)**:
+  - Added dedicated perimeter hit-zones (`ResizeOverlayGrid`) on all 4 borders (`Top`, `Bottom`, `Left`, `Right`) and 4 corners (`TopLeft`, `TopRight`, `BottomLeft`, `BottomRight`).
+  - Integrated native Win32 `WM_SYSCOMMAND` + `SC_SIZE` (`0xF001` - `0xF008`) modal resizing loops via `ReleaseCapture` and `SendMessage`.
+  - Full bidirectional cursor feedback (`SizeNS`, `SizeWE`, `SizeNWSE`, `SizeNESW`) across all outer edges.
+  - Resizing hit-zones automatically disable when notes are locked (`IsLocked`).
+- **Unfocused Auto-Transparency & Hover Preview Animation (`StickyNoteWindow.xaml.cs`, `AppSettings.cs`, `SettingsDialog.xaml`)**:
+  - Implemented automatic smooth opacity transitions on focus change (`Activated` / `Deactivated`).
+  - When notes lose input focus, they smoothly fade to translucent opacity (`55%` of configured opacity) via hardware-accelerated WPF `DoubleAnimation` easing curves.
+  - Returning focus instantly and smoothly restores full opaque/configured opacity.
+  - Hovering mouse over an unfocused note temporarily brightens the note for reading without requiring input activation.
+  - `SaveNoteState()` maintains `_userConfiguredOpacity` separately to ensure saving while unfocused never permanently lowers the note's base opacity.
+  - Added a "Transparent When Unfocused" toggle switch in **Settings & Preferences** under Desktop & System.
