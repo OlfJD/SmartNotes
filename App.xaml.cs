@@ -399,6 +399,10 @@ public partial class App : Application
             _trayManager.RebuildContextMenu();
             _hotKeyManager?.Dispose();
             InitGlobalHotkeys();
+            foreach (var win in _activeNoteWindows.Values)
+            {
+                win.ApplyFocusOpacity(win.IsActive);
+            }
             MemoryOptimizer.TrimMemory();
         });
 

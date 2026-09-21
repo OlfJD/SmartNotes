@@ -17,10 +17,13 @@
         TextOptions.TextRenderingMode="ClearType"
         SnapsToDevicePixels="True"
         UseLayoutRounding="True"
+        MouseEnter="Window_MouseEnter"
+        MouseLeave="Window_MouseLeave"
         PreviewKeyDown="Window_PreviewKeyDown">
 
-    <!-- True Single-Border Rounded Card (Thick 5px vector border, zero black outer pixels, zero inner seams) -->
-    <Border x:Name="NoteCardBorder" CornerRadius="16" Background="#1C1710" BorderBrush="#5A3E16" BorderThickness="5">
+    <Grid>
+        <!-- True Single-Border Rounded Card (Thick 5px vector border, zero black outer pixels, zero inner seams) -->
+        <Border x:Name="NoteCardBorder" CornerRadius="16" Background="#1C1710" BorderBrush="#5A3E16" BorderThickness="5">
         <Grid Margin="-1">
             <Grid.RowDefinitions>
                 <!-- 1. Header & Actions Bar -->
@@ -457,4 +460,20 @@
 
         </Grid>
     </Border>
+
+    <!-- 8-Way Multi-Directional Window Resize Hit-Zones (Top, Bottom, Left, Right, 4 Corners) -->
+    <Grid x:Name="ResizeOverlayGrid" IsHitTestVisible="True">
+        <!-- 4 Edge Rectangles -->
+        <Rectangle x:Name="ResizeEdgeTop" Height="6" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="14,0,14,0" Fill="Transparent" Cursor="SizeNS" Tag="Top" MouseLeftButtonDown="ResizeEdge_MouseLeftButtonDown"/>
+        <Rectangle x:Name="ResizeEdgeBottom" Height="6" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Margin="14,0,14,0" Fill="Transparent" Cursor="SizeNS" Tag="Bottom" MouseLeftButtonDown="ResizeEdge_MouseLeftButtonDown"/>
+        <Rectangle x:Name="ResizeEdgeLeft" Width="6" HorizontalAlignment="Left" VerticalAlignment="Stretch" Margin="0,14,0,14" Fill="Transparent" Cursor="SizeWE" Tag="Left" MouseLeftButtonDown="ResizeEdge_MouseLeftButtonDown"/>
+        <Rectangle x:Name="ResizeEdgeRight" Width="6" HorizontalAlignment="Right" VerticalAlignment="Stretch" Margin="0,14,0,14" Fill="Transparent" Cursor="SizeWE" Tag="Right" MouseLeftButtonDown="ResizeEdge_MouseLeftButtonDown"/>
+
+        <!-- 4 Corner Rectangles -->
+        <Rectangle x:Name="ResizeCornerTopLeft" Width="14" Height="14" HorizontalAlignment="Left" VerticalAlignment="Top" Fill="Transparent" Cursor="SizeNWSE" Tag="TopLeft" MouseLeftButtonDown="ResizeEdge_MouseLeftButtonDown"/>
+        <Rectangle x:Name="ResizeCornerTopRight" Width="14" Height="14" HorizontalAlignment="Right" VerticalAlignment="Top" Fill="Transparent" Cursor="SizeNESW" Tag="TopRight" MouseLeftButtonDown="ResizeEdge_MouseLeftButtonDown"/>
+        <Rectangle x:Name="ResizeCornerBottomLeft" Width="14" Height="14" HorizontalAlignment="Left" VerticalAlignment="Bottom" Fill="Transparent" Cursor="SizeNESW" Tag="BottomLeft" MouseLeftButtonDown="ResizeEdge_MouseLeftButtonDown"/>
+        <Rectangle x:Name="ResizeCornerBottomRight" Width="18" Height="18" HorizontalAlignment="Right" VerticalAlignment="Bottom" Fill="Transparent" Cursor="SizeNWSE" Tag="BottomRight" MouseLeftButtonDown="ResizeEdge_MouseLeftButtonDown"/>
+    </Grid>
+</Grid>
 </Window>

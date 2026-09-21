@@ -18,7 +18,7 @@ namespace SmartNotes.Core.Services;
 public static class UpdateService
 {
     private const string GitHubApiUrl = "https://api.github.com/repos/OlfJD/SmartNotes/releases/latest";
-    public static readonly Version CurrentVersion = new(1, 1, 4);
+    public static readonly Version CurrentVersion = new(1, 1, 5);
 
     private static readonly HttpClient HttpClient = new()
     {

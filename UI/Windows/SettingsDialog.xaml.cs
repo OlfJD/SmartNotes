@@ -43,6 +43,7 @@ public partial class SettingsDialog : Window
         var s = _settingsService.Settings;
         ChkStartup.IsChecked = s.LaunchOnStartup;
         ChkDesktopStuck.IsChecked = s.KeepBehindAllWindows;
+        ChkUnfocusedTransparency.IsChecked = s.EnableUnfocusedTransparency;
         ChkHotkeys.IsChecked = s.EnableGlobalHotkeys;
 
         // Populate Colors
@@ -118,6 +119,7 @@ public partial class SettingsDialog : Window
         var s = _settingsService.Settings;
         s.LaunchOnStartup = ChkStartup.IsChecked == true;
         s.KeepBehindAllWindows = ChkDesktopStuck.IsChecked == true;
+        s.EnableUnfocusedTransparency = ChkUnfocusedTransparency.IsChecked == true;
         s.EnableGlobalHotkeys = ChkHotkeys.IsChecked == true;
 
         if (CmbDefaultColor.SelectedItem is string color)
