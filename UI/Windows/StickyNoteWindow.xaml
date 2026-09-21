@@ -88,8 +88,8 @@
                         <!-- Note Tools Compartment (Color, Lock) -->
                         <Border x:Name="ToolsCompartmentBorder" Background="#141A28" BorderBrush="#26334D" BorderThickness="2" CornerRadius="8" Margin="0,0,5,0" Padding="1">
                             <StackPanel Orientation="Horizontal">
-                                <!-- Color Picker Button with Popup -->
-                                <Button x:Name="BtnColorPicker" Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnColorPicker_Click" ToolTip="Change note color theme">
+                                <!-- Color & Transparency Picker Button with Popup -->
+                                <Button x:Name="BtnColorPicker" Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnColorPicker_Click" ToolTip="Colors, Themes &amp; Transparency">
                                     <controls:LucideIcon IconKey="palette" Size="15" StrokeThickness="2.6" Foreground="#A8B5CD"/>
                                 </Button>
 
@@ -438,7 +438,7 @@
                         </Border>
 
                         <!-- Bottom Controls: Swatch, Hex Input, Apply Button -->
-                        <Grid Width="220">
+                        <Grid Width="220" Margin="0,0,0,10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
@@ -454,6 +454,45 @@
                             <!-- Apply Button -->
                             <Button Grid.Column="2" Style="{StaticResource PrimaryButton}" Height="30" Content="Apply" Click="BtnApplyCustomColor_Click" FontSize="12" FontWeight="Bold" Padding="12,0"/>
                         </Grid>
+
+                        <!-- TRANSPARENCY & DIMMING SECTION -->
+                        <Separator Background="#222D42" Margin="0,2,0,10"/>
+
+                        <TextBlock Text="Transparency &amp; Dimming" FontSize="11" FontWeight="Bold" Foreground="#8898B4" Margin="2,0,0,8"/>
+
+                        <!-- Note Solid Opacity Row -->
+                        <Grid Margin="2,0,2,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Note Opacity" FontSize="12" FontWeight="SemiBold" Foreground="#CBD5E1" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtActiveOpacityPercent" Grid.Column="1" Text="100%" FontSize="12" FontWeight="Bold" Foreground="#F59E0B" VerticalAlignment="Center"/>
+                        </Grid>
+                        <Slider x:Name="SliderActiveOpacity" Minimum="30" Maximum="100" Value="100" SmallChange="5" LargeChange="10" Margin="2,0,2,10" ValueChanged="SliderActiveOpacity_ValueChanged"/>
+
+                        <!-- Unfocused Dimming Toggle -->
+                        <Grid Margin="2,0,2,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Dim When Unfocused" FontSize="12" FontWeight="SemiBold" Foreground="#CBD5E1" VerticalAlignment="Center"/>
+                            <CheckBox x:Name="ChkUnfocusedDim" Grid.Column="1" Style="{StaticResource ModernSwitch}" IsChecked="True" Click="ChkUnfocusedDim_Click"/>
+                        </Grid>
+
+                        <!-- Unfocused Opacity Factor Slider -->
+                        <StackPanel x:Name="UnfocusedOpacityControlsPanel" Margin="2,0,2,2">
+                            <Grid Margin="0,0,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Unfocused Opacity" FontSize="12" FontWeight="SemiBold" Foreground="#94A3B8" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TxtUnfocusedOpacityPercent" Grid.Column="1" Text="55%" FontSize="12" FontWeight="Bold" Foreground="#06B6D4" VerticalAlignment="Center"/>
+                            </Grid>
+                            <Slider x:Name="SliderUnfocusedOpacity" Minimum="15" Maximum="90" Value="55" SmallChange="5" LargeChange="10" ValueChanged="SliderUnfocusedOpacity_ValueChanged"/>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
             </Popup>

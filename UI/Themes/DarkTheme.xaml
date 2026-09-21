@@ -416,4 +416,57 @@
         </Setter>
     </Style>
 
+    <!-- Modern Dark Slider Style -->
+    <Style x:Key="ModernSlider" TargetType="{x:Type Slider}">
+        <Setter Property="Stylus.IsPressAndHoldEnabled" Value="false"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource NeonAmberGlowBrush}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Slider}">
+                    <Grid VerticalAlignment="Center" Height="22">
+                        <Border Height="5" CornerRadius="2.5" Background="#1A2338" BorderBrush="#2F3E5E" BorderThickness="1"/>
+                        <Track x:Name="PART_Track">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Command="{x:Static Slider.DecreaseLarge}">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate>
+                                            <Border Height="5" CornerRadius="2.5" Background="{StaticResource NeonAmberBrush}"/>
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.DecreaseRepeatButton>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Command="{x:Static Slider.IncreaseLarge}">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate>
+                                            <Border Background="Transparent"/>
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.IncreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb Width="16" Height="16" Cursor="Hand">
+                                    <Thumb.Template>
+                                        <ControlTemplate>
+                                            <Border Width="16" Height="16" CornerRadius="8" Background="#FFFFFF" BorderBrush="{StaticResource NeonAmberBrush}" BorderThickness="2.5">
+                                                <Border.Effect>
+                                                    <DropShadowEffect BlurRadius="6" ShadowDepth="1" Opacity="0.5" Color="#000000"/>
+                                                </Border.Effect>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type Slider}" BasedOn="{StaticResource ModernSlider}"/>
+
 </ResourceDictionary>

@@ -392,6 +392,14 @@ public partial class App : Application
         _trayManager.ShowBalloon("SmartNotes", "Sticky notes arranged neatly on your desktop!", ToolTipIcon.Info);
     }
 
+    public void NotifyTransparencySettingsChanged()
+    {
+        foreach (var win in _activeNoteWindows.Values)
+        {
+            win.ApplyFocusOpacity(win.IsActive);
+        }
+    }
+
     public void OpenSettingsDialog()
     {
         var dlg = new SettingsDialog(_settingsService, _storageService, () =>
@@ -399,10 +407,7 @@ public partial class App : Application
             _trayManager.RebuildContextMenu();
             _hotKeyManager?.Dispose();
             InitGlobalHotkeys();
-            foreach (var win in _activeNoteWindows.Values)
-            {
-                win.ApplyFocusOpacity(win.IsActive);
-            }
+            NotifyTransparencySettingsChanged();
             MemoryOptimizer.TrimMemory();
         });
 
