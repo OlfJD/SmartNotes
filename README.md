@@ -4,11 +4,11 @@
 
 **Sleek Desktop Sticky Notes for Windows with Win32 Permanent Layer Sticking & Magnetic Stack Docking**
 
-[![Download Latest Release](https://img.shields.io/badge/Download-Latest_Release_(Windows)-06B6D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/OlfJD/SmartNotes/releases/latest/download/SmartNotes-v1.1.3-win-x64.zip)
+[![Download Latest Release](https://img.shields.io/badge/Download-Latest_Release_(Windows)-06B6D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/OlfJD/SmartNotes/releases/latest/download/SmartNotes-win-x64.zip)
 [![GitHub Release](https://img.shields.io/github/v/release/OlfJD/SmartNotes?style=for-the-badge&color=10B981)](https://github.com/OlfJD/SmartNotes/releases/latest)
 [![Platform](https://img.shields.io/badge/Platform-Windows_10_%2F_11-3B82F6?style=for-the-badge&logo=windows)](https://github.com/OlfJD/SmartNotes)
 
-### 📥 [👉 Click Here to Download SmartNotes for Windows (.zip)](https://github.com/OlfJD/SmartNotes/releases/latest/download/SmartNotes-v1.1.3-win-x64.zip)
+### 📥 [👉 Click Here to Download SmartNotes for Windows (.zip)](https://github.com/OlfJD/SmartNotes/releases/latest/download/SmartNotes-win-x64.zip)
 
 *(No installation required — just extract and run!)*
 
@@ -22,7 +22,7 @@
 
 ## ⚡ Quick Start for Users
 
-1. **[Download the Latest Release (.zip)](https://github.com/OlfJD/SmartNotes/releases/latest/download/SmartNotes-v1.1.3-win-x64.zip)**.
+1. **[Download the Latest Release (.zip)](https://github.com/OlfJD/SmartNotes/releases/latest/download/SmartNotes-win-x64.zip)**.
 2. **Extract** the ZIP folder anywhere on your PC (e.g. `Desktop` or `Documents`).
 3. Double-click **`SmartNotes.exe`** (or `Launch SmartNotes.bat`) to start!
 
