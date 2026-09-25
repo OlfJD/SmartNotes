@@ -48,6 +48,17 @@ When `PinMode == NotePinMode.DesktopStuck`:
 ### 3. Debounced Auto-Save
 - Modifications to text content, task checklist items, note position (`LocationChanged`), and dimensions (`SizeChanged`) trigger a 400ms debounced timer, avoiding excessive disk I/O while ensuring zero data loss.
 
+## Potential TODO: Advanced Theming Architecture (Cyberpunk, Elden Ring)
+To support full design-altering themes (not just colors, but layout, borders, backgrounds, and fonts like Cyberpunk or Elden Ring), a major UI architecture refactor is needed. 
+
+**Steps to Implement:**
+1. **Clone the Repo First:** Create a separate `SmartNotes_theme` working copy branch before touching the core.
+2. **Decouple StickyNoteWindow UI:** The `StickyNoteWindow.xaml` layout is currently hardcoded with inline styles and tight code-behind click events. 
+3. **Migrate to ControlTemplates:** Extract the entire UI layout into a `<ControlTemplate TargetType="Window">`. 
+4. **Wire Code-Behind Events via Template Parts:** Use `OnApplyTemplate()` in C# to find elements by name (`GetTemplateChild("PART_BtnNewNote")`) instead of using direct XAML `Click=` events.
+5. **Create Theme Dictionaries:** Create `CyberpunkTheme.xaml` and `EldenRingTheme.xaml`, each providing their own massive `<ControlTemplate>` that redesigns the window shape (e.g., clipped corners), fonts, and images.
+6. **Dynamic Swapping:** Build a `ThemeManager` to hot-swap the active `ResourceDictionary` at runtime to change the "whole design".
+
 ---
 
 ## Changelog & Evolution
