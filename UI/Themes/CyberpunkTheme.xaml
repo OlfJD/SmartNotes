@@ -40,7 +40,7 @@
 
                             <!-- Pin / Stick Mode Toggle Button -->
                             <Button x:Name="PART_BtnPinMode" Style="{StaticResource IconButton}" Width="28" Height="28"  ToolTip="Toggle Desktop Stuck (Behind Apps) / Always on Top" Margin="1,0,0,0">
-                                <controls:LucideIcon x:Name="PART_IconPin" IconKey="pin" Size="15" StrokeThickness="2.6" Foreground="#FF003C"/>
+                                <controls:LucideIcon x:Name="PART_IconPin" IconKey="pin" Size="15" StrokeThickness="2.6" Foreground="#7888A4"/>
                             </Button>
                         </StackPanel>
                     </Border>
@@ -57,12 +57,12 @@
 
                                 <!-- Checklist Mode Button -->
                                 <Button x:Name="PART_BtnChecklistMode" Style="{StaticResource IconButton}" Width="28" Height="28"  ToolTip="Switch to Checklist Mode" Margin="1,0,0,0">
-                                    <controls:LucideIcon x:Name="PART_IconChecklistMode" IconKey="list-todo" Size="15" StrokeThickness="2.6" Foreground="#FF003C"/>
+                                    <controls:LucideIcon x:Name="PART_IconChecklistMode" IconKey="list-todo" Size="15" StrokeThickness="2.6" Foreground="#7888A4"/>
                                 </Button>
 
                                 <!-- Copy Compartments Mode Button -->
                                 <Button x:Name="PART_BtnCopyMode" Style="{StaticResource IconButton}" Width="28" Height="28"  ToolTip="Switch to Copy Compartments Mode (Quick-Copy rows)" Margin="1,0,0,0">
-                                    <controls:LucideIcon x:Name="PART_IconCopyMode" IconKey="copy" Size="15" StrokeThickness="2.6" Foreground="#FF003C"/>
+                                    <controls:LucideIcon x:Name="PART_IconCopyMode" IconKey="copy" Size="15" StrokeThickness="2.6" Foreground="#7888A4"/>
                                 </Button>
                             </StackPanel>
                         </Border>
@@ -72,12 +72,12 @@
                             <StackPanel Orientation="Horizontal">
                                 <!-- Color & Transparency Picker Button with Popup -->
                                 <Button x:Name="PART_BtnColorPicker" Style="{StaticResource IconButton}" Width="28" Height="28"  ToolTip="Colors, Themes &amp; Transparency">
-                                    <controls:LucideIcon IconKey="palette" Size="15" StrokeThickness="2.6" Foreground="#FF003C"/>
+                                    <controls:LucideIcon IconKey="palette" Size="15" StrokeThickness="2.6" Foreground="#7888A4"/>
                                 </Button>
 
                                 <!-- Lock Note Button -->
                                 <Button x:Name="PART_BtnLock" Style="{StaticResource IconButton}" Width="28" Height="28"  ToolTip="Lock note position &amp; text" Margin="1,0,0,0">
-                                    <controls:LucideIcon x:Name="PART_IconLock" IconKey="unlock" Size="15" StrokeThickness="2.6" Foreground="#FF003C"/>
+                                    <controls:LucideIcon x:Name="PART_IconLock" IconKey="unlock" Size="15" StrokeThickness="2.6" Foreground="#7888A4"/>
                                 </Button>
                             </StackPanel>
                         </Border>
@@ -86,7 +86,7 @@
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <!-- More Menu Button -->
                             <Button x:Name="PART_BtnMore" Style="{StaticResource IconButton}" Width="28" Height="28"  ToolTip="More options..." Margin="0,0,2,0">
-                                <controls:LucideIcon IconKey="more-horizontal" Size="15" StrokeThickness="2.6" Foreground="#FF003C"/>
+                                <controls:LucideIcon IconKey="more-horizontal" Size="15" StrokeThickness="2.6" Foreground="#7888A4"/>
                             </Button>
 
                             <!-- Close / Delete Note Button -->
@@ -101,7 +101,7 @@
             <!-- 2. TITLE BAR (Editable Note Title) -->
             <Border Grid.Row="1" Background="Transparent" Padding="14,8,14,4">
                 <Grid>
-                    <TextBox x:Name="PART_TxtTitle"
+                    <TextBox x:Name="PART_TxtTitle" FontFamily="Consolas, Courier New, monospace"
                              Background="Transparent"
                              BorderThickness="0"
                              Foreground="#00F0FF"
@@ -165,7 +165,7 @@
 
                     <!-- Scrollable Tasks -->
                     <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,0,8">
-                        <ItemsControl x:Name="PART_PART_ChecklistItemsControl" ItemTemplate="{DynamicResource ChecklistItemTemplate}"/>
+                        <ItemsControl x:Name="PART_ChecklistItemsControl" ItemTemplate="{DynamicResource ChecklistItemTemplate}"/>
                     </ScrollViewer>
 
                     <!-- Add Item Row (2.5px thick border) -->
@@ -195,7 +195,7 @@
 
                     <!-- Scrollable Copy Items -->
                     <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,0,8">
-                        <ItemsControl x:Name="PART_PART_CopyItemsControl" ItemTemplate="{DynamicResource CopySnippetItemTemplate}"/>
+                        <ItemsControl x:Name="PART_CopyItemsControl" ItemTemplate="{DynamicResource CopySnippetItemTemplate}"/>
                     </ScrollViewer>
 
                     <!-- Add Copy Item Row -->
@@ -219,7 +219,7 @@
             <Border Grid.Row="3" Background="Transparent" Padding="14,0,10,6" VerticalAlignment="Bottom">
                 <Grid>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock x:Name="PART_TxtPinIndicator" Text="📌 Stuck to Desktop" FontSize="12" FontWeight="SemiBold" Foreground="#FF003C" Margin="0,0,12,0"/>
+                        <TextBlock x:Name="PART_TxtPinIndicator" Text="📌 Stuck to Desktop" FontSize="12" FontWeight="SemiBold" Foreground="#7888A4" Margin="0,0,12,0"/>
                         
                         <!-- Default Modified Timestamp -->
                         <TextBlock x:Name="PART_TxtModifiedTime" Text="Just now" FontSize="12" Foreground="#64748B" VerticalAlignment="Center"/>
