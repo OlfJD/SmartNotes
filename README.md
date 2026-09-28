@@ -30,7 +30,17 @@
 
 ## ✨ Features
 
-- **🧲 Magnetic Stack Leader Dragging & Docking (v1.1.3)**:
+- **✍️ Native Text Proofing, Spell Checking & Autocorrect Engine (v2.0)**:
+  - **Live Spell Checking**: Underlines misspelled words with real-time red squiggles across notes, titles, checklists, and copy compartments.
+  - **12 Proofing Languages**: Switch seamlessly between English (US/UK/CA/AU), German, Spanish, French, Italian, Portuguese, Dutch, Polish, and Swedish.
+  - **Intelligent Autocorrect as You Type**: Automatically corrects 150+ common typos (e.g., `teh` → `the`, `dont` → `don't`, `recieve` → `receive`) with casing preservation (`TEH` → `THE`).
+  - **Instant Backspace Undo**: Changed your mind? Pressing `Backspace` immediately after an autocorrect reverts the word back to your exact typed input.
+  - **Smart Typography & Symbols**: Converts shortcuts on the fly (`->` to `→`, `<-` to `←`, `=>` to `⇒`, `!=` to `≠`, `--` to `—`, `(c)` to `©`, `(r)` to `®`, `+-` to `±`, etc.).
+  - **Auto-Capitalization**: Automatically capitalizes sentence beginnings and standalone `i` → `I`.
+  - **Custom Dictionary & Rules**: Add words directly via the context menu or customize rules in `%APPDATA%\SmartNotes\`.
+  - **Obsidian Dark Context Menus**: Sleek right-click menus with spelling suggestions, "Add to Dictionary", "Ignore All", Cut/Copy/Paste, and nested Proofing/Language submenus.
+
+- **🧲 Magnetic Stack Leader Dragging & Docking**:
   - Drag notes next to one another to magnetically **snap and stick them together** into connected stacks and clusters.
   - **Highest Note (Stack Leader)**: Drag the highest note of any docked cluster to move the entire stack around together seamlessly.
   - **Effortless Peeling & Separation**: Drag any middle or lower note to instantly peel it away from the stack independently (no keyboard shortcuts needed!).

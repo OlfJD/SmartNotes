@@ -266,13 +266,21 @@ public class TrayManager : IDisposable
 
     public void UpdateTooltip(string text)
     {
-        if (text.Length > 63) text = text.Substring(0, 60) + "...";
-        _notifyIcon.Text = text;
+        try
+        {
+            if (text.Length > 63) text = text.Substring(0, 60) + "...";
+            _notifyIcon.Text = text;
+        }
+        catch { }
     }
 
     public void ShowBalloon(string title, string text, ToolTipIcon icon = ToolTipIcon.Info)
     {
-        _notifyIcon.ShowBalloonTip(3000, title, text, icon);
+        try
+        {
+            _notifyIcon.ShowBalloonTip(3000, title, text, icon);
+        }
+        catch { }
     }
 
     public void Dispose()

@@ -133,6 +133,7 @@ public partial class StickyNoteWindow : Window
     {
         WindowBlurHelper.ApplyModernWindowStyles(this);
         _desktopWindowManager.ApplyPinMode(_note.PinMode);
+        ApplyProofingSettings();
         if (_startInForeground || _note.PinMode == NotePinMode.AlwaysOnTop)
         {
             _desktopWindowManager.BringToFront();
@@ -205,23 +206,25 @@ public partial class StickyNoteWindow : Window
         _note.ViewMode = mode;
         _note.IsChecklistMode = (mode == NoteViewMode.Checklist);
 
-        TextModeContainer.Visibility = (mode == NoteViewMode.Text) ? Visibility.Visible : Visibility.Collapsed;
-        ChecklistModeContainer.Visibility = (mode == NoteViewMode.Checklist) ? Visibility.Visible : Visibility.Collapsed;
-        CopyModeContainer.Visibility = (mode == NoteViewMode.CopyCompartments) ? Visibility.Visible : Visibility.Collapsed;
+        if (TextModeContainer != null) TextModeContainer.Visibility = (mode == NoteViewMode.Text) ? Visibility.Visible : Visibility.Collapsed;
+        if (ChecklistModeContainer != null) ChecklistModeContainer.Visibility = (mode == NoteViewMode.Checklist) ? Visibility.Visible : Visibility.Collapsed;
+        if (CopyModeContainer != null) CopyModeContainer.Visibility = (mode == NoteViewMode.CopyCompartments) ? Visibility.Visible : Visibility.Collapsed;
 
-        IconTextMode.Foreground = (mode == NoteViewMode.Text) ? AmberBrush : MutedBrush;
-        IconChecklistMode.Foreground = (mode == NoteViewMode.Checklist) ? EmeraldBrush : MutedBrush;
-        IconCopyMode.Foreground = (mode == NoteViewMode.CopyCompartments) ? CyanBrush : MutedBrush;
+        if (IconTextMode != null) IconTextMode.Foreground = (mode == NoteViewMode.Text) ? AmberBrush : MutedBrush;
+        if (IconChecklistMode != null) IconChecklistMode.Foreground = (mode == NoteViewMode.Checklist) ? EmeraldBrush : MutedBrush;
+        if (IconCopyMode != null) IconCopyMode.Foreground = (mode == NoteViewMode.CopyCompartments) ? CyanBrush : MutedBrush;
 
-        BtnTextMode.ToolTip = (mode == NoteViewMode.Text) ? "Active: Plain Text Mode" : "Switch to Plain Text Mode";
-        BtnChecklistMode.ToolTip = (mode == NoteViewMode.Checklist) ? "Active: Checklist Mode" : "Switch to Checklist Mode";
-        BtnCopyMode.ToolTip = (mode == NoteViewMode.CopyCompartments) ? "Active: Copy Compartments Mode" : "Switch to Copy Compartments Mode";
+        if (BtnTextMode != null) BtnTextMode.ToolTip = (mode == NoteViewMode.Text) ? "Active: Plain Text Mode" : "Switch to Plain Text Mode";
+        if (BtnChecklistMode != null) BtnChecklistMode.ToolTip = (mode == NoteViewMode.Checklist) ? "Active: Checklist Mode" : "Switch to Checklist Mode";
+        if (BtnCopyMode != null) BtnCopyMode.ToolTip = (mode == NoteViewMode.CopyCompartments) ? "Active: Copy Compartments Mode" : "Switch to Copy Compartments Mode";
     }
 
     private void UpdatePinModeUI(NotePinMode mode)
     {
         _note.PinMode = mode;
         _desktopWindowManager.ApplyPinMode(mode);
+
+        if (TxtPinIndicator == null || IconPin == null || BtnPinMode == null) return;
 
         switch (mode)
         {
@@ -251,28 +254,27 @@ public partial class StickyNoteWindow : Window
     private void UpdateLockUI(bool isLocked)
     {
         _note.IsLocked = isLocked;
-        TxtTitle.IsReadOnly = isLocked;
-        TxtContent.IsReadOnly = isLocked;
-        TxtNewTask.IsEnabled = !isLocked;
-        TxtNewCopyItem.IsEnabled = !isLocked;
+        if (TxtTitle != null) TxtTitle.IsReadOnly = isLocked;
+        if (TxtContent != null) TxtContent.IsReadOnly = isLocked;
+        if (TxtNewTask != null) TxtNewTask.IsEnabled = !isLocked;
+        if (TxtNewCopyItem != null) TxtNewCopyItem.IsEnabled = !isLocked;
         if (ResizeOverlayGrid != null)
         {
             ResizeOverlayGrid.IsHitTestVisible = !isLocked;
         }
 
-        if (isLocked)
+        if (IconLock != null)
         {
-            IconLock.IconKey = "lock";
-            IconLock.Foreground = AmberBrush;
-            LockBadge.Visibility = Visibility.Visible;
-            BtnLock.ToolTip = "Note is Locked (Click to Unlock)";
+            IconLock.IconKey = isLocked ? "lock" : "unlock";
+            IconLock.Foreground = isLocked ? AmberBrush : MutedBrush;
         }
-        else
+        if (LockBadge != null)
         {
-            IconLock.IconKey = "unlock";
-            IconLock.Foreground = MutedBrush;
-            LockBadge.Visibility = Visibility.Collapsed;
-            BtnLock.ToolTip = "Lock note position & text";
+            LockBadge.Visibility = isLocked ? Visibility.Visible : Visibility.Collapsed;
+        }
+        if (BtnLock != null)
+        {
+            BtnLock.ToolTip = isLocked ? "Note is Locked (Click to Unlock)" : "Lock note position & text";
         }
     }
 
@@ -884,6 +886,82 @@ public partial class StickyNoteWindow : Window
         opacityMenu.Items.Add(toggleDimItem);
         menu.Items.Add(opacityMenu);
 
+        // Text Proofing Submenu
+        var proofingMenu = new MenuItem { Header = "Text Proofing & Language" };
+        bool isSpellCheck = _settingsService.Settings.EnableSpellCheck;
+        var toggleSpellCheckItem = new MenuItem
+        {
+            Header = isSpellCheck ? "✓ Spell Check Underlines (Enabled)" : "Spell Check Underlines (Disabled)"
+        };
+        toggleSpellCheckItem.Click += (s, e) =>
+        {
+            _settingsService.Settings.EnableSpellCheck = !isSpellCheck;
+            _settingsService.Save();
+            App.Instance?.NotifyProofingSettingsChanged();
+        };
+        proofingMenu.Items.Add(toggleSpellCheckItem);
+
+        bool isAutocorrect = _settingsService.Settings.EnableAutocorrect;
+        var toggleAutocorrectItem = new MenuItem
+        {
+            Header = isAutocorrect ? "✓ Autocorrect Common Typos (Enabled)" : "Autocorrect Common Typos (Disabled)"
+        };
+        toggleAutocorrectItem.Click += (s, e) =>
+        {
+            _settingsService.Settings.EnableAutocorrect = !isAutocorrect;
+            _settingsService.Save();
+        };
+        proofingMenu.Items.Add(toggleAutocorrectItem);
+
+        bool isAutoCap = _settingsService.Settings.AutoCapitalizeSentences;
+        var toggleAutoCapItem = new MenuItem
+        {
+            Header = isAutoCap ? "✓ Auto-Capitalize Sentences (Enabled)" : "Auto-Capitalize Sentences (Disabled)"
+        };
+        toggleAutoCapItem.Click += (s, e) =>
+        {
+            _settingsService.Settings.AutoCapitalizeSentences = !isAutoCap;
+            _settingsService.Save();
+        };
+        proofingMenu.Items.Add(toggleAutoCapItem);
+
+        bool isSymbols = _settingsService.Settings.SmartSymbolReplacements;
+        var toggleSymbolsItem = new MenuItem
+        {
+            Header = isSymbols ? "✓ Smart Symbols: -> to → (Enabled)" : "Smart Symbols (Disabled)"
+        };
+        toggleSymbolsItem.Click += (s, e) =>
+        {
+            _settingsService.Settings.SmartSymbolReplacements = !isSymbols;
+            _settingsService.Save();
+        };
+        proofingMenu.Items.Add(toggleSymbolsItem);
+
+        proofingMenu.Items.Add(new Separator());
+
+        var activeLangOption = TextProofingService.SupportedLanguages.FirstOrDefault(l => l.Code.Equals(_settingsService.Settings.ProofingLanguage, StringComparison.OrdinalIgnoreCase))
+            ?? TextProofingService.SupportedLanguages[0];
+
+        var langSubmenu = new MenuItem { Header = $"Proofing Language ({activeLangOption.DisplayName})" };
+        foreach (var lang in TextProofingService.SupportedLanguages)
+        {
+            bool isSelected = string.Equals(lang.Code, _settingsService.Settings.ProofingLanguage, StringComparison.OrdinalIgnoreCase);
+            var langItem = new MenuItem
+            {
+                Header = isSelected ? $"✓ {lang.DisplayName}" : lang.DisplayName,
+                FontWeight = isSelected ? FontWeights.Bold : FontWeights.Normal
+            };
+            langItem.Click += (s, e) =>
+            {
+                _settingsService.Settings.ProofingLanguage = lang.Code;
+                _settingsService.Save();
+                App.Instance?.NotifyProofingSettingsChanged();
+            };
+            langSubmenu.Items.Add(langItem);
+        }
+        proofingMenu.Items.Add(langSubmenu);
+        menu.Items.Add(proofingMenu);
+
         menu.Items.Add(new Separator());
 
         // Copy Note Content
@@ -913,7 +991,7 @@ public partial class StickyNoteWindow : Window
         menu.Items.Add(CreateMenuItem("Settings & Preferences...", OpenSettings));
 
         // Check for Updates
-        menu.Items.Add(CreateMenuItem("Check for Updates...", () =>
+        menu.Items.Add(CreateMenuItem("Check for Updates... (v2.0.1)", () =>
         {
             _ = UpdateService.CheckForUpdatesAsync(isManualCheck: true);
         }));
@@ -1394,5 +1472,302 @@ public partial class StickyNoteWindow : Window
             TxtNewCopyItem.Focus();
             RequestSave(isTyping: false);
         }
+    }
+
+    // --- VERSION 2.0: TEXT PROOFING & AUTOCORRECT ENGINE ---
+
+    private AutocorrectUndoItem? _lastAutocorrect;
+
+    public void ApplyProofingSettings()
+    {
+        var proofing = TextProofingService.Instance;
+        var settings = _settingsService.Settings;
+
+        proofing.ApplyProofingToTextBox(TxtContent, settings);
+        proofing.ApplyProofingToTextBox(TxtTitle, settings);
+        proofing.ApplyProofingToTextBox(TxtNewTask, settings);
+        proofing.ApplyProofingToTextBox(TxtNewCopyItem, settings);
+    }
+
+    private void TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+    {
+        if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)) return;
+
+        if (sender is TextBox tb)
+        {
+            char c = e.Text.Length > 0 ? e.Text[0] : ' ';
+            if (c == ' ' || c == '.' || c == ',' || c == '!' || c == '?' || c == ';' || c == ':')
+            {
+                if (TextProofingService.Instance.TryAutocorrect(tb, c, _settingsService.Settings, out var undo))
+                {
+                    _lastAutocorrect = undo;
+                    RequestSave(isTyping: true);
+                }
+            }
+        }
+    }
+
+    private void TextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)) return;
+
+        if (sender is TextBox tb)
+        {
+            if (e.Key == Key.Back)
+            {
+                if (TextProofingService.TryUndoAutocorrect(tb, _lastAutocorrect))
+                {
+                    _lastAutocorrect = null;
+                    e.Handled = true;
+                    RequestSave(isTyping: true);
+                    return;
+                }
+                _lastAutocorrect = null;
+            }
+            else if (e.Key == Key.Space || e.Key == Key.Return || e.Key == Key.Tab)
+            {
+                char delim = (e.Key == Key.Return) ? '\n' : ' ';
+                if (TextProofingService.Instance.TryAutocorrect(tb, delim, _settingsService.Settings, out var undo))
+                {
+                    _lastAutocorrect = undo;
+                    RequestSave(isTyping: true);
+                }
+            }
+        }
+    }
+
+    private void TextBox_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+    {
+        if (sender is not TextBox tb) return;
+        e.Handled = true; // Prevent default Windows context menu
+
+        var menu = new ContextMenu();
+        if (Application.Current.TryFindResource(typeof(ContextMenu)) is Style cmStyle)
+        {
+            menu.Style = cmStyle;
+        }
+
+        var settings = _settingsService.Settings;
+
+        // 1. Spelling Suggestions if right-clicked on an error
+        Point mousePos = Mouse.GetPosition(tb);
+        int charIndex = tb.GetCharacterIndexFromPoint(mousePos, snapToText: true);
+        SpellingError? error = (charIndex >= 0) ? tb.GetSpellingError(charIndex) : null;
+        if (error == null && tb.CaretIndex >= 0)
+        {
+            error = tb.GetSpellingError(tb.CaretIndex);
+        }
+
+        if (error != null)
+        {
+            var headerItem = new MenuItem
+            {
+                Header = "SPELLING SUGGESTIONS",
+                IsEnabled = false,
+                FontWeight = FontWeights.Bold,
+                Foreground = AmberBrush
+            };
+            menu.Items.Add(headerItem);
+            
+            var suggestions = error.Suggestions.Take(5).ToList();
+            int targetIndex = (charIndex >= 0 && tb.GetSpellingError(charIndex) != null) ? charIndex : tb.CaretIndex;
+            int errStart = tb.GetSpellingErrorStart(targetIndex);
+            int errLen = tb.GetSpellingErrorLength(targetIndex);
+            string misspelled = (errStart >= 0 && errStart + errLen <= tb.Text.Length) ? tb.Text.Substring(errStart, errLen) : "";
+
+            if (suggestions.Count > 0)
+            {
+                foreach (var suggestion in suggestions)
+                {
+                    var suggItem = new MenuItem
+                    {
+                        Header = suggestion,
+                        FontWeight = FontWeights.SemiBold,
+                        Foreground = new SolidColorBrush(Colors.White),
+                        Icon = new LucideIcon { IconKey = "check", Size = 15, StrokeThickness = 3, Foreground = EmeraldBrush }
+                    };
+                    suggItem.Click += (s, ev) =>
+                    {
+                        error.Correct(suggestion);
+                        RequestSave(isTyping: true);
+                    };
+                    menu.Items.Add(suggItem);
+                }
+            }
+            else
+            {
+                var noSugg = new MenuItem
+                {
+                    Header = "(No spelling suggestions)",
+                    IsEnabled = false,
+                    Icon = new LucideIcon { IconKey = "spell-check", Size = 13, StrokeThickness = 2.4, Foreground = MutedBrush }
+                };
+                menu.Items.Add(noSugg);
+            }
+
+            menu.Items.Add(new Separator());
+
+            if (!string.IsNullOrEmpty(misspelled))
+            {
+                var addDictItem = new MenuItem
+                {
+                    Header = $"Add \"{misspelled}\" to Dictionary",
+                    Icon = new LucideIcon { IconKey = "book-plus", Size = 14, StrokeThickness = 2.4, Foreground = AmberBrush }
+                };
+                addDictItem.Click += (s, ev) =>
+                {
+                    TextProofingService.Instance.AddWordToCustomDictionary(misspelled);
+                    ApplyProofingSettings();
+                };
+                menu.Items.Add(addDictItem);
+            }
+
+            var ignoreItem = new MenuItem
+            {
+                Header = "Ignore All Occurrences",
+                Icon = new LucideIcon { IconKey = "eye-off", Size = 14, StrokeThickness = 2.4, Foreground = MutedBrush }
+            };
+            ignoreItem.Click += (s, ev) =>
+            {
+                error.IgnoreAll();
+            };
+            menu.Items.Add(ignoreItem);
+
+            menu.Items.Add(new Separator());
+        }
+
+        // 2. Standard Clipboard Actions
+        var cutItem = new MenuItem
+        {
+            Header = "Cut",
+            InputGestureText = "Ctrl+X",
+            IsEnabled = !tb.IsReadOnly && tb.SelectionLength > 0,
+            Icon = new LucideIcon { IconKey = "scissors", Size = 13, StrokeThickness = 2.4, Foreground = MutedBrush }
+        };
+        cutItem.Click += (s, ev) => tb.Cut();
+        menu.Items.Add(cutItem);
+
+        var copyItem = new MenuItem
+        {
+            Header = "Copy",
+            InputGestureText = "Ctrl+C",
+            IsEnabled = tb.SelectionLength > 0,
+            Icon = new LucideIcon { IconKey = "copy", Size = 13, StrokeThickness = 2.4, Foreground = MutedBrush }
+        };
+        copyItem.Click += (s, ev) => tb.Copy();
+        menu.Items.Add(copyItem);
+
+        var pasteItem = new MenuItem
+        {
+            Header = "Paste",
+            InputGestureText = "Ctrl+V",
+            IsEnabled = !tb.IsReadOnly && Clipboard.ContainsText(),
+            Icon = new LucideIcon { IconKey = "clipboard", Size = 13, StrokeThickness = 2.4, Foreground = MutedBrush }
+        };
+        pasteItem.Click += (s, ev) => tb.Paste();
+        menu.Items.Add(pasteItem);
+
+        var selectAllItem = new MenuItem
+        {
+            Header = "Select All",
+            InputGestureText = "Ctrl+A",
+            IsEnabled = tb.Text.Length > 0,
+            Icon = new LucideIcon { IconKey = "square", Size = 13, StrokeThickness = 2.4, Foreground = MutedBrush }
+        };
+        selectAllItem.Click += (s, ev) => tb.SelectAll();
+        menu.Items.Add(selectAllItem);
+
+        menu.Items.Add(new Separator());
+
+        // 3. Text Proofing & Language Submenu
+        var proofingMenu = new MenuItem
+        {
+            Header = "Text Proofing & Language",
+            Icon = new LucideIcon { IconKey = "spell-check", Size = 14, StrokeThickness = 2.6, Foreground = AmberBrush }
+        };
+
+        // Spell Check Toggle
+        var spellCheckToggle = new MenuItem
+        {
+            Header = settings.EnableSpellCheck ? "✓ Spell Check (Enabled)" : "Spell Check (Disabled)"
+        };
+        spellCheckToggle.Click += (s, ev) =>
+        {
+            settings.EnableSpellCheck = !settings.EnableSpellCheck;
+            _settingsService.Save();
+            App.Instance?.NotifyProofingSettingsChanged();
+        };
+        proofingMenu.Items.Add(spellCheckToggle);
+
+        // Autocorrect Toggle
+        var autocorrectToggle = new MenuItem
+        {
+            Header = settings.EnableAutocorrect ? "✓ Autocorrect Common Typos (Enabled)" : "Autocorrect Common Typos (Disabled)"
+        };
+        autocorrectToggle.Click += (s, ev) =>
+        {
+            settings.EnableAutocorrect = !settings.EnableAutocorrect;
+            _settingsService.Save();
+        };
+        proofingMenu.Items.Add(autocorrectToggle);
+
+        // Sentence Capitalization Toggle
+        var autoCapToggle = new MenuItem
+        {
+            Header = settings.AutoCapitalizeSentences ? "✓ Auto-Capitalize Sentences (Enabled)" : "Auto-Capitalize Sentences (Disabled)"
+        };
+        autoCapToggle.Click += (s, ev) =>
+        {
+            settings.AutoCapitalizeSentences = !settings.AutoCapitalizeSentences;
+            _settingsService.Save();
+        };
+        proofingMenu.Items.Add(autoCapToggle);
+
+        // Smart Symbols Toggle
+        var smartSymToggle = new MenuItem
+        {
+            Header = settings.SmartSymbolReplacements ? "✓ Smart Symbols: -> to → (Enabled)" : "Smart Symbols (Disabled)"
+        };
+        smartSymToggle.Click += (s, ev) =>
+        {
+            settings.SmartSymbolReplacements = !settings.SmartSymbolReplacements;
+            _settingsService.Save();
+        };
+        proofingMenu.Items.Add(smartSymToggle);
+
+        proofingMenu.Items.Add(new Separator());
+
+        // Language Selection Submenu
+        var activeLangOption = TextProofingService.SupportedLanguages.FirstOrDefault(l => l.Code.Equals(settings.ProofingLanguage, StringComparison.OrdinalIgnoreCase))
+            ?? TextProofingService.SupportedLanguages[0];
+
+        var langSubmenu = new MenuItem
+        {
+            Header = $"Language ({activeLangOption.DisplayName})",
+            Icon = new LucideIcon { IconKey = "languages", Size = 13, StrokeThickness = 2.4, Foreground = MutedBrush }
+        };
+
+        foreach (var lang in TextProofingService.SupportedLanguages)
+        {
+            bool isSelected = string.Equals(lang.Code, settings.ProofingLanguage, StringComparison.OrdinalIgnoreCase);
+            var langItem = new MenuItem
+            {
+                Header = isSelected ? $"✓ {lang.DisplayName}" : lang.DisplayName,
+                FontWeight = isSelected ? FontWeights.Bold : FontWeights.Normal
+            };
+            langItem.Click += (s, ev) =>
+            {
+                settings.ProofingLanguage = lang.Code;
+                _settingsService.Save();
+                App.Instance?.NotifyProofingSettingsChanged();
+            };
+            langSubmenu.Items.Add(langItem);
+        }
+        proofingMenu.Items.Add(langSubmenu);
+
+        menu.Items.Add(proofingMenu);
+
+        menu.PlacementTarget = tb;
+        menu.IsOpen = true;
     }
 }
