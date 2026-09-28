@@ -9,7 +9,7 @@ public static class ThemeManager
     private static readonly Dictionary<string, string> ThemeDictionaryPaths = new()
     {
         { "Default", "pack://application:,,,/UI/Themes/DefaultStickyNoteTemplate.xaml" },
-        // Future themes (like Cyberpunk, Elden Ring) can be added here
+        { "Cyberpunk", "pack://application:,,,/UI/Themes/CyberpunkTheme.xaml" },
     };
 
     public static void ApplyTheme(Window window, string themeKey)
