@@ -165,7 +165,7 @@
 
                     <!-- Scrollable Tasks -->
                     <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,0,8">
-                        <ItemsControl x:Name="PART_PART_ChecklistItemsControl" ItemTemplate="{DynamicResource ChecklistItemTemplate}"/>
+                        <ItemsControl x:Name="PART_ChecklistItemsControl" ItemTemplate="{DynamicResource ChecklistItemTemplate}"/>
                     </ScrollViewer>
 
                     <!-- Add Item Row (2.5px thick border) -->
@@ -195,7 +195,7 @@
 
                     <!-- Scrollable Copy Items -->
                     <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,0,8">
-                        <ItemsControl x:Name="PART_PART_CopyItemsControl" ItemTemplate="{DynamicResource CopySnippetItemTemplate}"/>
+                        <ItemsControl x:Name="PART_CopyItemsControl" ItemTemplate="{DynamicResource CopySnippetItemTemplate}"/>
                     </ScrollViewer>
 
                     <!-- Add Copy Item Row -->

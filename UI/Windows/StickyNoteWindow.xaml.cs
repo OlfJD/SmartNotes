@@ -712,22 +712,25 @@ private readonly NoteStorageService _storageService;
         try
         {
             _currentGlowBrush = theme.GlowBrush;
+            
+            if (_note.ThemeKey != "Cyberpunk")
+            {
+                NoteCardBorder.Background = theme.BgBrush;
+                NoteCardBorder.BorderBrush = theme.BorderBrush;
+                HeaderBorder.Background = theme.HeaderBgBrush;
+                HeaderBorder.BorderBrush = theme.BorderBrush;
+                LeftCompartmentBorder.BorderBrush = theme.BorderBrush;
+                ModeCompartmentBorder.BorderBrush = theme.BorderBrush;
+                ToolsCompartmentBorder.BorderBrush = theme.BorderBrush;
 
-            NoteCardBorder.Background = theme.BgBrush;
-            NoteCardBorder.BorderBrush = theme.BorderBrush;
-            HeaderBorder.Background = theme.HeaderBgBrush;
-            HeaderBorder.BorderBrush = theme.BorderBrush;
-            LeftCompartmentBorder.BorderBrush = theme.BorderBrush;
-            ModeCompartmentBorder.BorderBrush = theme.BorderBrush;
-            ToolsCompartmentBorder.BorderBrush = theme.BorderBrush;
-
-            TxtTitle.Foreground = theme.TextPrimaryBrush;
-            TxtContent.Foreground = theme.TextPrimaryBrush;
-            TxtTitle.CaretBrush = theme.GlowBrush;
-            TxtContent.CaretBrush = theme.GlowBrush;
-            TxtNewTask.CaretBrush = theme.GlowBrush;
-            TxtNewCopyItem.CaretBrush = theme.GlowBrush;
-            IconPlus.Foreground = theme.GlowBrush;
+                TxtTitle.Foreground = theme.TextPrimaryBrush;
+                TxtContent.Foreground = theme.TextPrimaryBrush;
+                TxtTitle.CaretBrush = theme.GlowBrush;
+                TxtContent.CaretBrush = theme.GlowBrush;
+                TxtNewTask.CaretBrush = theme.GlowBrush;
+                TxtNewCopyItem.CaretBrush = theme.GlowBrush;
+                IconPlus.Foreground = theme.GlowBrush;
+            }
         }
         catch { }
     }
