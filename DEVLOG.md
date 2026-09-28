@@ -59,6 +59,10 @@ To support full design-altering themes (not just colors, but layout, borders, ba
 5. **Create Theme Dictionaries:** Create `CyberpunkTheme.xaml` and `EldenRingTheme.xaml`, each providing their own massive `<ControlTemplate>` that redesigns the window shape (e.g., clipped corners), fonts, and images.
 6. **Dynamic Swapping:** Build a `ThemeManager` to hot-swap the active `ResourceDictionary` at runtime to change the "whole design".
 
+## Potential TODO: Spell Checking / Language Proofing
+- **Implement Language Proofing:** Enable `SpellCheck.IsEnabled="True"` in WPF text/content boxes.
+- **Upload Proofing:** Push the language proofing updates to GitHub main branch once validated.
+
 ---
 
 ## Changelog & Evolution
