@@ -5,6 +5,8 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Shapes;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -32,7 +34,84 @@ public enum ResizeDirection
 
 public partial class StickyNoteWindow : Window
 {
-    private readonly NoteStorageService _storageService;
+            private ItemsControl? ChecklistItemsControl;
+    private Grid? ChecklistModeContainer;
+    private ItemsControl? CopyItemsControl;
+    private Grid? CopyModeContainer;
+    private Border? CustomColorPreview;
+    private System.Windows.Shapes.Rectangle? HueBaseRect;
+    private Border? HueThumb;
+    private LucideIcon? IconChecklistMode;
+    private LucideIcon? IconCopyMode;
+    private LucideIcon? IconLock;
+    private LucideIcon? IconPin;
+    private LucideIcon? IconPlus;
+    private LucideIcon? IconTextMode;
+    private LucideIcon? IconTypingStatus;
+    private Border? LeftCompartmentBorder;
+    private StackPanel? LockBadge;
+    private Border? ModeCompartmentBorder;
+    private Border? NoteCardBorder;
+    private Grid? ResizeOverlayGrid;
+    private System.Windows.Shapes.Ellipse? SatValThumb;
+    private Grid? TextModeContainer;
+    private Border? ToolsCompartmentBorder;
+    private TextBlock? TxtActiveOpacityPercent;
+    private TextBlock? TxtContentPlaceholder;
+    private TextBlock? TxtModifiedTime;
+    private TextBlock? TxtNewCopyItemPlaceholder;
+    private TextBlock? TxtNewTaskPlaceholder;
+    private TextBlock? TxtPinIndicator;
+    private TextBlock? TxtTitlePlaceholder;
+    private TextBlock? TxtTypingStatus;
+    private TextBlock? TxtUnfocusedOpacityPercent;
+    private StackPanel? TypingIndicatorContainer;
+    private StackPanel? UnfocusedOpacityControlsPanel;
+private Border? HeaderBorder;
+    private Button? Unnamed_Button_1;
+    private Button? BtnPinMode;
+    private Button? BtnTextMode;
+    private Button? BtnChecklistMode;
+    private Button? BtnCopyMode;
+    private Button? BtnColorPicker;
+    private Button? BtnLock;
+    private Button? BtnMore;
+    private Button? Unnamed_Button_9;
+    private TextBox? TxtTitle;
+    internal TextBox? TxtContent;
+    private Border? NewTaskContainer;
+    private TextBox? TxtNewTask;
+    private Button? Unnamed_Button_14;
+    private Border? NewCopyItemContainer;
+    private TextBox? TxtNewCopyItem;
+    private Button? Unnamed_Button_17;
+    private Popup? ColorPopup;
+    private Button? Unnamed_Button_19;
+    private Button? Unnamed_Button_20;
+    private Button? Unnamed_Button_21;
+    private Button? Unnamed_Button_22;
+    private Button? Unnamed_Button_23;
+    private Button? Unnamed_Button_24;
+    private Button? Unnamed_Button_25;
+    private Button? Unnamed_Button_26;
+    private Grid? SatValPickerGrid;
+    private Grid? HueBarGrid;
+    private TextBox? TxtCustomHex;
+    private Button? Unnamed_Button_30;
+    private Slider? SliderActiveOpacity;
+    private CheckBox? ChkUnfocusedDim;
+    private Slider? SliderUnfocusedOpacity;
+    private System.Windows.Shapes.Rectangle? ResizeEdgeTop;
+    private System.Windows.Shapes.Rectangle? ResizeEdgeBottom;
+    private System.Windows.Shapes.Rectangle? ResizeEdgeLeft;
+    private System.Windows.Shapes.Rectangle? ResizeEdgeRight;
+    private System.Windows.Shapes.Rectangle? ResizeCornerTopLeft;
+    private System.Windows.Shapes.Rectangle? ResizeCornerTopRight;
+    private System.Windows.Shapes.Rectangle? ResizeCornerBottomLeft;
+    private System.Windows.Shapes.Rectangle? ResizeCornerBottomRight;
+
+
+private readonly NoteStorageService _storageService;
     private readonly SettingsService _settingsService;
     private readonly Action<NoteItem> _onSpawnNewNote;
     private readonly Action<StickyNoteWindow> _onClosedCallback;
@@ -82,6 +161,7 @@ public partial class StickyNoteWindow : Window
         _desktopWindowManager = new DesktopWindowManager(this);
 
         InitializeComponent();
+        ThemeManager.ApplyTheme(this, _note.ThemeKey);
 
         // Position window according to saved note coordinates with virtual screen safety bounds
         double vLeft = SystemParameters.VirtualScreenLeft;
@@ -114,6 +194,458 @@ public partial class StickyNoteWindow : Window
             _desktopWindowManager.BringToFront();
             ApplyFocusOpacity(true);
         };
+    }
+
+
+    public override void OnApplyTemplate()
+    {
+        base.OnApplyTemplate();
+
+        // Unbind previous
+        if (HeaderBorder != null)
+        {
+            HeaderBorder.MouseLeftButtonDown -= Header_MouseLeftButtonDown;
+        }
+        if (Unnamed_Button_1 != null)
+        {
+            Unnamed_Button_1.Click -= BtnNewNote_Click;
+        }
+        if (BtnPinMode != null)
+        {
+            BtnPinMode.Click -= BtnPinMode_Click;
+        }
+        if (BtnTextMode != null)
+        {
+            BtnTextMode.Click -= BtnTextMode_Click;
+        }
+        if (BtnChecklistMode != null)
+        {
+            BtnChecklistMode.Click -= BtnChecklistMode_Click;
+        }
+        if (BtnCopyMode != null)
+        {
+            BtnCopyMode.Click -= BtnCopyMode_Click;
+        }
+        if (BtnColorPicker != null)
+        {
+            BtnColorPicker.Click -= BtnColorPicker_Click;
+        }
+        if (BtnLock != null)
+        {
+            BtnLock.Click -= BtnLock_Click;
+        }
+        if (BtnMore != null)
+        {
+            BtnMore.Click -= BtnMore_Click;
+        }
+        if (Unnamed_Button_9 != null)
+        {
+            Unnamed_Button_9.Click -= BtnClose_Click;
+        }
+        if (TxtTitle != null)
+        {
+            TxtTitle.TextChanged -= TxtTitle_TextChanged;
+            TxtTitle.GotFocus -= TxtTitle_GotFocus;
+            TxtTitle.LostFocus -= TxtTitle_LostFocus;
+        }
+        if (TxtContent != null)
+        {
+            TxtContent.TextChanged -= TxtContent_TextChanged;
+            TxtContent.GotFocus -= TxtContent_GotFocus;
+            TxtContent.LostFocus -= TxtContent_LostFocus;
+        }
+        if (NewTaskContainer != null)
+        {
+            NewTaskContainer.MouseLeftButtonDown -= NewTaskContainer_MouseLeftButtonDown;
+        }
+        if (TxtNewTask != null)
+        {
+            TxtNewTask.KeyDown -= TxtNewTask_KeyDown;
+            TxtNewTask.TextChanged -= TxtNewTask_TextChanged;
+            TxtNewTask.GotFocus -= TxtNewTask_GotFocus;
+            TxtNewTask.LostFocus -= TxtNewTask_LostFocus;
+        }
+        if (Unnamed_Button_14 != null)
+        {
+            Unnamed_Button_14.Click -= BtnAddTask_Click;
+        }
+        if (NewCopyItemContainer != null)
+        {
+            NewCopyItemContainer.MouseLeftButtonDown -= NewCopyItemContainer_MouseLeftButtonDown;
+        }
+        if (TxtNewCopyItem != null)
+        {
+            TxtNewCopyItem.KeyDown -= TxtNewCopyItem_KeyDown;
+            TxtNewCopyItem.TextChanged -= TxtNewCopyItem_TextChanged;
+            TxtNewCopyItem.GotFocus -= TxtNewCopyItem_GotFocus;
+            TxtNewCopyItem.LostFocus -= TxtNewCopyItem_LostFocus;
+        }
+        if (Unnamed_Button_17 != null)
+        {
+            Unnamed_Button_17.Click -= BtnAddCopyItem_Click;
+        }
+        if (ColorPopup != null)
+        {
+            ColorPopup.Opened -= ColorPopup_Opened;
+        }
+        if (Unnamed_Button_19 != null)
+        {
+            Unnamed_Button_19.Click -= ColorSwatch_Click;
+        }
+        if (Unnamed_Button_20 != null)
+        {
+            Unnamed_Button_20.Click -= ColorSwatch_Click;
+        }
+        if (Unnamed_Button_21 != null)
+        {
+            Unnamed_Button_21.Click -= ColorSwatch_Click;
+        }
+        if (Unnamed_Button_22 != null)
+        {
+            Unnamed_Button_22.Click -= ColorSwatch_Click;
+        }
+        if (Unnamed_Button_23 != null)
+        {
+            Unnamed_Button_23.Click -= ColorSwatch_Click;
+        }
+        if (Unnamed_Button_24 != null)
+        {
+            Unnamed_Button_24.Click -= ColorSwatch_Click;
+        }
+        if (Unnamed_Button_25 != null)
+        {
+            Unnamed_Button_25.Click -= ColorSwatch_Click;
+        }
+        if (Unnamed_Button_26 != null)
+        {
+            Unnamed_Button_26.Click -= ColorSwatch_Click;
+        }
+        if (SatValPickerGrid != null)
+        {
+            SatValPickerGrid.MouseLeftButtonDown -= SatValPicker_MouseDown;
+            SatValPickerGrid.MouseMove -= SatValPicker_MouseMove;
+            SatValPickerGrid.MouseLeftButtonUp -= SatValPicker_MouseUp;
+        }
+        if (HueBarGrid != null)
+        {
+            HueBarGrid.MouseLeftButtonDown -= HueBar_MouseDown;
+            HueBarGrid.MouseMove -= HueBar_MouseMove;
+            HueBarGrid.MouseLeftButtonUp -= HueBar_MouseUp;
+        }
+        if (TxtCustomHex != null)
+        {
+            TxtCustomHex.TextChanged -= TxtCustomHex_TextChanged;
+        }
+        if (Unnamed_Button_30 != null)
+        {
+            Unnamed_Button_30.Click -= BtnApplyCustomColor_Click;
+        }
+        if (SliderActiveOpacity != null)
+        {
+            SliderActiveOpacity.ValueChanged -= SliderActiveOpacity_ValueChanged;
+        }
+        if (ChkUnfocusedDim != null)
+        {
+            ChkUnfocusedDim.Click -= ChkUnfocusedDim_Click;
+        }
+        if (SliderUnfocusedOpacity != null)
+        {
+            SliderUnfocusedOpacity.ValueChanged -= SliderUnfocusedOpacity_ValueChanged;
+        }
+        if (ResizeEdgeTop != null)
+        {
+            ResizeEdgeTop.MouseLeftButtonDown -= ResizeEdge_MouseLeftButtonDown;
+        }
+        if (ResizeEdgeBottom != null)
+        {
+            ResizeEdgeBottom.MouseLeftButtonDown -= ResizeEdge_MouseLeftButtonDown;
+        }
+        if (ResizeEdgeLeft != null)
+        {
+            ResizeEdgeLeft.MouseLeftButtonDown -= ResizeEdge_MouseLeftButtonDown;
+        }
+        if (ResizeEdgeRight != null)
+        {
+            ResizeEdgeRight.MouseLeftButtonDown -= ResizeEdge_MouseLeftButtonDown;
+        }
+        if (ResizeCornerTopLeft != null)
+        {
+            ResizeCornerTopLeft.MouseLeftButtonDown -= ResizeEdge_MouseLeftButtonDown;
+        }
+        if (ResizeCornerTopRight != null)
+        {
+            ResizeCornerTopRight.MouseLeftButtonDown -= ResizeEdge_MouseLeftButtonDown;
+        }
+        if (ResizeCornerBottomLeft != null)
+        {
+            ResizeCornerBottomLeft.MouseLeftButtonDown -= ResizeEdge_MouseLeftButtonDown;
+        }
+        if (ResizeCornerBottomRight != null)
+        {
+            ResizeCornerBottomRight.MouseLeftButtonDown -= ResizeEdge_MouseLeftButtonDown;
+        }
+
+
+
+        // Bind new
+        HeaderBorder = GetTemplateChild("PART_HeaderBorder") as Border;
+        Unnamed_Button_1 = GetTemplateChild("PART_Unnamed_Button_1") as Button;
+        BtnPinMode = GetTemplateChild("PART_BtnPinMode") as Button;
+        BtnTextMode = GetTemplateChild("PART_BtnTextMode") as Button;
+        BtnChecklistMode = GetTemplateChild("PART_BtnChecklistMode") as Button;
+        BtnCopyMode = GetTemplateChild("PART_BtnCopyMode") as Button;
+        BtnColorPicker = GetTemplateChild("PART_BtnColorPicker") as Button;
+        BtnLock = GetTemplateChild("PART_BtnLock") as Button;
+        BtnMore = GetTemplateChild("PART_BtnMore") as Button;
+        Unnamed_Button_9 = GetTemplateChild("PART_Unnamed_Button_9") as Button;
+        TxtTitle = GetTemplateChild("PART_TxtTitle") as TextBox;
+        TxtContent = GetTemplateChild("PART_TxtContent") as TextBox;
+        NewTaskContainer = GetTemplateChild("PART_NewTaskContainer") as Border;
+        TxtNewTask = GetTemplateChild("PART_TxtNewTask") as TextBox;
+        Unnamed_Button_14 = GetTemplateChild("PART_Unnamed_Button_14") as Button;
+        NewCopyItemContainer = GetTemplateChild("PART_NewCopyItemContainer") as Border;
+        TxtNewCopyItem = GetTemplateChild("PART_TxtNewCopyItem") as TextBox;
+        Unnamed_Button_17 = GetTemplateChild("PART_Unnamed_Button_17") as Button;
+        ColorPopup = GetTemplateChild("PART_ColorPopup") as Popup;
+        Unnamed_Button_19 = GetTemplateChild("PART_Unnamed_Button_19") as Button;
+        Unnamed_Button_20 = GetTemplateChild("PART_Unnamed_Button_20") as Button;
+        Unnamed_Button_21 = GetTemplateChild("PART_Unnamed_Button_21") as Button;
+        Unnamed_Button_22 = GetTemplateChild("PART_Unnamed_Button_22") as Button;
+        Unnamed_Button_23 = GetTemplateChild("PART_Unnamed_Button_23") as Button;
+        Unnamed_Button_24 = GetTemplateChild("PART_Unnamed_Button_24") as Button;
+        Unnamed_Button_25 = GetTemplateChild("PART_Unnamed_Button_25") as Button;
+        Unnamed_Button_26 = GetTemplateChild("PART_Unnamed_Button_26") as Button;
+        SatValPickerGrid = GetTemplateChild("PART_SatValPickerGrid") as Grid;
+        HueBarGrid = GetTemplateChild("PART_HueBarGrid") as Grid;
+        TxtCustomHex = GetTemplateChild("PART_TxtCustomHex") as TextBox;
+        Unnamed_Button_30 = GetTemplateChild("PART_Unnamed_Button_30") as Button;
+        SliderActiveOpacity = GetTemplateChild("PART_SliderActiveOpacity") as Slider;
+        ChkUnfocusedDim = GetTemplateChild("PART_ChkUnfocusedDim") as CheckBox;
+        SliderUnfocusedOpacity = GetTemplateChild("PART_SliderUnfocusedOpacity") as Slider;
+        ResizeEdgeTop = GetTemplateChild("PART_ResizeEdgeTop") as System.Windows.Shapes.Rectangle;
+        ResizeEdgeBottom = GetTemplateChild("PART_ResizeEdgeBottom") as System.Windows.Shapes.Rectangle;
+        ResizeEdgeLeft = GetTemplateChild("PART_ResizeEdgeLeft") as System.Windows.Shapes.Rectangle;
+        ResizeEdgeRight = GetTemplateChild("PART_ResizeEdgeRight") as System.Windows.Shapes.Rectangle;
+        ResizeCornerTopLeft = GetTemplateChild("PART_ResizeCornerTopLeft") as System.Windows.Shapes.Rectangle;
+        ResizeCornerTopRight = GetTemplateChild("PART_ResizeCornerTopRight") as System.Windows.Shapes.Rectangle;
+        ResizeCornerBottomLeft = GetTemplateChild("PART_ResizeCornerBottomLeft") as System.Windows.Shapes.Rectangle;
+        ResizeCornerBottomRight = GetTemplateChild("PART_ResizeCornerBottomRight") as System.Windows.Shapes.Rectangle;
+        if (HeaderBorder != null)
+        {
+            HeaderBorder.MouseLeftButtonDown += Header_MouseLeftButtonDown;
+            ChecklistItemsControl = GetTemplateChild("PART_ChecklistItemsControl") as ItemsControl;
+        ChecklistModeContainer = GetTemplateChild("PART_ChecklistModeContainer") as Grid;
+        CopyItemsControl = GetTemplateChild("PART_CopyItemsControl") as ItemsControl;
+        CopyModeContainer = GetTemplateChild("PART_CopyModeContainer") as Grid;
+        CustomColorPreview = GetTemplateChild("PART_CustomColorPreview") as Border;
+        HueBaseRect = GetTemplateChild("PART_HueBaseRect") as System.Windows.Shapes.Rectangle;
+        HueThumb = GetTemplateChild("PART_HueThumb") as Border;
+        IconChecklistMode = GetTemplateChild("PART_IconChecklistMode") as LucideIcon;
+        IconCopyMode = GetTemplateChild("PART_IconCopyMode") as LucideIcon;
+        IconLock = GetTemplateChild("PART_IconLock") as LucideIcon;
+        IconPin = GetTemplateChild("PART_IconPin") as LucideIcon;
+        IconPlus = GetTemplateChild("PART_IconPlus") as LucideIcon;
+        IconTextMode = GetTemplateChild("PART_IconTextMode") as LucideIcon;
+        IconTypingStatus = GetTemplateChild("PART_IconTypingStatus") as LucideIcon;
+        LeftCompartmentBorder = GetTemplateChild("PART_LeftCompartmentBorder") as Border;
+        LockBadge = GetTemplateChild("PART_LockBadge") as StackPanel;
+        ModeCompartmentBorder = GetTemplateChild("PART_ModeCompartmentBorder") as Border;
+        NoteCardBorder = GetTemplateChild("PART_NoteCardBorder") as Border;
+        ResizeOverlayGrid = GetTemplateChild("PART_ResizeOverlayGrid") as Grid;
+        SatValThumb = GetTemplateChild("PART_SatValThumb") as System.Windows.Shapes.Ellipse;
+        TextModeContainer = GetTemplateChild("PART_TextModeContainer") as Grid;
+        ToolsCompartmentBorder = GetTemplateChild("PART_ToolsCompartmentBorder") as Border;
+        TxtActiveOpacityPercent = GetTemplateChild("PART_TxtActiveOpacityPercent") as TextBlock;
+        TxtContentPlaceholder = GetTemplateChild("PART_TxtContentPlaceholder") as TextBlock;
+        TxtModifiedTime = GetTemplateChild("PART_TxtModifiedTime") as TextBlock;
+        TxtNewCopyItemPlaceholder = GetTemplateChild("PART_TxtNewCopyItemPlaceholder") as TextBlock;
+        TxtNewTaskPlaceholder = GetTemplateChild("PART_TxtNewTaskPlaceholder") as TextBlock;
+        TxtPinIndicator = GetTemplateChild("PART_TxtPinIndicator") as TextBlock;
+        TxtTitlePlaceholder = GetTemplateChild("PART_TxtTitlePlaceholder") as TextBlock;
+        TxtTypingStatus = GetTemplateChild("PART_TxtTypingStatus") as TextBlock;
+        TxtUnfocusedOpacityPercent = GetTemplateChild("PART_TxtUnfocusedOpacityPercent") as TextBlock;
+        TypingIndicatorContainer = GetTemplateChild("PART_TypingIndicatorContainer") as StackPanel;
+        UnfocusedOpacityControlsPanel = GetTemplateChild("PART_UnfocusedOpacityControlsPanel") as StackPanel;
+    }
+        if (Unnamed_Button_1 != null)
+        {
+            Unnamed_Button_1.Click += BtnNewNote_Click;
+        }
+        if (BtnPinMode != null)
+        {
+            BtnPinMode.Click += BtnPinMode_Click;
+        }
+        if (BtnTextMode != null)
+        {
+            BtnTextMode.Click += BtnTextMode_Click;
+        }
+        if (BtnChecklistMode != null)
+        {
+            BtnChecklistMode.Click += BtnChecklistMode_Click;
+        }
+        if (BtnCopyMode != null)
+        {
+            BtnCopyMode.Click += BtnCopyMode_Click;
+        }
+        if (BtnColorPicker != null)
+        {
+            BtnColorPicker.Click += BtnColorPicker_Click;
+        }
+        if (BtnLock != null)
+        {
+            BtnLock.Click += BtnLock_Click;
+        }
+        if (BtnMore != null)
+        {
+            BtnMore.Click += BtnMore_Click;
+        }
+        if (Unnamed_Button_9 != null)
+        {
+            Unnamed_Button_9.Click += BtnClose_Click;
+        }
+        if (TxtTitle != null)
+        {
+            TxtTitle.TextChanged += TxtTitle_TextChanged;
+            TxtTitle.GotFocus += TxtTitle_GotFocus;
+            TxtTitle.LostFocus += TxtTitle_LostFocus;
+        }
+        if (TxtContent != null)
+        {
+            TxtContent.TextChanged += TxtContent_TextChanged;
+            TxtContent.GotFocus += TxtContent_GotFocus;
+            TxtContent.LostFocus += TxtContent_LostFocus;
+        }
+        if (NewTaskContainer != null)
+        {
+            NewTaskContainer.MouseLeftButtonDown += NewTaskContainer_MouseLeftButtonDown;
+        }
+        if (TxtNewTask != null)
+        {
+            TxtNewTask.KeyDown += TxtNewTask_KeyDown;
+            TxtNewTask.TextChanged += TxtNewTask_TextChanged;
+            TxtNewTask.GotFocus += TxtNewTask_GotFocus;
+            TxtNewTask.LostFocus += TxtNewTask_LostFocus;
+        }
+        if (Unnamed_Button_14 != null)
+        {
+            Unnamed_Button_14.Click += BtnAddTask_Click;
+        }
+        if (NewCopyItemContainer != null)
+        {
+            NewCopyItemContainer.MouseLeftButtonDown += NewCopyItemContainer_MouseLeftButtonDown;
+        }
+        if (TxtNewCopyItem != null)
+        {
+            TxtNewCopyItem.KeyDown += TxtNewCopyItem_KeyDown;
+            TxtNewCopyItem.TextChanged += TxtNewCopyItem_TextChanged;
+            TxtNewCopyItem.GotFocus += TxtNewCopyItem_GotFocus;
+            TxtNewCopyItem.LostFocus += TxtNewCopyItem_LostFocus;
+        }
+        if (Unnamed_Button_17 != null)
+        {
+            Unnamed_Button_17.Click += BtnAddCopyItem_Click;
+        }
+        if (ColorPopup != null)
+        {
+            ColorPopup.Opened += ColorPopup_Opened;
+        }
+        if (Unnamed_Button_19 != null)
+        {
+            Unnamed_Button_19.Click += ColorSwatch_Click;
+        }
+        if (Unnamed_Button_20 != null)
+        {
+            Unnamed_Button_20.Click += ColorSwatch_Click;
+        }
+        if (Unnamed_Button_21 != null)
+        {
+            Unnamed_Button_21.Click += ColorSwatch_Click;
+        }
+        if (Unnamed_Button_22 != null)
+        {
+            Unnamed_Button_22.Click += ColorSwatch_Click;
+        }
+        if (Unnamed_Button_23 != null)
+        {
+            Unnamed_Button_23.Click += ColorSwatch_Click;
+        }
+        if (Unnamed_Button_24 != null)
+        {
+            Unnamed_Button_24.Click += ColorSwatch_Click;
+        }
+        if (Unnamed_Button_25 != null)
+        {
+            Unnamed_Button_25.Click += ColorSwatch_Click;
+        }
+        if (Unnamed_Button_26 != null)
+        {
+            Unnamed_Button_26.Click += ColorSwatch_Click;
+        }
+        if (SatValPickerGrid != null)
+        {
+            SatValPickerGrid.MouseLeftButtonDown += SatValPicker_MouseDown;
+            SatValPickerGrid.MouseMove += SatValPicker_MouseMove;
+            SatValPickerGrid.MouseLeftButtonUp += SatValPicker_MouseUp;
+        }
+        if (HueBarGrid != null)
+        {
+            HueBarGrid.MouseLeftButtonDown += HueBar_MouseDown;
+            HueBarGrid.MouseMove += HueBar_MouseMove;
+            HueBarGrid.MouseLeftButtonUp += HueBar_MouseUp;
+        }
+        if (TxtCustomHex != null)
+        {
+            TxtCustomHex.TextChanged += TxtCustomHex_TextChanged;
+        }
+        if (Unnamed_Button_30 != null)
+        {
+            Unnamed_Button_30.Click += BtnApplyCustomColor_Click;
+        }
+        if (SliderActiveOpacity != null)
+        {
+            SliderActiveOpacity.ValueChanged += SliderActiveOpacity_ValueChanged;
+        }
+        if (ChkUnfocusedDim != null)
+        {
+            ChkUnfocusedDim.Click += ChkUnfocusedDim_Click;
+        }
+        if (SliderUnfocusedOpacity != null)
+        {
+            SliderUnfocusedOpacity.ValueChanged += SliderUnfocusedOpacity_ValueChanged;
+        }
+        if (ResizeEdgeTop != null)
+        {
+            ResizeEdgeTop.MouseLeftButtonDown += ResizeEdge_MouseLeftButtonDown;
+        }
+        if (ResizeEdgeBottom != null)
+        {
+            ResizeEdgeBottom.MouseLeftButtonDown += ResizeEdge_MouseLeftButtonDown;
+        }
+        if (ResizeEdgeLeft != null)
+        {
+            ResizeEdgeLeft.MouseLeftButtonDown += ResizeEdge_MouseLeftButtonDown;
+        }
+        if (ResizeEdgeRight != null)
+        {
+            ResizeEdgeRight.MouseLeftButtonDown += ResizeEdge_MouseLeftButtonDown;
+        }
+        if (ResizeCornerTopLeft != null)
+        {
+            ResizeCornerTopLeft.MouseLeftButtonDown += ResizeEdge_MouseLeftButtonDown;
+        }
+        if (ResizeCornerTopRight != null)
+        {
+            ResizeCornerTopRight.MouseLeftButtonDown += ResizeEdge_MouseLeftButtonDown;
+        }
+        if (ResizeCornerBottomLeft != null)
+        {
+            ResizeCornerBottomLeft.MouseLeftButtonDown += ResizeEdge_MouseLeftButtonDown;
+        }
+        if (ResizeCornerBottomRight != null)
+        {
+            ResizeCornerBottomRight.MouseLeftButtonDown += ResizeEdge_MouseLeftButtonDown;
+        }
+
     }
 
     private void InitDebounceTimer()
