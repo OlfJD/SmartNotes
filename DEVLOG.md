@@ -59,11 +59,8 @@ To support full design-altering themes (not just colors, but layout, borders, ba
 5. **Create Theme Dictionaries:** Create `CyberpunkTheme.xaml` and `EldenRingTheme.xaml`, each providing their own massive `<ControlTemplate>` that redesigns the window shape (e.g., clipped corners), fonts, and images.
 6. **Dynamic Swapping:** Build a `ThemeManager` to hot-swap the active `ResourceDictionary` at runtime to change the "whole design".
 
-## Potential TODO: Spell Checking / Language Proofing
-- **Implement Language Proofing:** Enable `SpellCheck.IsEnabled="True"` in WPF text/content boxes.
-- **Upload Proofing:** Push the language proofing updates to GitHub main branch once validated.
-
 ---
+
 
 ## Changelog & Evolution
 
@@ -249,3 +246,44 @@ To support full design-altering themes (not just colors, but layout, borders, ba
   - Added Unfocused Opacity slider to **Settings & Preferences** modal.
   - Added Dim When Unfocused toggle in note header **More Options (`...`)** `Opacity` submenu.
   - Built custom vector `ModernSlider` style in `DarkTheme.xaml`.
+
+### Version 2.0.0 - Native Language Proofing, Live Autocorrect Engine & Smart Typography (2026-09-28)
+- **Native WPF & Windows Spell Checking Engine (`TextProofingService.cs`, `StickyNoteWindow.xaml`, `StickyNoteWindow.xaml.cs`)**:
+  - Integrated real-time red squiggly underlines on misspelled words across note body text (`TxtContent`), titles (`TxtTitle`), checklist items, and quick-copy snippet fields.
+  - Multi-language proofing support with 12 international languages (`en-US`, `en-GB`, `en-CA`, `en-AU`, `de-DE`, `es-ES`, `fr-FR`, `it-IT`, `pt-PT`, `nl-NL`, `pl-PL`, `sv-SE`).
+  - Persistent custom user dictionary at `%APPDATA%\SmartNotes\custom_dict.lex` with seamless "Add to Dictionary" and "Ignore All" context menu actions.
+- **Real-Time Autocorrect Engine (`TextProofingService.cs`, `AutocorrectRule.cs`)**:
+  - Instant typo fixes as you type (e.g., `teh` → `the`, `dont` → `don't`, `cant` → `can't`, `recieve` → `receive`, `seperate` → `separate`, `definately` → `definitely`, `goverment` → `government`, etc.) with intelligent casing preservation (`TEH` → `THE`, `Teh` → `The`, `teh` → `the`).
+  - Automatic sentence capitalization: automatically capitalizes the first letter of sentences and standalone `i` → `I`.
+  - Smart typography symbol replacements (`->` to `→`, `<-` to `←`, `=>` to `⇒`, `!=` to `≠`, `--` to `—`, `---` to `—`, `(c)` to `©`, `(r)` to `®`, `(tm)` to `™`, `+-` to `±`, `...` to `…`, `1/2` to `½`, `1/4` to `¼`, `3/4` to `¾`, `>=` to `≥`, `<=` to `≤`).
+  - Instant Backspace Undo UX: Pressing `Backspace` immediately after an autocorrect reverts the word back to what was originally typed.
+  - Custom user autocorrect rules loaded and saved to `%APPDATA%\SmartNotes\autocorrect_rules.json`.
+- **Obsidian Dark Theme Context Menus (`DarkTheme.xaml`, `StickyNoteWindow.xaml.cs`)**:
+  - High-contrast neon dark right-click context menu displaying top spelling suggestions with checkmark accents, "Add to Dictionary", "Ignore All", Cut/Copy/Paste/Select All, and nested Proofing & Language configuration submenus.
+  - Razor-sharp vector Lucide icons for all menu commands (`spell-check`, `check`, `scissors`, `copy`, `clipboard`, `languages`, `eye-off`).
+  - Upgraded `DarkTheme.xaml` `MenuItem` style to support hierarchical submenus with smooth popups and chevron arrow indicators.
+- **Settings & Preferences Dashboard V2.0 Integration (`SettingsDialog.xaml`, `SettingsDialog.xaml.cs`)**:
+  - Added dedicated **"TEXT PROOFING & AUTOCORRECT (VERSION 2.0)"** card with live toggles for Spell Check, Proofing Language dropdown, Autocorrect, Sentence Capitalization, Smart Symbols, and 1-click links to open Custom Dictionary (`custom_dict.lex`) and Custom Rules (`autocorrect_rules.json`).
+
+### Version 2.1.0 - Complete Settings & Preferences Dashboard Overhaul (2026-09-28)
+- **Modern Sidebar Rail & Categorized Layout (`SettingsDialog.xaml`, `SettingsDialog.xaml.cs`)**:
+  - Completely redesigned the settings experience from a single cramped, disproportionate scroll list (520x540) to an expansive, beautifully proportioned modern dashboard (800x600).
+  - Added a dedicated **Left Sidebar Navigation Rail** (Width: 220px) with custom glowing active indicator pills and razor-sharp Lucide vector icons:
+    1. 🖥️ **Desktop & System** (`monitor`, Amber accent)
+    2. 🎨 **Note Appearance** (`palette`, Emerald accent)
+    3. ⌨️ **Global Hotkeys** (`keyboard`, Cyan accent)
+    4. ✍️ **Text Proofing** (`spell-check`, Violet accent)
+    5. 🗑️ **Trash & Recovery** (`trash-2`, Rose accent)
+    6. ⚡ **Memory & Performance** (`cpu`, Amber accent)
+- **Note Appearance Visual Palette & Real-Time Note Preview**:
+  - Integrated an interactive 8-theme visual color swatch selector (Amber, Emerald, Violet, Cyan, Rose, Obsidian, Gold, Mint) directly alongside the theme combobox.
+  - Implemented a live **Note Card Preview** right within the settings panel that immediately renders dynamic theme border colors, header backgrounds, font sizing, and typography as settings are adjusted.
+- **Custom Dark Theme Controls Engine (`DarkTheme.xaml`)**:
+  - Implemented full custom Obsidian Dark styles for `ComboBox`, `ComboBoxItem`, and `ToggleButton`, eliminating bright default Win32 dropdown controls.
+  - Features obsidian surfaces (`#131824`), glowing focus/hover borders (`#FBBF24`), smooth slide popups with dark drop shadows, and Lucide chevron indicators.
+  - Added `SettingsNavRadio` style for responsive navigation tabs with hover and active states.
+- **Enhanced Typography & Proportion Fixes**:
+  - Added comprehensive `TextWrapping="Wrap"` across all settings titles, descriptions, and subtitle blocks to ensure zero text truncation across all screen DPIs.
+  - Converted raw unicode emojis to crisp vector LucideIcons (`book-open`, `wand-2`, `folder`, `trash-2`, `zap`, `check-check`).
+  - Styled global hotkey badges with glowing keycap frames (`Win + Alt + N`, `Win + Alt + H`, `Win + Alt + D`).
+

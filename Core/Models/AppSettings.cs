@@ -19,4 +19,13 @@ public class AppSettings
     public bool KeepBehindAllWindows { get; set; } = true;
     public bool EnableUnfocusedTransparency { get; set; } = true;
     public double UnfocusedOpacity { get; set; } = 0.55;
+
+    // Version 2.0: Text Proofing & Autocorrect Engine
+    public bool EnableSpellCheck { get; set; } = true;
+    public string ProofingLanguage { get; set; } = "auto";
+    public bool EnableAutocorrect { get; set; } = true;
+    public bool AutoCapitalizeSentences { get; set; } = true;
+    public bool SmartSymbolReplacements { get; set; } = true;
+    public bool CustomReplacementsEnabled { get; set; } = true;
 }
+

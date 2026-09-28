@@ -1,7 +1,5 @@
 @echo off
-if exist "%~dp0SmartNotes.exe" (
-    start "" "%~dp0SmartNotes.exe"
-) else (
-    start "" "%~dp0release\SmartNotes.exe"
-)
+echo Compiling and publishing the latest version...
+dotnet publish "%~dp0SmartNotes.csproj" -c Release -o "%~dp0release"
+start "" /D "%~dp0release" "%~dp0release\SmartNotes.exe"
 exit

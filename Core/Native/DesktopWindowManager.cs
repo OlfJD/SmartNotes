@@ -171,6 +171,8 @@ public class DesktopWindowManager
         }
     }
 
+    private static readonly uint WmBringToFront = Win32Api.RegisterWindowMessage("SmartNotes_BringToFront_Broadcast_987654");
+
     public void BringToFront()
     {
         _isInteracting = true;
@@ -188,6 +190,8 @@ public class DesktopWindowManager
             Win32Api.SetWindowPos(_hwnd, Win32Api.HWND_TOP, 0, 0, 0, 0,
                 Win32Api.SWP_NOMOVE | Win32Api.SWP_NOSIZE | Win32Api.SWP_SHOWWINDOW);
         }
+
+        Win32Api.SetForegroundWindow(_hwnd);
 
         try
         {
@@ -249,6 +253,17 @@ public class DesktopWindowManager
 
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
+        if (msg == WmBringToFront)
+        {
+            _window.Dispatcher.Invoke(() =>
+            {
+                _window.Show();
+                BringToFront();
+            });
+            handled = true;
+            return IntPtr.Zero;
+        }
+
         if (msg == Win32Api.WM_ENTERSIZEMOVE)
         {
             StartDrag();
@@ -362,19 +377,6 @@ public class DesktopWindowManager
                     _isInteracting = false;
                     SendToDesktopBottom();
                 }
-            }
-            else if (msg == Win32Api.WM_WINDOWPOSCHANGING && !_isInteracting)
-            {
-                try
-                {
-                    var wp = Marshal.PtrToStructure<Win32Api.WINDOWPOS>(lParam);
-                    if (wp.hwndInsertAfter != Win32Api.HWND_BOTTOM && (wp.flags & Win32Api.SWP_NOZORDER) == 0)
-                    {
-                        wp.hwndInsertAfter = Win32Api.HWND_BOTTOM;
-                        Marshal.StructureToPtr(wp, lParam, false);
-                    }
-                }
-                catch { }
             }
         }
 

@@ -16,8 +16,10 @@ namespace SmartNotes;
 
 public partial class App : Application
 {
-    private const string AppMutexName = "SmartNotes_SingleInstance_Mutex_987654";
-    private Mutex? _appMutex;
+    private const string AppMutexName = @"Local\SmartNotes_SingleInstance_Mutex_987654";
+    private const string AppEventName = @"Local\SmartNotes_SingleInstance_Event_987654";
+    private Mutex? _instanceMutex;
+    private EventWaitHandle? _instanceEvent;
 
     private SettingsService _settingsService = null!;
     private NoteStorageService _storageService = null!;
@@ -26,7 +28,6 @@ public partial class App : Application
     private Window? _dummyHwndHost;
 
     private readonly Dictionary<Guid, StickyNoteWindow> _activeNoteWindows = new();
-    private bool _ownsMutex = false;
 
     public static App? Instance => Current as App;
 
@@ -53,71 +54,119 @@ public partial class App : Application
         return result;
     }
 
+    private static void LogStartup(string msg)
+    {
+        try
+        {
+            string appFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SmartNotes");
+            Directory.CreateDirectory(appFolder);
+            File.AppendAllText(Path.Combine(appFolder, "startup.log"), $"[{DateTime.Now:HH:mm:ss.fff}] {msg}\n");
+        }
+        catch { }
+    }
+
     protected override void OnStartup(StartupEventArgs e)
     {
+        LogStartup("OnStartup triggered.");
+
         AppDomain.CurrentDomain.UnhandledException += (s, ev) =>
         {
-            try
-            {
-                string crashPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "crash.log");
-                File.WriteAllText(crashPath, $"[AppDomain UnhandledException] {ev.ExceptionObject}");
-            }
-            catch { }
+            LogStartup($"[AppDomain UnhandledException] {ev.ExceptionObject}");
         };
 
         DispatcherUnhandledException += (s, ev) =>
         {
+            LogStartup($"[DispatcherUnhandledException] {ev.Exception}\n{ev.Exception.StackTrace}");
+        };
+
+        bool ownsMutex = false;
+        try
+        {
+            _instanceMutex = new Mutex(true, AppMutexName, out bool createdNew);
+            ownsMutex = createdNew;
+            LogStartup($"Mutex created, createdNew: {createdNew}");
+            if (!ownsMutex)
+            {
+                try
+                {
+                    ownsMutex = _instanceMutex.WaitOne(0, false);
+                    LogStartup($"Mutex WaitOne(0): {ownsMutex}");
+                }
+                catch (AbandonedMutexException)
+                {
+                    ownsMutex = true;
+                    LogStartup("Mutex AbandonedMutexException in WaitOne");
+                }
+            }
+        }
+        catch (AbandonedMutexException)
+        {
+            ownsMutex = true;
+            LogStartup("Mutex AbandonedMutexException on create");
+        }
+        catch (Exception ex)
+        {
+            ownsMutex = true;
+            LogStartup($"Mutex exception: {ex.Message}");
+        }
+
+        if (!ownsMutex)
+        {
+            LogStartup("Not owning mutex, signaling existing instance and shutting down...");
             try
             {
-                string crashPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "crash.log");
-                File.WriteAllText(crashPath, $"[DispatcherUnhandledException] {ev.Exception}\n{ev.Exception.StackTrace}");
+                using var evt = EventWaitHandle.OpenExisting(AppEventName);
+                evt.Set();
             }
-            catch { }
-        };
+            catch (Exception ex)
+            {
+                LogStartup($"Event signal exception: {ex.Message}");
+            }
+
+            Shutdown();
+            return;
+        }
+
+        LogStartup("Mutex owned successfully. Initializing application services...");
 
         try
         {
-            _appMutex = new Mutex(true, AppMutexName, out bool isNewInstance);
-            _ownsMutex = isNewInstance;
-            if (!_ownsMutex)
-            {
-                MessageBox.Show("SmartNotes is already running in your system tray / desktop!", "SmartNotes", MessageBoxButton.OK, MessageBoxImage.Information);
-                _appMutex.Dispose();
-                _appMutex = null;
-                Shutdown();
-                return;
-            }
+            _instanceEvent = new EventWaitHandle(false, EventResetMode.AutoReset, AppEventName);
         }
-        catch
+        catch (Exception ex)
         {
-            _ownsMutex = false;
+            LogStartup($"EventWaitHandle create exception: {ex.Message}");
         }
 
         base.OnStartup(e);
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-        _settingsService = new SettingsService();
-        _storageService = new NoteStorageService();
-
-        MemoryOptimizer.Initialize();
-        InitDummyHwndHost();
-        InitGlobalHotkeys();
-        InitTrayManager();
-
-        // Restore active notes on the desktop at their exact saved coordinates
-        RestoreAllDesktopNotes();
-
-        // Check for updates asynchronously on startup
-        _ = Task.Run(async () =>
+        try
         {
-            await Task.Delay(2500); // Allow desktop notes to render smoothly before checking
-            await UpdateService.CheckForUpdatesAsync(isManualCheck: false, notifyCallback: (title, msg) =>
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    _trayManager?.ShowBalloon(title, msg, ToolTipIcon.Info);
-                });
-            });
-        });
+            _settingsService = new SettingsService();
+            LogStartup("SettingsService loaded.");
+            _storageService = new NoteStorageService();
+            LogStartup($"NoteStorageService loaded. Active notes: {_storageService.Notes.Count}");
+
+            MemoryOptimizer.Initialize();
+            LogStartup("MemoryOptimizer initialized.");
+            InitDummyHwndHost();
+            LogStartup("DummyHwndHost initialized.");
+            InitGlobalHotkeys();
+            LogStartup("GlobalHotkeys initialized.");
+            InitTrayManager();
+            LogStartup("TrayManager initialized.");
+            StartSingleInstanceListener();
+            LogStartup("SingleInstanceListener started.");
+
+            // Restore active notes on the desktop at their exact saved coordinates
+            RestoreAllDesktopNotes();
+            LogStartup("Desktop notes restored.");
+        }
+        catch (Exception ex)
+        {
+            LogStartup($"Error during service initialization: {ex}\n{ex.StackTrace}");
+        }
     }
 
     private void InitDummyHwndHost()
@@ -195,8 +244,7 @@ public partial class App : Application
 
         foreach (var note in activeNotes)
         {
-            bool shouldBringFront = (note.PinMode == NotePinMode.AlwaysOnTop);
-            SpawnStickyNoteWindow(note, bringToFront: shouldBringFront);
+            SpawnStickyNoteWindow(note, bringToFront: true);
         }
 
         UpdateTrayTooltip();
@@ -400,6 +448,14 @@ public partial class App : Application
         }
     }
 
+    public void NotifyProofingSettingsChanged()
+    {
+        foreach (var win in _activeNoteWindows.Values)
+        {
+            win.ApplyProofingSettings();
+        }
+    }
+
     public void OpenSettingsDialog()
     {
         var dlg = new SettingsDialog(_settingsService, _storageService, () =>
@@ -408,6 +464,7 @@ public partial class App : Application
             _hotKeyManager?.Dispose();
             InitGlobalHotkeys();
             NotifyTransparencySettingsChanged();
+            NotifyProofingSettingsChanged();
             MemoryOptimizer.TrimMemory();
         });
 
@@ -459,6 +516,45 @@ public partial class App : Application
         _trayManager.UpdateTooltip($"SmartNotes - {count} sticky note{(count == 1 ? "" : "s")} on desktop");
     }
 
+    private void StartSingleInstanceListener()
+    {
+        if (_instanceEvent == null) return;
+
+        var thread = new Thread(() =>
+        {
+            while (true)
+            {
+                try
+                {
+                    if (_instanceEvent.WaitOne())
+                    {
+                        Dispatcher.BeginInvoke(() =>
+                        {
+                            if (_settingsService.Settings.HideAllNotes)
+                            {
+                                ToggleHideAllNotes();
+                            }
+                            else
+                            {
+                                BringAllNotesToFront();
+                            }
+                            _trayManager?.ShowBalloon("SmartNotes", "Sticky notes active and brought to front!", ToolTipIcon.Info);
+                        });
+                    }
+                }
+                catch
+                {
+                    break;
+                }
+            }
+        })
+        {
+            IsBackground = true,
+            Name = "SmartNotes_SingleInstance_Listener"
+        };
+        thread.Start();
+    }
+
     public void ExitApplication()
     {
         Shutdown();
@@ -466,18 +562,18 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        LogStartup($"OnExit called with ExitCode: {e.ApplicationExitCode}");
         try { _trayManager?.Dispose(); } catch { }
         try { _hotKeyManager?.Dispose(); } catch { }
+        try { _instanceEvent?.Dispose(); } catch { }
+        _instanceEvent = null;
         try
         {
-            if (_ownsMutex && _appMutex != null)
-            {
-                _appMutex.ReleaseMutex();
-            }
+            _instanceMutex?.ReleaseMutex();
+            _instanceMutex?.Dispose();
         }
         catch { }
-        try { _appMutex?.Dispose(); } catch { }
-        _appMutex = null;
+        _instanceMutex = null;
 
         base.OnExit(e);
     }

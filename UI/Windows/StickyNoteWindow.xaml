@@ -128,6 +128,10 @@
                              CaretBrush="#F59E0B"
                              Cursor="IBeam"
                              Padding="0"
+                             SpellCheck.IsEnabled="True"
+                             ContextMenuOpening="TextBox_ContextMenuOpening"
+                             PreviewTextInput="TextBox_PreviewTextInput"
+                             PreviewKeyDown="TextBox_PreviewKeyDown"
                              TextChanged="TxtTitle_TextChanged"
                              GotFocus="TxtTitle_GotFocus"
                              LostFocus="TxtTitle_LostFocus"/>
@@ -159,6 +163,10 @@
                              CaretBrush="#F59E0B"
                              Cursor="IBeam"
                              Padding="2"
+                             SpellCheck.IsEnabled="True"
+                             ContextMenuOpening="TextBox_ContextMenuOpening"
+                             PreviewTextInput="TextBox_PreviewTextInput"
+                             PreviewKeyDown="TextBox_PreviewKeyDown"
                              TextChanged="TxtContent_TextChanged"
                              GotFocus="TxtContent_GotFocus"
                              LostFocus="TxtContent_LostFocus"/>
@@ -214,7 +222,7 @@
                                             </CheckBox>
 
                                             <!-- Task Text -->
-                                            <TextBox Grid.Column="1" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="TaskText_Changed" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" VerticalAlignment="Center" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
+                                            <TextBox Grid.Column="1" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="TaskText_Changed" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" VerticalAlignment="Center" SpellCheck.IsEnabled="True" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" PreviewKeyDown="TextBox_PreviewKeyDown" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
 
                                             <!-- Delete Task Item Button -->
                                             <Button Grid.Column="2" Style="{StaticResource IconButton}" Width="24" Height="24" Click="BtnDeleteTask_Click" ToolTip="Delete task" Padding="3">
@@ -234,7 +242,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="TxtNewTask" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" Cursor="IBeam" VerticalAlignment="Stretch" VerticalContentAlignment="Center" KeyDown="TxtNewTask_KeyDown" TextChanged="TxtNewTask_TextChanged" GotFocus="TxtNewTask_GotFocus" LostFocus="TxtNewTask_LostFocus"/>
+                            <TextBox x:Name="TxtNewTask" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" Cursor="IBeam" VerticalAlignment="Stretch" VerticalContentAlignment="Center" SpellCheck.IsEnabled="True" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" KeyDown="TxtNewTask_KeyDown" TextChanged="TxtNewTask_TextChanged" GotFocus="TxtNewTask_GotFocus" LostFocus="TxtNewTask_LostFocus"/>
                             <TextBlock x:Name="TxtNewTaskPlaceholder" Text="Add new task (Press Enter)..." Foreground="#64748B" FontSize="14.5" IsHitTestVisible="False" VerticalAlignment="Center" Margin="2,0,0,0"/>
                             <Button Grid.Column="1" Style="{StaticResource IconButton}" Width="26" Height="26" Click="BtnAddTask_Click" ToolTip="Add task" Cursor="Hand">
                                 <controls:LucideIcon IconKey="plus" Size="15" StrokeThickness="2.8" Foreground="{StaticResource NeonEmeraldGlowBrush}"/>
@@ -269,7 +277,7 @@
                                             </Grid.ColumnDefinitions>
 
                                             <!-- Snippet Text Box -->
-                                            <TextBox Grid.Column="0" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="CopyItemText_Changed" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" Cursor="IBeam" VerticalAlignment="Center" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
+                                            <TextBox Grid.Column="0" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="CopyItemText_Changed" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" Cursor="IBeam" VerticalAlignment="Center" SpellCheck.IsEnabled="True" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" PreviewKeyDown="TextBox_PreviewKeyDown" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
 
                                             <!-- Dedicated Copy Button on the right in the same line -->
                                             <Button Grid.Column="1" Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnCopyRow_Click" ToolTip="Copy this line to clipboard" Margin="4,0,2,0" Padding="4">
@@ -294,7 +302,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="TxtNewCopyItem" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" Cursor="IBeam" VerticalAlignment="Stretch" VerticalContentAlignment="Center" KeyDown="TxtNewCopyItem_KeyDown" TextChanged="TxtNewCopyItem_TextChanged" GotFocus="TxtNewCopyItem_GotFocus" LostFocus="TxtNewCopyItem_LostFocus"/>
+                            <TextBox x:Name="TxtNewCopyItem" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" Cursor="IBeam" VerticalAlignment="Stretch" VerticalContentAlignment="Center" SpellCheck.IsEnabled="True" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" KeyDown="TxtNewCopyItem_KeyDown" TextChanged="TxtNewCopyItem_TextChanged" GotFocus="TxtNewCopyItem_GotFocus" LostFocus="TxtNewCopyItem_LostFocus"/>
                             <TextBlock x:Name="TxtNewCopyItemPlaceholder" Text="Add new copy item (Press Enter)..." Foreground="#64748B" FontSize="14.5" IsHitTestVisible="False" VerticalAlignment="Center" Margin="2,0,0,0"/>
                             <Button Grid.Column="1" Style="{StaticResource IconButton}" Width="26" Height="26" Click="BtnAddCopyItem_Click" ToolTip="Add copy item" Cursor="Hand">
                                 <controls:LucideIcon IconKey="plus" Size="15" StrokeThickness="2.8" Foreground="{StaticResource NeonCyanBrush}"/>
@@ -303,6 +311,7 @@
                     </Border>
                 </Grid>
             </Grid>
+
 
             <!-- 4. BOTTOM FOOTER (Modified Time, Typing Indicator, Lock Badge) -->
             <Border Grid.Row="3" Background="Transparent" Padding="14,0,10,6" VerticalAlignment="Bottom">
