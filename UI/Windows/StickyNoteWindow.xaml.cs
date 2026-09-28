@@ -212,19 +212,19 @@ private readonly NoteStorageService _storageService;
         }
         if (BtnPinMode != null)
         {
-            BtnPinMode.Click -= BtnPinMode_Click;
+            if (BtnPinMode != null) BtnPinMode.Click -= BtnPinMode_Click;
         }
         if (BtnTextMode != null)
         {
-            BtnTextMode.Click -= BtnTextMode_Click;
+            if (BtnTextMode != null) BtnTextMode.Click -= BtnTextMode_Click;
         }
         if (BtnChecklistMode != null)
         {
-            BtnChecklistMode.Click -= BtnChecklistMode_Click;
+            if (BtnChecklistMode != null) BtnChecklistMode.Click -= BtnChecklistMode_Click;
         }
         if (BtnCopyMode != null)
         {
-            BtnCopyMode.Click -= BtnCopyMode_Click;
+            if (BtnCopyMode != null) BtnCopyMode.Click -= BtnCopyMode_Click;
         }
         if (BtnColorPicker != null)
         {
@@ -232,7 +232,7 @@ private readonly NoteStorageService _storageService;
         }
         if (BtnLock != null)
         {
-            BtnLock.Click -= BtnLock_Click;
+            if (BtnLock != null) BtnLock.Click -= BtnLock_Click;
         }
         if (BtnMore != null)
         {
@@ -244,15 +244,15 @@ private readonly NoteStorageService _storageService;
         }
         if (TxtTitle != null)
         {
-            TxtTitle.TextChanged -= TxtTitle_TextChanged;
-            TxtTitle.GotFocus -= TxtTitle_GotFocus;
-            TxtTitle.LostFocus -= TxtTitle_LostFocus;
+            if (TxtTitle != null) TxtTitle.TextChanged -= TxtTitle_TextChanged;
+            if (TxtTitle != null) TxtTitle.GotFocus -= TxtTitle_GotFocus;
+            if (TxtTitle != null) TxtTitle.LostFocus -= TxtTitle_LostFocus;
         }
         if (TxtContent != null)
         {
-            TxtContent.TextChanged -= TxtContent_TextChanged;
-            TxtContent.GotFocus -= TxtContent_GotFocus;
-            TxtContent.LostFocus -= TxtContent_LostFocus;
+            if (TxtContent != null) TxtContent.TextChanged -= TxtContent_TextChanged;
+            if (TxtContent != null) TxtContent.GotFocus -= TxtContent_GotFocus;
+            if (TxtContent != null) TxtContent.LostFocus -= TxtContent_LostFocus;
         }
         if (NewTaskContainer != null)
         {
@@ -260,10 +260,10 @@ private readonly NoteStorageService _storageService;
         }
         if (TxtNewTask != null)
         {
-            TxtNewTask.KeyDown -= TxtNewTask_KeyDown;
-            TxtNewTask.TextChanged -= TxtNewTask_TextChanged;
-            TxtNewTask.GotFocus -= TxtNewTask_GotFocus;
-            TxtNewTask.LostFocus -= TxtNewTask_LostFocus;
+            if (TxtNewTask != null) TxtNewTask.KeyDown -= TxtNewTask_KeyDown;
+            if (TxtNewTask != null) TxtNewTask.TextChanged -= TxtNewTask_TextChanged;
+            if (TxtNewTask != null) TxtNewTask.GotFocus -= TxtNewTask_GotFocus;
+            if (TxtNewTask != null) TxtNewTask.LostFocus -= TxtNewTask_LostFocus;
         }
         if (Unnamed_Button_14 != null)
         {
@@ -275,10 +275,10 @@ private readonly NoteStorageService _storageService;
         }
         if (TxtNewCopyItem != null)
         {
-            TxtNewCopyItem.KeyDown -= TxtNewCopyItem_KeyDown;
-            TxtNewCopyItem.TextChanged -= TxtNewCopyItem_TextChanged;
-            TxtNewCopyItem.GotFocus -= TxtNewCopyItem_GotFocus;
-            TxtNewCopyItem.LostFocus -= TxtNewCopyItem_LostFocus;
+            if (TxtNewCopyItem != null) TxtNewCopyItem.KeyDown -= TxtNewCopyItem_KeyDown;
+            if (TxtNewCopyItem != null) TxtNewCopyItem.TextChanged -= TxtNewCopyItem_TextChanged;
+            if (TxtNewCopyItem != null) TxtNewCopyItem.GotFocus -= TxtNewCopyItem_GotFocus;
+            if (TxtNewCopyItem != null) TxtNewCopyItem.LostFocus -= TxtNewCopyItem_LostFocus;
         }
         if (Unnamed_Button_17 != null)
         {
@@ -286,7 +286,7 @@ private readonly NoteStorageService _storageService;
         }
         if (ColorPopup != null)
         {
-            ColorPopup.Opened -= ColorPopup_Opened;
+            if (ColorPopup != null) ColorPopup.Opened -= ColorPopup_Opened;
         }
         if (Unnamed_Button_19 != null)
         {
@@ -334,7 +334,7 @@ private readonly NoteStorageService _storageService;
         }
         if (TxtCustomHex != null)
         {
-            TxtCustomHex.TextChanged -= TxtCustomHex_TextChanged;
+            if (TxtCustomHex != null) TxtCustomHex.TextChanged -= TxtCustomHex_TextChanged;
         }
         if (Unnamed_Button_30 != null)
         {
@@ -342,15 +342,15 @@ private readonly NoteStorageService _storageService;
         }
         if (SliderActiveOpacity != null)
         {
-            SliderActiveOpacity.ValueChanged -= SliderActiveOpacity_ValueChanged;
+            if (SliderActiveOpacity != null) SliderActiveOpacity.ValueChanged -= SliderActiveOpacity_ValueChanged;
         }
         if (ChkUnfocusedDim != null)
         {
-            ChkUnfocusedDim.Click -= ChkUnfocusedDim_Click;
+            if (ChkUnfocusedDim != null) ChkUnfocusedDim.Click -= ChkUnfocusedDim_Click;
         }
         if (SliderUnfocusedOpacity != null)
         {
-            SliderUnfocusedOpacity.ValueChanged -= SliderUnfocusedOpacity_ValueChanged;
+            if (SliderUnfocusedOpacity != null) SliderUnfocusedOpacity.ValueChanged -= SliderUnfocusedOpacity_ValueChanged;
         }
         if (ResizeEdgeTop != null)
         {
@@ -473,19 +473,19 @@ private readonly NoteStorageService _storageService;
         }
         if (BtnPinMode != null)
         {
-            BtnPinMode.Click += BtnPinMode_Click;
+            if (BtnPinMode != null) BtnPinMode.Click += BtnPinMode_Click;
         }
         if (BtnTextMode != null)
         {
-            BtnTextMode.Click += BtnTextMode_Click;
+            if (BtnTextMode != null) BtnTextMode.Click += BtnTextMode_Click;
         }
         if (BtnChecklistMode != null)
         {
-            BtnChecklistMode.Click += BtnChecklistMode_Click;
+            if (BtnChecklistMode != null) BtnChecklistMode.Click += BtnChecklistMode_Click;
         }
         if (BtnCopyMode != null)
         {
-            BtnCopyMode.Click += BtnCopyMode_Click;
+            if (BtnCopyMode != null) BtnCopyMode.Click += BtnCopyMode_Click;
         }
         if (BtnColorPicker != null)
         {
@@ -493,7 +493,7 @@ private readonly NoteStorageService _storageService;
         }
         if (BtnLock != null)
         {
-            BtnLock.Click += BtnLock_Click;
+            if (BtnLock != null) BtnLock.Click += BtnLock_Click;
         }
         if (BtnMore != null)
         {
@@ -505,15 +505,15 @@ private readonly NoteStorageService _storageService;
         }
         if (TxtTitle != null)
         {
-            TxtTitle.TextChanged += TxtTitle_TextChanged;
-            TxtTitle.GotFocus += TxtTitle_GotFocus;
-            TxtTitle.LostFocus += TxtTitle_LostFocus;
+            if (TxtTitle != null) TxtTitle.TextChanged += TxtTitle_TextChanged;
+            if (TxtTitle != null) TxtTitle.GotFocus += TxtTitle_GotFocus;
+            if (TxtTitle != null) TxtTitle.LostFocus += TxtTitle_LostFocus;
         }
         if (TxtContent != null)
         {
-            TxtContent.TextChanged += TxtContent_TextChanged;
-            TxtContent.GotFocus += TxtContent_GotFocus;
-            TxtContent.LostFocus += TxtContent_LostFocus;
+            if (TxtContent != null) TxtContent.TextChanged += TxtContent_TextChanged;
+            if (TxtContent != null) TxtContent.GotFocus += TxtContent_GotFocus;
+            if (TxtContent != null) TxtContent.LostFocus += TxtContent_LostFocus;
         }
         if (NewTaskContainer != null)
         {
@@ -521,10 +521,10 @@ private readonly NoteStorageService _storageService;
         }
         if (TxtNewTask != null)
         {
-            TxtNewTask.KeyDown += TxtNewTask_KeyDown;
-            TxtNewTask.TextChanged += TxtNewTask_TextChanged;
-            TxtNewTask.GotFocus += TxtNewTask_GotFocus;
-            TxtNewTask.LostFocus += TxtNewTask_LostFocus;
+            if (TxtNewTask != null) TxtNewTask.KeyDown += TxtNewTask_KeyDown;
+            if (TxtNewTask != null) TxtNewTask.TextChanged += TxtNewTask_TextChanged;
+            if (TxtNewTask != null) TxtNewTask.GotFocus += TxtNewTask_GotFocus;
+            if (TxtNewTask != null) TxtNewTask.LostFocus += TxtNewTask_LostFocus;
         }
         if (Unnamed_Button_14 != null)
         {
@@ -536,10 +536,10 @@ private readonly NoteStorageService _storageService;
         }
         if (TxtNewCopyItem != null)
         {
-            TxtNewCopyItem.KeyDown += TxtNewCopyItem_KeyDown;
-            TxtNewCopyItem.TextChanged += TxtNewCopyItem_TextChanged;
-            TxtNewCopyItem.GotFocus += TxtNewCopyItem_GotFocus;
-            TxtNewCopyItem.LostFocus += TxtNewCopyItem_LostFocus;
+            if (TxtNewCopyItem != null) TxtNewCopyItem.KeyDown += TxtNewCopyItem_KeyDown;
+            if (TxtNewCopyItem != null) TxtNewCopyItem.TextChanged += TxtNewCopyItem_TextChanged;
+            if (TxtNewCopyItem != null) TxtNewCopyItem.GotFocus += TxtNewCopyItem_GotFocus;
+            if (TxtNewCopyItem != null) TxtNewCopyItem.LostFocus += TxtNewCopyItem_LostFocus;
         }
         if (Unnamed_Button_17 != null)
         {
@@ -547,7 +547,7 @@ private readonly NoteStorageService _storageService;
         }
         if (ColorPopup != null)
         {
-            ColorPopup.Opened += ColorPopup_Opened;
+            if (ColorPopup != null) ColorPopup.Opened += ColorPopup_Opened;
         }
         if (Unnamed_Button_19 != null)
         {
@@ -595,7 +595,7 @@ private readonly NoteStorageService _storageService;
         }
         if (TxtCustomHex != null)
         {
-            TxtCustomHex.TextChanged += TxtCustomHex_TextChanged;
+            if (TxtCustomHex != null) TxtCustomHex.TextChanged += TxtCustomHex_TextChanged;
         }
         if (Unnamed_Button_30 != null)
         {
@@ -603,15 +603,15 @@ private readonly NoteStorageService _storageService;
         }
         if (SliderActiveOpacity != null)
         {
-            SliderActiveOpacity.ValueChanged += SliderActiveOpacity_ValueChanged;
+            if (SliderActiveOpacity != null) SliderActiveOpacity.ValueChanged += SliderActiveOpacity_ValueChanged;
         }
         if (ChkUnfocusedDim != null)
         {
-            ChkUnfocusedDim.Click += ChkUnfocusedDim_Click;
+            if (ChkUnfocusedDim != null) ChkUnfocusedDim.Click += ChkUnfocusedDim_Click;
         }
         if (SliderUnfocusedOpacity != null)
         {
-            SliderUnfocusedOpacity.ValueChanged += SliderUnfocusedOpacity_ValueChanged;
+            if (SliderUnfocusedOpacity != null) SliderUnfocusedOpacity.ValueChanged += SliderUnfocusedOpacity_ValueChanged;
         }
         if (ResizeEdgeTop != null)
         {
@@ -668,7 +668,7 @@ private readonly NoteStorageService _storageService;
         if (_startInForeground || _note.PinMode == NotePinMode.AlwaysOnTop)
         {
             _desktopWindowManager.BringToFront();
-            TxtContent.Focus();
+            if (TxtContent != null) TxtContent.Focus();
         }
         _isLoaded = true;
         ApplyFocusOpacity(IsActive || _startInForeground);
@@ -676,21 +676,21 @@ private readonly NoteStorageService _storageService;
 
     private void ApplyNoteData()
     {
-        TxtTitle.Text = _note.Title;
-        TxtContent.Text = _note.Content;
-        TxtTitlePlaceholder.Visibility = string.IsNullOrEmpty(_note.Title) ? Visibility.Visible : Visibility.Collapsed;
-        TxtContentPlaceholder.Visibility = string.IsNullOrEmpty(_note.Content) ? Visibility.Visible : Visibility.Collapsed;
+        if (TxtTitle != null) TxtTitle.Text = _note.Title;
+        if (TxtContent != null) TxtContent.Text = _note.Content;
+        if (TxtTitlePlaceholder != null) TxtTitlePlaceholder.Visibility = string.IsNullOrEmpty(_note.Title) ? Visibility.Visible : Visibility.Collapsed;
+        if (TxtContentPlaceholder != null) TxtContentPlaceholder.Visibility = string.IsNullOrEmpty(_note.Content) ? Visibility.Visible : Visibility.Collapsed;
 
-        TxtContent.FontSize = Math.Max(11, _note.FontSize);
-        TxtTitle.FontSize = Math.Max(12, _note.FontSize + 1);
+        if (TxtContent != null) TxtContent.FontSize = Math.Max(11, _note.FontSize);
+        if (TxtTitle != null) TxtTitle.FontSize = Math.Max(12, _note.FontSize + 1);
 
         // Checklist setup
         _checklistItems = new ObservableCollection<TodoCheckItem>(_note.Checklist);
-        ChecklistItemsControl.ItemsSource = _checklistItems;
+        if (ChecklistItemsControl != null) ChecklistItemsControl.ItemsSource = _checklistItems;
 
         // Copy list setup
         _copyItems = new ObservableCollection<CopySnippetItem>(_note.CopyList);
-        CopyItemsControl.ItemsSource = _copyItems;
+        if (CopyItemsControl != null) CopyItemsControl.ItemsSource = _copyItems;
 
         // Ensure backward compatibility
         if (_note.IsChecklistMode && _note.ViewMode == NoteViewMode.Text)
@@ -715,21 +715,27 @@ private readonly NoteStorageService _storageService;
             
             if (_note.ThemeKey != "Cyberpunk")
             {
-                NoteCardBorder.Background = theme.BgBrush;
-                NoteCardBorder.BorderBrush = theme.BorderBrush;
-                HeaderBorder.Background = theme.HeaderBgBrush;
-                HeaderBorder.BorderBrush = theme.BorderBrush;
-                LeftCompartmentBorder.BorderBrush = theme.BorderBrush;
-                ModeCompartmentBorder.BorderBrush = theme.BorderBrush;
-                ToolsCompartmentBorder.BorderBrush = theme.BorderBrush;
+                if (NoteCardBorder != null)
+                {
+                    NoteCardBorder.Background = theme.BgBrush;
+                    NoteCardBorder.BorderBrush = theme.BorderBrush;
+                }
+                if (HeaderBorder != null)
+                {
+                    HeaderBorder.Background = theme.HeaderBgBrush;
+                    HeaderBorder.BorderBrush = theme.BorderBrush;
+                }
+                if (LeftCompartmentBorder != null) LeftCompartmentBorder.BorderBrush = theme.BorderBrush;
+                if (ModeCompartmentBorder != null) ModeCompartmentBorder.BorderBrush = theme.BorderBrush;
+                if (ToolsCompartmentBorder != null) ToolsCompartmentBorder.BorderBrush = theme.BorderBrush;
 
-                TxtTitle.Foreground = theme.TextPrimaryBrush;
-                TxtContent.Foreground = theme.TextPrimaryBrush;
-                TxtTitle.CaretBrush = theme.GlowBrush;
-                TxtContent.CaretBrush = theme.GlowBrush;
-                TxtNewTask.CaretBrush = theme.GlowBrush;
-                TxtNewCopyItem.CaretBrush = theme.GlowBrush;
-                IconPlus.Foreground = theme.GlowBrush;
+                if (TxtTitle != null) TxtTitle.Foreground = theme.TextPrimaryBrush;
+                if (TxtContent != null) TxtContent.Foreground = theme.TextPrimaryBrush;
+                if (TxtTitle != null) TxtTitle.CaretBrush = theme.GlowBrush;
+                if (TxtContent != null) TxtContent.CaretBrush = theme.GlowBrush;
+                if (TxtNewTask != null) TxtNewTask.CaretBrush = theme.GlowBrush;
+                if (TxtNewCopyItem != null) TxtNewCopyItem.CaretBrush = theme.GlowBrush;
+                if (IconPlus != null) IconPlus.Foreground = theme.GlowBrush;
             }
         }
         catch { }
@@ -740,17 +746,17 @@ private readonly NoteStorageService _storageService;
         _note.ViewMode = mode;
         _note.IsChecklistMode = (mode == NoteViewMode.Checklist);
 
-        TextModeContainer.Visibility = (mode == NoteViewMode.Text) ? Visibility.Visible : Visibility.Collapsed;
-        ChecklistModeContainer.Visibility = (mode == NoteViewMode.Checklist) ? Visibility.Visible : Visibility.Collapsed;
-        CopyModeContainer.Visibility = (mode == NoteViewMode.CopyCompartments) ? Visibility.Visible : Visibility.Collapsed;
+        if (TextModeContainer != null) TextModeContainer.Visibility = (mode == NoteViewMode.Text) ? Visibility.Visible : Visibility.Collapsed;
+        if (ChecklistModeContainer != null) ChecklistModeContainer.Visibility = (mode == NoteViewMode.Checklist) ? Visibility.Visible : Visibility.Collapsed;
+        if (CopyModeContainer != null) CopyModeContainer.Visibility = (mode == NoteViewMode.CopyCompartments) ? Visibility.Visible : Visibility.Collapsed;
 
-        IconTextMode.Foreground = (mode == NoteViewMode.Text) ? AmberBrush : MutedBrush;
-        IconChecklistMode.Foreground = (mode == NoteViewMode.Checklist) ? EmeraldBrush : MutedBrush;
-        IconCopyMode.Foreground = (mode == NoteViewMode.CopyCompartments) ? CyanBrush : MutedBrush;
+        if (IconTextMode != null) IconTextMode.Foreground = (mode == NoteViewMode.Text) ? AmberBrush : MutedBrush;
+        if (IconChecklistMode != null) IconChecklistMode.Foreground = (mode == NoteViewMode.Checklist) ? EmeraldBrush : MutedBrush;
+        if (IconCopyMode != null) IconCopyMode.Foreground = (mode == NoteViewMode.CopyCompartments) ? CyanBrush : MutedBrush;
 
-        BtnTextMode.ToolTip = (mode == NoteViewMode.Text) ? "Active: Plain Text Mode" : "Switch to Plain Text Mode";
-        BtnChecklistMode.ToolTip = (mode == NoteViewMode.Checklist) ? "Active: Checklist Mode" : "Switch to Checklist Mode";
-        BtnCopyMode.ToolTip = (mode == NoteViewMode.CopyCompartments) ? "Active: Copy Compartments Mode" : "Switch to Copy Compartments Mode";
+        if (BtnTextMode != null) BtnTextMode.ToolTip = (mode == NoteViewMode.Text) ? "Active: Plain Text Mode" : "Switch to Plain Text Mode";
+        if (BtnChecklistMode != null) BtnChecklistMode.ToolTip = (mode == NoteViewMode.Checklist) ? "Active: Checklist Mode" : "Switch to Checklist Mode";
+        if (BtnCopyMode != null) BtnCopyMode.ToolTip = (mode == NoteViewMode.CopyCompartments) ? "Active: Copy Compartments Mode" : "Switch to Copy Compartments Mode";
     }
 
     private void UpdatePinModeUI(NotePinMode mode)
@@ -761,24 +767,24 @@ private readonly NoteStorageService _storageService;
         switch (mode)
         {
             case NotePinMode.DesktopStuck:
-                TxtPinIndicator.Text = "📌 Stuck to Desktop";
-                IconPin.IconKey = "pin";
-                IconPin.Foreground = EmeraldBrush;
-                BtnPinMode.ToolTip = "Mode: Stuck to Desktop (Behind all apps). Click to Float Always on Top";
+                if (TxtPinIndicator != null) TxtPinIndicator.Text = "📌 Stuck to Desktop";
+                if (IconPin != null) IconPin.IconKey = "pin";
+                if (IconPin != null) IconPin.Foreground = EmeraldBrush;
+                if (BtnPinMode != null) BtnPinMode.ToolTip = "Mode: Stuck to Desktop (Behind all apps). Click to Float Always on Top";
                 break;
 
             case NotePinMode.AlwaysOnTop:
-                TxtPinIndicator.Text = "📌 Always on Top";
-                IconPin.IconKey = "pin";
-                IconPin.Foreground = AmberBrush;
-                BtnPinMode.ToolTip = "Mode: Always on Top (Floating). Click to Stick to Desktop";
+                if (TxtPinIndicator != null) TxtPinIndicator.Text = "📌 Always on Top";
+                if (IconPin != null) IconPin.IconKey = "pin";
+                if (IconPin != null) IconPin.Foreground = AmberBrush;
+                if (BtnPinMode != null) BtnPinMode.ToolTip = "Mode: Always on Top (Floating). Click to Stick to Desktop";
                 break;
 
             case NotePinMode.Normal:
-                TxtPinIndicator.Text = "📌 Normal Window";
-                IconPin.IconKey = "pin-off";
-                IconPin.Foreground = MutedBrush;
-                BtnPinMode.ToolTip = "Mode: Normal Window. Click to Stick to Desktop";
+                if (TxtPinIndicator != null) TxtPinIndicator.Text = "📌 Normal Window";
+                if (IconPin != null) IconPin.IconKey = "pin-off";
+                if (IconPin != null) IconPin.Foreground = MutedBrush;
+                if (BtnPinMode != null) BtnPinMode.ToolTip = "Mode: Normal Window. Click to Stick to Desktop";
                 break;
         }
     }
@@ -786,10 +792,10 @@ private readonly NoteStorageService _storageService;
     private void UpdateLockUI(bool isLocked)
     {
         _note.IsLocked = isLocked;
-        TxtTitle.IsReadOnly = isLocked;
-        TxtContent.IsReadOnly = isLocked;
-        TxtNewTask.IsEnabled = !isLocked;
-        TxtNewCopyItem.IsEnabled = !isLocked;
+        if (TxtTitle != null) TxtTitle.IsReadOnly = isLocked;
+        if (TxtContent != null) TxtContent.IsReadOnly = isLocked;
+        if (TxtNewTask != null) TxtNewTask.IsEnabled = !isLocked;
+        if (TxtNewCopyItem != null) TxtNewCopyItem.IsEnabled = !isLocked;
         if (ResizeOverlayGrid != null)
         {
             ResizeOverlayGrid.IsHitTestVisible = !isLocked;
@@ -797,17 +803,17 @@ private readonly NoteStorageService _storageService;
 
         if (isLocked)
         {
-            IconLock.IconKey = "lock";
-            IconLock.Foreground = AmberBrush;
-            LockBadge.Visibility = Visibility.Visible;
-            BtnLock.ToolTip = "Note is Locked (Click to Unlock)";
+            if (IconLock != null) IconLock.IconKey = "lock";
+            if (IconLock != null) IconLock.Foreground = AmberBrush;
+            if (LockBadge != null) LockBadge.Visibility = Visibility.Visible;
+            if (BtnLock != null) BtnLock.ToolTip = "Note is Locked (Click to Unlock)";
         }
         else
         {
-            IconLock.IconKey = "unlock";
-            IconLock.Foreground = MutedBrush;
-            LockBadge.Visibility = Visibility.Collapsed;
-            BtnLock.ToolTip = "Lock note position & text";
+            if (IconLock != null) IconLock.IconKey = "unlock";
+            if (IconLock != null) IconLock.Foreground = MutedBrush;
+            if (LockBadge != null) LockBadge.Visibility = Visibility.Collapsed;
+            if (BtnLock != null) BtnLock.ToolTip = "Lock note position & text";
         }
     }
 
@@ -816,19 +822,19 @@ private readonly NoteStorageService _storageService;
         var elapsed = DateTime.Now - _note.ModifiedAt;
         if (elapsed.TotalMinutes < 1)
         {
-            TxtModifiedTime.Text = "Just now";
+            if (TxtModifiedTime != null) TxtModifiedTime.Text = "Just now";
         }
         else if (elapsed.TotalMinutes < 60)
         {
-            TxtModifiedTime.Text = $"{(int)elapsed.TotalMinutes}m ago";
+            if (TxtModifiedTime != null) TxtModifiedTime.Text = $"{(int)elapsed.TotalMinutes}m ago";
         }
         else if (elapsed.TotalHours < 24)
         {
-            TxtModifiedTime.Text = $"{(int)elapsed.TotalHours}h ago";
+            if (TxtModifiedTime != null) TxtModifiedTime.Text = $"{(int)elapsed.TotalHours}h ago";
         }
         else
         {
-            TxtModifiedTime.Text = _note.ModifiedAt.ToString("MMM d");
+            if (TxtModifiedTime != null) TxtModifiedTime.Text = _note.ModifiedAt.ToString("MMM d");
         }
     }
 
@@ -837,12 +843,12 @@ private readonly NoteStorageService _storageService;
         if (!_isLoaded) return;
         _savedStatusResetTimer?.Stop();
 
-        TxtModifiedTime.Visibility = Visibility.Collapsed;
-        TypingIndicatorContainer.Visibility = Visibility.Visible;
-        IconTypingStatus.IconKey = "pen-line";
-        IconTypingStatus.Foreground = _currentGlowBrush;
-        TxtTypingStatus.Text = "Typing...";
-        TxtTypingStatus.Foreground = _currentGlowBrush;
+        if (TxtModifiedTime != null) TxtModifiedTime.Visibility = Visibility.Collapsed;
+        if (TypingIndicatorContainer != null) TypingIndicatorContainer.Visibility = Visibility.Visible;
+        if (IconTypingStatus != null) IconTypingStatus.IconKey = "pen-line";
+        if (IconTypingStatus != null) IconTypingStatus.Foreground = _currentGlowBrush;
+        if (TxtTypingStatus != null) TxtTypingStatus.Text = "Typing...";
+        if (TxtTypingStatus != null) TxtTypingStatus.Foreground = _currentGlowBrush;
     }
 
     private void ShowSavedIndicator()
@@ -850,12 +856,12 @@ private readonly NoteStorageService _storageService;
         if (!_isLoaded) return;
         _savedStatusResetTimer?.Stop();
 
-        TxtModifiedTime.Visibility = Visibility.Collapsed;
-        TypingIndicatorContainer.Visibility = Visibility.Visible;
-        IconTypingStatus.IconKey = "check";
-        IconTypingStatus.Foreground = EmeraldBrush;
-        TxtTypingStatus.Text = "Saved";
-        TxtTypingStatus.Foreground = EmeraldBrush;
+        if (TxtModifiedTime != null) TxtModifiedTime.Visibility = Visibility.Collapsed;
+        if (TypingIndicatorContainer != null) TypingIndicatorContainer.Visibility = Visibility.Visible;
+        if (IconTypingStatus != null) IconTypingStatus.IconKey = "check";
+        if (IconTypingStatus != null) IconTypingStatus.Foreground = EmeraldBrush;
+        if (TxtTypingStatus != null) TxtTypingStatus.Text = "Saved";
+        if (TxtTypingStatus != null) TxtTypingStatus.Foreground = EmeraldBrush;
 
         _savedStatusResetTimer = new DispatcherTimer
         {
@@ -864,8 +870,8 @@ private readonly NoteStorageService _storageService;
         _savedStatusResetTimer.Tick += (s, e) =>
         {
             _savedStatusResetTimer.Stop();
-            TypingIndicatorContainer.Visibility = Visibility.Collapsed;
-            TxtModifiedTime.Visibility = Visibility.Visible;
+            if (TypingIndicatorContainer != null) TypingIndicatorContainer.Visibility = Visibility.Collapsed;
+            if (TxtModifiedTime != null) TxtModifiedTime.Visibility = Visibility.Visible;
             UpdateModifiedTime();
         };
         _savedStatusResetTimer.Start();
@@ -909,8 +915,8 @@ private readonly NoteStorageService _storageService;
 
     public void SaveNoteState()
     {
-        _note.Title = TxtTitle.Text;
-        _note.Content = TxtContent.Text;
+        _note.Title = (TxtTitle != null ? TxtTitle.Text : _note.Title);
+        _note.Content = (TxtContent != null ? TxtContent.Text : _note.Content);
         _note.Checklist = new List<TodoCheckItem>(_checklistItems);
         _note.CopyList = new List<CopySnippetItem>(_copyItems);
         _note.IsChecklistMode = (_note.ViewMode == NoteViewMode.Checklist);
@@ -919,7 +925,7 @@ private readonly NoteStorageService _storageService;
         _note.Width = Width;
         _note.Height = Height;
         _note.Opacity = _userConfiguredOpacity;
-        _note.FontSize = TxtContent.FontSize;
+        _note.FontSize = (TxtContent != null ? TxtContent.FontSize : _note.FontSize);
         _note.ModifiedAt = DateTime.Now;
 
         _storageService.UpdateNote(_note);
@@ -956,27 +962,27 @@ private readonly NoteStorageService _storageService;
     // User interactions / Text Input
     private void TxtTitle_TextChanged(object sender, TextChangedEventArgs e)
     {
-        TxtTitlePlaceholder.Visibility = string.IsNullOrEmpty(TxtTitle.Text) ? Visibility.Visible : Visibility.Collapsed;
+        if (TxtTitlePlaceholder != null) TxtTitlePlaceholder.Visibility = string.IsNullOrEmpty(TxtTitle.Text) ? Visibility.Visible : Visibility.Collapsed;
         RequestSave(isTyping: true);
     }
 
     private void TxtContent_TextChanged(object sender, TextChangedEventArgs e)
     {
-        TxtContentPlaceholder.Visibility = string.IsNullOrEmpty(TxtContent.Text) ? Visibility.Visible : Visibility.Collapsed;
+        if (TxtContentPlaceholder != null) TxtContentPlaceholder.Visibility = string.IsNullOrEmpty(TxtContent.Text) ? Visibility.Visible : Visibility.Collapsed;
         RequestSave(isTyping: true);
     }
 
     private void TxtTitle_GotFocus(object sender, RoutedEventArgs e)
     {
         _desktopWindowManager.BringToFront();
-        TxtTitlePlaceholder.Visibility = Visibility.Collapsed;
+        if (TxtTitlePlaceholder != null) TxtTitlePlaceholder.Visibility = Visibility.Collapsed;
     }
 
     private void TxtTitle_LostFocus(object sender, RoutedEventArgs e)
     {
         if (string.IsNullOrEmpty(TxtTitle.Text))
         {
-            TxtTitlePlaceholder.Visibility = Visibility.Visible;
+            if (TxtTitlePlaceholder != null) TxtTitlePlaceholder.Visibility = Visibility.Visible;
         }
         SaveNoteState();
     }
@@ -984,14 +990,14 @@ private readonly NoteStorageService _storageService;
     private void TxtContent_GotFocus(object sender, RoutedEventArgs e)
     {
         _desktopWindowManager.BringToFront();
-        TxtContentPlaceholder.Visibility = Visibility.Collapsed;
+        if (TxtContentPlaceholder != null) TxtContentPlaceholder.Visibility = Visibility.Collapsed;
     }
 
     private void TxtContent_LostFocus(object sender, RoutedEventArgs e)
     {
         if (string.IsNullOrEmpty(TxtContent.Text))
         {
-            TxtContentPlaceholder.Visibility = Visibility.Visible;
+            if (TxtContentPlaceholder != null) TxtContentPlaceholder.Visibility = Visibility.Visible;
         }
         SaveNoteState();
     }
@@ -1114,7 +1120,7 @@ private readonly NoteStorageService _storageService;
 
     private void BtnColorPicker_Click(object sender, RoutedEventArgs e)
     {
-        ColorPopup.IsOpen = !ColorPopup.IsOpen;
+        if (ColorPopup != null) ColorPopup.IsOpen = !ColorPopup.IsOpen;
     }
 
     private void ColorPopup_Opened(object? sender, EventArgs e)
@@ -1138,28 +1144,28 @@ private readonly NoteStorageService _storageService;
         {
             if (SliderActiveOpacity != null)
             {
-                SliderActiveOpacity.Value = Math.Round(_userConfiguredOpacity * 100);
+                if (SliderActiveOpacity != null) SliderActiveOpacity.Value = Math.Round(_userConfiguredOpacity * 100);
             }
             if (TxtActiveOpacityPercent != null)
             {
-                TxtActiveOpacityPercent.Text = $"{(int)Math.Round(_userConfiguredOpacity * 100)}%";
+                if (TxtActiveOpacityPercent != null) TxtActiveOpacityPercent.Text = $"{(int)Math.Round(_userConfiguredOpacity * 100)}%";
             }
             if (ChkUnfocusedDim != null)
             {
-                ChkUnfocusedDim.IsChecked = _settingsService.Settings.EnableUnfocusedTransparency;
+                if (ChkUnfocusedDim != null) ChkUnfocusedDim.IsChecked = _settingsService.Settings.EnableUnfocusedTransparency;
             }
             if (SliderUnfocusedOpacity != null)
             {
-                SliderUnfocusedOpacity.Value = Math.Round(_settingsService.Settings.UnfocusedOpacity * 100);
-                SliderUnfocusedOpacity.IsEnabled = _settingsService.Settings.EnableUnfocusedTransparency;
+                if (SliderUnfocusedOpacity != null) SliderUnfocusedOpacity.Value = Math.Round(_settingsService.Settings.UnfocusedOpacity * 100);
+                if (SliderUnfocusedOpacity != null) SliderUnfocusedOpacity.IsEnabled = _settingsService.Settings.EnableUnfocusedTransparency;
             }
             if (TxtUnfocusedOpacityPercent != null)
             {
-                TxtUnfocusedOpacityPercent.Text = $"{(int)Math.Round(_settingsService.Settings.UnfocusedOpacity * 100)}%";
+                if (TxtUnfocusedOpacityPercent != null) TxtUnfocusedOpacityPercent.Text = $"{(int)Math.Round(_settingsService.Settings.UnfocusedOpacity * 100)}%";
             }
             if (UnfocusedOpacityControlsPanel != null)
             {
-                UnfocusedOpacityControlsPanel.Opacity = _settingsService.Settings.EnableUnfocusedTransparency ? 1.0 : 0.4;
+                if (UnfocusedOpacityControlsPanel != null) UnfocusedOpacityControlsPanel.Opacity = _settingsService.Settings.EnableUnfocusedTransparency ? 1.0 : 0.4;
             }
         }
         finally
@@ -1180,7 +1186,7 @@ private readonly NoteStorageService _storageService;
         if (sender is Button btn && btn.Tag is string colorKey)
         {
             ApplyTheme(colorKey);
-            ColorPopup.IsOpen = false;
+            if (ColorPopup != null) ColorPopup.IsOpen = false;
             RequestSave(isTyping: false);
         }
     }
@@ -1294,7 +1300,7 @@ private readonly NoteStorageService _storageService;
 
         if (CustomColorPreview != null)
         {
-            CustomColorPreview.Background = new SolidColorBrush(color);
+            if (CustomColorPreview != null) CustomColorPreview.Background = new SolidColorBrush(color);
         }
     }
 
@@ -1308,7 +1314,7 @@ private readonly NoteStorageService _storageService;
             try
             {
                 var color = (Color)ColorConverter.ConvertFromString(hex);
-                CustomColorPreview.Background = new SolidColorBrush(color);
+                if (CustomColorPreview != null) CustomColorPreview.Background = new SolidColorBrush(color);
                 RgbToHsv(color, out _currentHue, out _currentSat, out _currentVal);
                 UpdateSatValDisplay();
                 UpdateHueDisplay();
@@ -1322,7 +1328,7 @@ private readonly NoteStorageService _storageService;
         string hex = TxtCustomHex.Text.Trim();
         if (!hex.StartsWith("#")) hex = "#" + hex;
         ApplyTheme(hex);
-        ColorPopup.IsOpen = false;
+        if (ColorPopup != null) ColorPopup.IsOpen = false;
         RequestSave(isTyping: false);
     }
 
@@ -1490,8 +1496,8 @@ private readonly NoteStorageService _storageService;
 
     private void SetFontSize(double size)
     {
-        TxtContent.FontSize = size;
-        TxtTitle.FontSize = size + 1;
+        if (TxtContent != null) TxtContent.FontSize = size;
+        if (TxtTitle != null) TxtTitle.FontSize = size + 1;
         RequestSave();
     }
 
@@ -1505,7 +1511,7 @@ private readonly NoteStorageService _storageService;
 
         if (TxtActiveOpacityPercent != null)
         {
-            TxtActiveOpacityPercent.Text = $"{(int)SliderActiveOpacity.Value}%";
+            if (TxtActiveOpacityPercent != null) TxtActiveOpacityPercent.Text = $"{(int)SliderActiveOpacity.Value}%";
         }
 
         ApplyFocusOpacity(IsActive);
@@ -1522,11 +1528,11 @@ private readonly NoteStorageService _storageService;
 
         if (UnfocusedOpacityControlsPanel != null)
         {
-            UnfocusedOpacityControlsPanel.Opacity = isEnabled ? 1.0 : 0.4;
+            if (UnfocusedOpacityControlsPanel != null) UnfocusedOpacityControlsPanel.Opacity = isEnabled ? 1.0 : 0.4;
         }
         if (SliderUnfocusedOpacity != null)
         {
-            SliderUnfocusedOpacity.IsEnabled = isEnabled;
+            if (SliderUnfocusedOpacity != null) SliderUnfocusedOpacity.IsEnabled = isEnabled;
         }
 
         App.Instance?.NotifyTransparencySettingsChanged();
@@ -1542,7 +1548,7 @@ private readonly NoteStorageService _storageService;
 
         if (TxtUnfocusedOpacityPercent != null)
         {
-            TxtUnfocusedOpacityPercent.Text = $"{(int)SliderUnfocusedOpacity.Value}%";
+            if (TxtUnfocusedOpacityPercent != null) TxtUnfocusedOpacityPercent.Text = $"{(int)SliderUnfocusedOpacity.Value}%";
         }
 
         App.Instance?.NotifyTransparencySettingsChanged();
@@ -1556,10 +1562,10 @@ private readonly NoteStorageService _storageService;
         if (SliderActiveOpacity != null && !_suppressTransparencyEvents)
         {
             _suppressTransparencyEvents = true;
-            SliderActiveOpacity.Value = Math.Round(_userConfiguredOpacity * 100);
+            if (SliderActiveOpacity != null) SliderActiveOpacity.Value = Math.Round(_userConfiguredOpacity * 100);
             if (TxtActiveOpacityPercent != null)
             {
-                TxtActiveOpacityPercent.Text = $"{(int)SliderActiveOpacity.Value}%";
+                if (TxtActiveOpacityPercent != null) TxtActiveOpacityPercent.Text = $"{(int)SliderActiveOpacity.Value}%";
             }
             _suppressTransparencyEvents = false;
         }
@@ -1745,21 +1751,21 @@ private readonly NoteStorageService _storageService;
     private void NewTaskContainer_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         _desktopWindowManager.BringToFront();
-        TxtNewTask.Focus();
+        if (TxtNewTask != null) TxtNewTask.Focus();
         e.Handled = true;
     }
 
     private void TxtNewTask_GotFocus(object sender, RoutedEventArgs e)
     {
         _desktopWindowManager.BringToFront();
-        TxtNewTaskPlaceholder.Visibility = Visibility.Collapsed;
+        if (TxtNewTaskPlaceholder != null) TxtNewTaskPlaceholder.Visibility = Visibility.Collapsed;
     }
 
     private void TxtNewTask_LostFocus(object sender, RoutedEventArgs e)
     {
         if (string.IsNullOrEmpty(TxtNewTask.Text))
         {
-            TxtNewTaskPlaceholder.Visibility = Visibility.Visible;
+            if (TxtNewTaskPlaceholder != null) TxtNewTaskPlaceholder.Visibility = Visibility.Visible;
         }
     }
 
@@ -1774,7 +1780,7 @@ private readonly NoteStorageService _storageService;
 
     private void TxtNewTask_TextChanged(object sender, TextChangedEventArgs e)
     {
-        TxtNewTaskPlaceholder.Visibility = string.IsNullOrEmpty(TxtNewTask.Text) ? Visibility.Visible : Visibility.Collapsed;
+        if (TxtNewTaskPlaceholder != null) TxtNewTaskPlaceholder.Visibility = string.IsNullOrEmpty(TxtNewTask.Text) ? Visibility.Visible : Visibility.Collapsed;
         if (!string.IsNullOrEmpty(TxtNewTask.Text))
         {
             ShowTypingIndicator();
@@ -1793,9 +1799,9 @@ private readonly NoteStorageService _storageService;
         {
             var item = new TodoCheckItem { Text = text, IsDone = false };
             _checklistItems.Add(item);
-            TxtNewTask.Text = "";
-            TxtNewTaskPlaceholder.Visibility = Visibility.Visible;
-            TxtNewTask.Focus();
+            if (TxtNewTask != null) TxtNewTask.Text = "";
+            if (TxtNewTaskPlaceholder != null) TxtNewTaskPlaceholder.Visibility = Visibility.Visible;
+            if (TxtNewTask != null) TxtNewTask.Focus();
             RequestSave(isTyping: false);
         }
     }
@@ -1823,21 +1829,21 @@ private readonly NoteStorageService _storageService;
     private void NewCopyItemContainer_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         _desktopWindowManager.BringToFront();
-        TxtNewCopyItem.Focus();
+        if (TxtNewCopyItem != null) TxtNewCopyItem.Focus();
         e.Handled = true;
     }
 
     private void TxtNewCopyItem_GotFocus(object sender, RoutedEventArgs e)
     {
         _desktopWindowManager.BringToFront();
-        TxtNewCopyItemPlaceholder.Visibility = Visibility.Collapsed;
+        if (TxtNewCopyItemPlaceholder != null) TxtNewCopyItemPlaceholder.Visibility = Visibility.Collapsed;
     }
 
     private void TxtNewCopyItem_LostFocus(object sender, RoutedEventArgs e)
     {
         if (string.IsNullOrEmpty(TxtNewCopyItem.Text))
         {
-            TxtNewCopyItemPlaceholder.Visibility = Visibility.Visible;
+            if (TxtNewCopyItemPlaceholder != null) TxtNewCopyItemPlaceholder.Visibility = Visibility.Visible;
         }
     }
 
@@ -1905,7 +1911,7 @@ private readonly NoteStorageService _storageService;
 
     private void TxtNewCopyItem_TextChanged(object sender, TextChangedEventArgs e)
     {
-        TxtNewCopyItemPlaceholder.Visibility = string.IsNullOrEmpty(TxtNewCopyItem.Text) ? Visibility.Visible : Visibility.Collapsed;
+        if (TxtNewCopyItemPlaceholder != null) TxtNewCopyItemPlaceholder.Visibility = string.IsNullOrEmpty(TxtNewCopyItem.Text) ? Visibility.Visible : Visibility.Collapsed;
         if (!string.IsNullOrEmpty(TxtNewCopyItem.Text))
         {
             ShowTypingIndicator();
@@ -1924,9 +1930,9 @@ private readonly NoteStorageService _storageService;
         {
             var item = new CopySnippetItem { Text = text };
             _copyItems.Add(item);
-            TxtNewCopyItem.Text = "";
-            TxtNewCopyItemPlaceholder.Visibility = Visibility.Visible;
-            TxtNewCopyItem.Focus();
+            if (TxtNewCopyItem != null) TxtNewCopyItem.Text = "";
+            if (TxtNewCopyItemPlaceholder != null) TxtNewCopyItemPlaceholder.Visibility = Visibility.Visible;
+            if (TxtNewCopyItem != null) TxtNewCopyItem.Focus();
             RequestSave(isTyping: false);
         }
     }

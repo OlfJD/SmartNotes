@@ -17,7 +17,10 @@ namespace SmartNotes;
 public partial class App : Application
 {
     private const string AppMutexName = "SmartNotes_SingleInstance_Mutex_987654";
+    private const string AppEventName = "SmartNotes_SingleInstance_Event_987654";
     private Mutex? _appMutex;
+    private EventWaitHandle? _activateEvent;
+    private CancellationTokenSource? _eventCts;
 
     private SettingsService _settingsService = null!;
     private NoteStorageService _storageService = null!;
@@ -75,23 +78,92 @@ public partial class App : Application
             catch { }
         };
 
+        bool isNewInstance = false;
         try
         {
-            _appMutex = new Mutex(true, AppMutexName, out bool isNewInstance);
-            _ownsMutex = isNewInstance;
-            if (!_ownsMutex)
+            _appMutex = new Mutex(true, AppMutexName, out isNewInstance);
+        }
+        catch (AbandonedMutexException)
+        {
+            // The previous instance terminated or crashed without releasing the mutex
+            isNewInstance = true;
+        }
+        catch
+        {
+            isNewInstance = false;
+        }
+
+        if (!isNewInstance)
+        {
+            try
             {
-                MessageBox.Show("SmartNotes is already running in your system tray / desktop!", "SmartNotes", MessageBoxButton.OK, MessageBoxImage.Information);
-                _appMutex.Dispose();
+                var currentProc = System.Diagnostics.Process.GetCurrentProcess();
+                var runningOtherProcs = System.Diagnostics.Process.GetProcessesByName(currentProc.ProcessName)
+                    .Where(p => p.Id != currentProc.Id)
+                    .ToList();
+
+                if (runningOtherProcs.Count > 0)
+                {
+                    // Existing instance is running in background/tray: signal it to bring notes to foreground
+                    try
+                    {
+                        using var signalHandle = EventWaitHandle.OpenExisting(AppEventName);
+                        signalHandle.Set();
+                    }
+                    catch { }
+
+                    _appMutex?.Dispose();
+                    _appMutex = null;
+                    Shutdown();
+                    return;
+                }
+                else
+                {
+                    // No other SmartNotes process is actually running (stale handle from crash)
+                    isNewInstance = true;
+                }
+            }
+            catch
+            {
+                _appMutex?.Dispose();
                 _appMutex = null;
                 Shutdown();
                 return;
             }
         }
-        catch
+
+        _ownsMutex = isNewInstance;
+
+        // Initialize activation listener on background thread
+        try
         {
-            _ownsMutex = false;
+            _activateEvent = new EventWaitHandle(false, EventResetMode.AutoReset, AppEventName);
+            _eventCts = new CancellationTokenSource();
+            var token = _eventCts.Token;
+
+            Task.Factory.StartNew(() =>
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        if (_activateEvent.WaitOne(800))
+                        {
+                            if (token.IsCancellationRequested) break;
+                            Dispatcher.Invoke(() =>
+                            {
+                                BringAllNotesToFront();
+                            });
+                        }
+                    }
+                    catch
+                    {
+                        break;
+                    }
+                }
+            }, TaskCreationOptions.LongRunning);
         }
+        catch { }
 
         base.OnStartup(e);
 
@@ -297,6 +369,13 @@ public partial class App : Application
 
     public void BringAllNotesToFront()
     {
+        if (_settingsService.Settings.HideAllNotes)
+        {
+            _settingsService.Settings.HideAllNotes = false;
+            _settingsService.Save();
+            _trayManager?.RebuildContextMenu();
+        }
+
         var activeNotes = _storageService.Notes.Where(n => !n.IsDeleted).ToList();
         if (activeNotes.Count == 0)
         {
@@ -326,7 +405,7 @@ public partial class App : Application
             win.Show();
             win.Activate();
             win.DesktopWindowManager.BringToFront();
-            win.TxtContent.Focus();
+            win.TxtContent?.Focus();
         }
         else
         {
@@ -466,6 +545,8 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        try { _eventCts?.Cancel(); } catch { }
+        try { _activateEvent?.Dispose(); } catch { }
         try { _trayManager?.Dispose(); } catch { }
         try { _hotKeyManager?.Dispose(); } catch { }
         try
