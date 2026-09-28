@@ -56,7 +56,7 @@ To support full design-altering themes (not just colors, but layout, borders, ba
 - [x] 2. **Decouple StickyNoteWindow UI:** The `StickyNoteWindow.xaml` layout is currently hardcoded with inline styles and tight code-behind click events. 
 - [x] 3. **Migrate to ControlTemplates:** Extract the entire UI layout into a `<ControlTemplate TargetType="Window">`. 
 - [x] 4. **Wire Code-Behind Events via Template Parts:** Use `OnApplyTemplate()` in C# to find elements by name (`GetTemplateChild("PART_BtnNewNote")`) instead of using direct XAML `Click=` events.
-- [ ] 5. **Create Theme Dictionaries:** Create `CyberpunkTheme.xaml` and `EldenRingTheme.xaml`, each providing their own massive `<ControlTemplate>` that redesigns the window shape (e.g., clipped corners), fonts, and images.
+- [x] 5. **Create Theme Dictionaries:** Create `CyberpunkTheme.xaml` and `EldenRingTheme.xaml`, each providing their own massive `<ControlTemplate>` that redesigns the window shape (e.g., clipped corners), fonts, and images.
 - [x] 6. **Dynamic Swapping:** Build a `ThemeManager` to hot-swap the active `ResourceDictionary` at runtime to change the "whole design".
 
 ---
