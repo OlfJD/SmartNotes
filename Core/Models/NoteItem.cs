@@ -29,6 +29,7 @@ public class NoteItem
     public double Height { get; set; } = 360;
 
     // Appearance & Pinning
+    public string ThemeKey { get; set; } = "Default";
     public string ColorKey { get; set; } = "Amber";
     public NotePinMode PinMode { get; set; } = NotePinMode.DesktopStuck;
     public bool IsLocked { get; set; } = false;
@@ -74,6 +75,7 @@ public class NoteItem
             Y = Y + 30,
             Width = Width,
             Height = Height,
+            ThemeKey = ThemeKey,
             ColorKey = ColorKey,
             PinMode = PinMode,
             IsLocked = false,

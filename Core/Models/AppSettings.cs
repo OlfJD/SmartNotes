@@ -5,6 +5,7 @@ namespace SmartNotes.Core.Models;
 public class AppSettings
 {
     public bool LaunchOnStartup { get; set; } = true;
+    public string DefaultThemeKey { get; set; } = "Default";
     public string DefaultColorKey { get; set; } = "Amber";
     public NotePinMode DefaultPinMode { get; set; } = NotePinMode.DesktopStuck;
     public double DefaultFontSize { get; set; } = 16.0;
