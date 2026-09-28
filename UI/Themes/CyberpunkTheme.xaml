@@ -2,429 +2,184 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:controls="clr-namespace:SmartNotes.UI.Controls">
     
+    <!-- Neon Yellow/Green Futuristic Brushes -->
+    <SolidColorBrush x:Key="NeonYellow" Color="#DFFF00"/>
+    <SolidColorBrush x:Key="DarkBg" Color="#0B0D05"/>
+    <SolidColorBrush x:Key="PanelBg" Color="#161A0A"/>
+    <SolidColorBrush x:Key="MutedYellow" Color="#44DFFF00"/>
+    <SolidColorBrush x:Key="DimYellow" Color="#22DFFF00"/>
+    
+    <!-- Grid Background -->
+    <DrawingBrush x:Key="GridBg" Viewport="0,0,40,40" ViewportUnits="Absolute" TileMode="Tile">
+        <DrawingBrush.Drawing>
+            <GeometryDrawing>
+                <GeometryDrawing.Geometry>
+                    <GeometryGroup>
+                        <LineGeometry StartPoint="0,0" EndPoint="40,0"/>
+                        <LineGeometry StartPoint="0,0" EndPoint="0,40"/>
+                    </GeometryGroup>
+                </GeometryDrawing.Geometry>
+                <GeometryDrawing.Pen>
+                    <Pen Brush="{StaticResource DimYellow}" Thickness="1"/>
+                </GeometryDrawing.Pen>
+            </GeometryDrawing>
+        </DrawingBrush.Drawing>
+    </DrawingBrush>
+
+    <!-- Caution Stripes -->
+    <DrawingBrush x:Key="CautionStripes" Viewport="0,0,20,20" ViewportUnits="Absolute" TileMode="Tile">
+        <DrawingBrush.Transform>
+            <RotateTransform Angle="45" />
+        </DrawingBrush.Transform>
+        <DrawingBrush.Drawing>
+            <GeometryDrawing>
+                <GeometryDrawing.Geometry>
+                    <RectangleGeometry Rect="0,0,10,20"/>
+                </GeometryDrawing.Geometry>
+                <GeometryDrawing.Brush>
+                    <SolidColorBrush Color="#DFFF00"/>
+                </GeometryDrawing.Brush>
+            </GeometryDrawing>
+        </DrawingBrush.Drawing>
+    </DrawingBrush>
+
+    <!-- Icon Button Style for Cyberpunk -->
+    <Style x:Key="CyberIconButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}" CornerRadius="0">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="{StaticResource MutedYellow}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <ControlTemplate x:Key="StickyNoteTemplate" TargetType="Window">
-<Grid>
-        <!-- True Single-Border Rounded Card (Thick 5px vector border, zero black outer pixels, zero inner seams) -->
-        <Border x:Name="PART_NoteCardBorder" CornerRadius="0" Background="#080808" BorderBrush="#00F0FF" BorderThickness="2,2,8,8">
-        <Grid Margin="-1">
-            <Grid.RowDefinitions>
-                <!-- 1. Header & Actions Bar -->
-                <RowDefinition Height="44"/>
-                <!-- 2. Title Input -->
-                <RowDefinition Height="Auto"/>
-                <!-- 3. Note Content Body (Text, Checklist, or Copy Compartments) -->
-                <RowDefinition Height="*"/>
-                <!-- 4. Footer Info & Resize Grip -->
-                <RowDefinition Height="28"/>
-            </Grid.RowDefinitions>
+        <Grid>
+            <!-- Background with Grid -->
+            <Border Background="{StaticResource DarkBg}" BorderBrush="{StaticResource NeonYellow}" BorderThickness="3">
+                <Border Background="{StaticResource GridBg}" Margin="2">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="10"/>
+                        </Grid.RowDefinitions>
 
-            <!-- 1. TOP HEADER (Clean Drag bar + Action Buttons with Separated Compartments) -->
-            <Border x:Name="PART_HeaderBorder" Grid.Row="0" Background="#FCEE0A" BorderBrush="#00F0FF" BorderThickness="0,0,0,5" CornerRadius="0" >
-                <Grid Margin="8,0,8,0">
-                    <Grid.ColumnDefinitions>
-                        <!-- Left: Pin Status & New Note -->
-                        <ColumnDefinition Width="Auto"/>
-                        <!-- Center Spacer (Clean Drag Area) -->
-                        <ColumnDefinition Width="*"/>
-                        <!-- Right: Modes, Tools, More, Close -->
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- Left Action Buttons (New Note & Pin Mode Compartment) -->
-                    <Border x:Name="PART_LeftCompartmentBorder" Background="#111" BorderBrush="#00F0FF" BorderThickness="2" CornerRadius="0" Padding="1" VerticalAlignment="Center">
-                        <StackPanel Orientation="Horizontal">
-                            <!-- New Note Button -->
-                            <Button x:Name="PART_Unnamed_Button_1" Style="{StaticResource IconButton}" Width="28" Height="28"  ToolTip="Create new sticky note (+)">
-                                <controls:LucideIcon IconKey="plus" Size="15" StrokeThickness="2.8" Foreground="#00F0FF" x:Name="PART_IconPlus"/>
-                            </Button>
-
-                            <!-- Pin / Stick Mode Toggle Button -->
-                            <Button x:Name="PART_BtnPinMode" Style="{StaticResource IconButton}" Width="28" Height="28"  ToolTip="Toggle Desktop Stuck (Behind Apps) / Always on Top" Margin="1,0,0,0">
-                                <controls:LucideIcon x:Name="PART_IconPin" IconKey="pin" Size="15" StrokeThickness="2.6" Foreground="#7888A4"/>
-                            </Button>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Right Action Buttons -->
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                        <!-- Mode Switcher Compartment (Text, Checklist, Copy Compartments) -->
-                        <Border x:Name="PART_ModeCompartmentBorder" Background="#111" BorderBrush="#00F0FF" BorderThickness="2" CornerRadius="0" Margin="0,0,5,0" Padding="1">
-                            <StackPanel Orientation="Horizontal">
-                                <!-- Text Mode Button -->
-                                <Button x:Name="PART_BtnTextMode" Style="{StaticResource IconButton}" Width="28" Height="28"  ToolTip="Switch to Text Note Mode">
-                                    <controls:LucideIcon x:Name="PART_IconTextMode" IconKey="file-text" Size="15" StrokeThickness="2.6" Foreground="#00F0FF"/>
-                                </Button>
-
-                                <!-- Checklist Mode Button -->
-                                <Button x:Name="PART_BtnChecklistMode" Style="{StaticResource IconButton}" Width="28" Height="28"  ToolTip="Switch to Checklist Mode" Margin="1,0,0,0">
-                                    <controls:LucideIcon x:Name="PART_IconChecklistMode" IconKey="list-todo" Size="15" StrokeThickness="2.6" Foreground="#7888A4"/>
-                                </Button>
-
-                                <!-- Copy Compartments Mode Button -->
-                                <Button x:Name="PART_BtnCopyMode" Style="{StaticResource IconButton}" Width="28" Height="28"  ToolTip="Switch to Copy Compartments Mode (Quick-Copy rows)" Margin="1,0,0,0">
-                                    <controls:LucideIcon x:Name="PART_IconCopyMode" IconKey="copy" Size="15" StrokeThickness="2.6" Foreground="#7888A4"/>
-                                </Button>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Note Tools Compartment (Color, Lock) -->
-                        <Border x:Name="PART_ToolsCompartmentBorder" Background="#111" BorderBrush="#00F0FF" BorderThickness="2" CornerRadius="0" Margin="0,0,5,0" Padding="1">
-                            <StackPanel Orientation="Horizontal">
-                                <!-- Color & Transparency Picker Button with Popup -->
-                                <Button x:Name="PART_BtnColorPicker" Style="{StaticResource IconButton}" Width="28" Height="28"  ToolTip="Colors, Themes &amp; Transparency">
-                                    <controls:LucideIcon IconKey="palette" Size="15" StrokeThickness="2.6" Foreground="#7888A4"/>
-                                </Button>
-
-                                <!-- Lock Note Button -->
-                                <Button x:Name="PART_BtnLock" Style="{StaticResource IconButton}" Width="28" Height="28"  ToolTip="Lock note position &amp; text" Margin="1,0,0,0">
-                                    <controls:LucideIcon x:Name="PART_IconLock" IconKey="unlock" Size="15" StrokeThickness="2.6" Foreground="#7888A4"/>
-                                </Button>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Window & Overflow Controls (More, Close) -->
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <!-- More Menu Button -->
-                            <Button x:Name="PART_BtnMore" Style="{StaticResource IconButton}" Width="28" Height="28"  ToolTip="More options..." Margin="0,0,2,0">
-                                <controls:LucideIcon IconKey="more-horizontal" Size="15" StrokeThickness="2.6" Foreground="#7888A4"/>
-                            </Button>
-
-                            <!-- Close / Delete Note Button -->
-                            <Button x:Name="PART_Unnamed_Button_9" Style="{StaticResource IconButton}" Width="28" Height="28"  ToolTip="Delete note">
-                                <controls:LucideIcon IconKey="x" Size="15" StrokeThickness="2.8" Foreground="#EF4444"/>
-                            </Button>
-                        </StackPanel>
-                    </StackPanel>
-                </Grid>
-            </Border>
-
-            <!-- 2. TITLE BAR (Editable Note Title) -->
-            <Border Grid.Row="1" Background="Transparent" Padding="14,8,14,4">
-                <Grid>
-                    <TextBox x:Name="PART_TxtTitle" FontFamily="Consolas, Courier New, monospace"
-                             Background="Transparent"
-                             BorderThickness="0"
-                             Foreground="#00F0FF"
-                             FontSize="16.5"
-                             FontWeight="Bold"
-                             CaretBrush="#FF003C"
-                             Cursor="IBeam"
-                             Padding="0"
-                             
-                             
-                             />
-                    <TextBlock x:Name="PART_TxtTitlePlaceholder"
-                               Text="Title (optional)..."
-                               Foreground="#7888A4"
-                               FontSize="16.5"
-                               FontWeight="SemiBold"
-                               IsHitTestVisible="False"
-                               VerticalAlignment="Center"
-                               Visibility="Visible"/>
-                </Grid>
-            </Border>
-
-            <!-- 3. NOTE CONTENT BODY -->
-            <Grid Grid.Row="2" Margin="14,4,14,4">
-                <!-- MODE A: Multiline Plain/Markdown Text Editor -->
-                <Grid x:Name="PART_TextModeContainer" Visibility="Visible">
-                    <TextBox x:Name="PART_TxtContent"
-                             Background="Transparent"
-                             BorderThickness="0"
-                             Foreground="#00F0FF"
-                             FontSize="16"
-                             FontFamily="Consolas, Courier New, monospace" FontWeight="Bold"
-                             AcceptsReturn="True"
-                             AcceptsTab="True"
-                             TextWrapping="Wrap"
-                             VerticalScrollBarVisibility="Auto"
-                             CaretBrush="#FF003C"
-                             Cursor="IBeam"
-                             Padding="2"
-                             
-                             
-                             />
-                    <TextBlock x:Name="PART_TxtContentPlaceholder"
-                               Text="Type your note here..."
-                               Foreground="#64748B"
-                               FontSize="16"
-                               FontStyle="Italic"
-                               IsHitTestVisible="False"
-                               Margin="2,2,0,0"
-                               Visibility="Visible"/>
-                </Grid>
-
-                <!-- MODE B: Interactive Checklist Container -->
-                <Grid x:Name="PART_ChecklistModeContainer" Visibility="Collapsed">
-                    <Grid.RowDefinitions>
-                        <!-- Checklist Items List -->
-                        <RowDefinition Height="*"/>
-                        <!-- Add New Task Input -->
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- Scrollable Tasks -->
-                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,0,8">
-                        <ItemsControl x:Name="PART_ChecklistItemsControl" ItemTemplate="{DynamicResource ChecklistItemTemplate}"/>
-                    </ScrollViewer>
-
-                    <!-- Add Item Row (2.5px thick border) -->
-                    <Border x:Name="PART_NewTaskContainer" Grid.Row="1" Background="#161D2E" CornerRadius="0" BorderBrush="#303E5C" BorderThickness="2.5" Padding="8,4" Cursor="IBeam" >
-                        <Grid>
+                        <!-- Futuristic Header -->
+                        <Grid Grid.Row="0" Margin="10,10,10,0">
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="PART_TxtNewTask" Background="Transparent" BorderThickness="0" Foreground="#00F0FF" FontSize="15" CaretBrush="#FF003C" Cursor="IBeam" VerticalAlignment="Stretch" VerticalContentAlignment="Center"    />
-                            <TextBlock x:Name="PART_TxtNewTaskPlaceholder" Text="Add new task (Press Enter)..." Foreground="#64748B" FontSize="14.5" IsHitTestVisible="False" VerticalAlignment="Center" Margin="2,0,0,0"/>
-                            <Button x:Name="PART_Unnamed_Button_14" Grid.Column="1" Style="{StaticResource IconButton}" Width="26" Height="26"  ToolTip="Add task" Cursor="Hand">
-                                <controls:LucideIcon IconKey="plus" Size="15" StrokeThickness="2.8" Foreground="{StaticResource NeonEmeraldGlowBrush}"/>
-                            </Button>
+
+                            <!-- Left controls -->
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="PART_BtnNewNote" Style="{StaticResource CyberIconButton}" Width="30" Height="30">
+                                    <controls:LucideIcon x:Name="PART_IconPlus" IconKey="plus" Size="16" Foreground="{StaticResource NeonYellow}"/>
+                                </Button>
+                                <Button x:Name="PART_BtnPinMode" Style="{StaticResource CyberIconButton}" Width="30" Height="30" Margin="5,0,0,0">
+                                    <controls:LucideIcon x:Name="PART_IconPin" IconKey="pin" Size="16" Foreground="{StaticResource NeonYellow}"/>
+                                </Button>
+                            </StackPanel>
+
+                            <!-- Center Decorative Bar -->
+                            <Border Grid.Column="1" Height="2" Background="{StaticResource NeonYellow}" Margin="15,0,15,0" VerticalAlignment="Center"/>
+
+                            <!-- Right Controls -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                <Button x:Name="PART_BtnTextMode" Style="{StaticResource CyberIconButton}" Width="30" Height="30">
+                                    <controls:LucideIcon x:Name="PART_IconTextMode" IconKey="file-text" Size="16" Foreground="{StaticResource NeonYellow}"/>
+                                </Button>
+                                <Button x:Name="PART_BtnChecklistMode" Style="{StaticResource CyberIconButton}" Width="30" Height="30">
+                                    <controls:LucideIcon x:Name="PART_IconChecklistMode" IconKey="list-todo" Size="16" Foreground="{StaticResource NeonYellow}"/>
+                                </Button>
+                                <Button x:Name="PART_BtnCopyMode" Style="{StaticResource CyberIconButton}" Width="30" Height="30">
+                                    <controls:LucideIcon x:Name="PART_IconCopyMode" IconKey="copy" Size="16" Foreground="{StaticResource NeonYellow}"/>
+                                </Button>
+                                
+                                <Border Width="2" Background="{StaticResource NeonYellow}" Margin="5,5,5,5"/>
+
+                                <Button x:Name="PART_BtnColorPicker" Style="{StaticResource CyberIconButton}" Width="30" Height="30">
+                                    <controls:LucideIcon IconKey="palette" Size="16" Foreground="{StaticResource NeonYellow}"/>
+                                </Button>
+                                <Button x:Name="PART_BtnLock" Style="{StaticResource CyberIconButton}" Width="30" Height="30">
+                                    <controls:LucideIcon x:Name="PART_IconLock" IconKey="unlock" Size="16" Foreground="{StaticResource NeonYellow}"/>
+                                </Button>
+                                <Button x:Name="PART_BtnMore" Style="{StaticResource CyberIconButton}" Width="30" Height="30">
+                                    <controls:LucideIcon IconKey="more-horizontal" Size="16" Foreground="{StaticResource NeonYellow}"/>
+                                </Button>
+                                <Button x:Name="PART_BtnClose" Style="{StaticResource CyberIconButton}" Width="30" Height="30">
+                                    <controls:LucideIcon IconKey="x" Size="18" StrokeThickness="3" Foreground="Red"/>
+                                </Button>
+                            </StackPanel>
                         </Grid>
-                    </Border>
-                </Grid>
 
-                <!-- MODE C: Interactive Copy Compartments Container -->
-                <Grid x:Name="PART_CopyModeContainer" Visibility="Collapsed">
-                    <Grid.RowDefinitions>
-                        <!-- Copy Items List -->
-                        <RowDefinition Height="*"/>
-                        <!-- Add New Copy Item Input -->
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- Scrollable Copy Items -->
-                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,0,8">
-                        <ItemsControl x:Name="PART_CopyItemsControl" ItemTemplate="{DynamicResource CopySnippetItemTemplate}"/>
-                    </ScrollViewer>
-
-                    <!-- Add Copy Item Row -->
-                    <Border x:Name="PART_NewCopyItemContainer" Grid.Row="1" Background="#161D2E" CornerRadius="0" BorderBrush="#303E5C" BorderThickness="2.5" Padding="8,4" Cursor="IBeam" >
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBox x:Name="PART_TxtNewCopyItem" Background="Transparent" BorderThickness="0" Foreground="#00F0FF" FontSize="15" CaretBrush="#FF003C" Cursor="IBeam" VerticalAlignment="Stretch" VerticalContentAlignment="Center"    />
-                            <TextBlock x:Name="PART_TxtNewCopyItemPlaceholder" Text="Add new copy item (Press Enter)..." Foreground="#64748B" FontSize="14.5" IsHitTestVisible="False" VerticalAlignment="Center" Margin="2,0,0,0"/>
-                            <Button x:Name="PART_Unnamed_Button_17" Grid.Column="1" Style="{StaticResource IconButton}" Width="26" Height="26"  ToolTip="Add copy item" Cursor="Hand">
-                                <controls:LucideIcon IconKey="plus" Size="15" StrokeThickness="2.8" Foreground="{StaticResource NeonCyanBrush}"/>
-                            </Button>
+                        <!-- Title -->
+                        <Grid Grid.Row="1" Margin="10,10,10,0">
+                            <TextBox x:Name="PART_TxtTitle" Background="Transparent" BorderThickness="0" Foreground="{StaticResource NeonYellow}" FontSize="18" FontFamily="Consolas, Courier New, monospace" FontWeight="Bold" CaretBrush="{StaticResource NeonYellow}"/>
+                            <TextBlock x:Name="PART_TxtTitlePlaceholder" Text="TITLE_INPUT..." Foreground="{StaticResource MutedYellow}" FontSize="18" FontFamily="Consolas, Courier New, monospace" FontWeight="Bold" IsHitTestVisible="False"/>
                         </Grid>
-                    </Border>
-                </Grid>
-            </Grid>
 
-            <!-- 4. BOTTOM FOOTER (Modified Time, Typing Indicator, Lock Badge) -->
-            <Border Grid.Row="3" Background="Transparent" Padding="14,0,10,6" VerticalAlignment="Bottom">
-                <Grid>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock x:Name="PART_TxtPinIndicator" Text="📌 Stuck to Desktop" FontSize="12" FontWeight="SemiBold" Foreground="#7888A4" Margin="0,0,12,0"/>
-                        
-                        <!-- Default Modified Timestamp -->
-                        <TextBlock x:Name="PART_TxtModifiedTime" Text="Just now" FontSize="12" Foreground="#64748B" VerticalAlignment="Center"/>
+                        <!-- Body Containers -->
+                        <Border Grid.Row="2" Margin="10,10,10,10" Background="{StaticResource PanelBg}" BorderBrush="{StaticResource NeonYellow}" BorderThickness="1">
+                            <Grid Margin="10">
+                                <!-- Text Mode -->
+                                <Grid x:Name="PART_TextModeContainer" Visibility="Visible">
+                                    <TextBox x:Name="PART_TxtContent" Background="Transparent" BorderThickness="0" Foreground="{StaticResource NeonYellow}" FontSize="14" FontFamily="Consolas, Courier New, monospace" AcceptsReturn="True" TextWrapping="Wrap" CaretBrush="{StaticResource NeonYellow}"/>
+                                    <TextBlock x:Name="PART_TxtContentPlaceholder" Text="> AWAITING INPUT..." Foreground="{StaticResource MutedYellow}" FontSize="14" FontFamily="Consolas, Courier New, monospace" IsHitTestVisible="False"/>
+                                </Grid>
 
-                        <!-- Live Typing & Save Status Indicator -->
-                        <StackPanel x:Name="PART_TypingIndicatorContainer" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
-                            <controls:LucideIcon x:Name="PART_IconTypingStatus" IconKey="pen-line" Size="12" StrokeThickness="2.4" Foreground="#00F0FF" Margin="0,0,4,0" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="PART_TxtTypingStatus" Text="Typing..." FontSize="12" FontWeight="SemiBold" Foreground="#00F0FF" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </StackPanel>
-
-                    <!-- Lock Badge if locked -->
-                    <StackPanel x:Name="PART_LockBadge" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,18,0" Visibility="Collapsed">
-                        <controls:LucideIcon IconKey="lock" Size="13" StrokeThickness="2.4" Foreground="#00F0FF" Margin="0,0,4,0"/>
-                        <TextBlock Text="LOCKED" FontSize="11.5" FontWeight="Bold" Foreground="#00F0FF"/>
-                    </StackPanel>
-                </Grid>
-            </Border>
-
-            <!-- COLOR PALETTE POPUP (Obsidian Theme with Classic 2D Drawing-App Color Picker) -->
-            <Popup x:Name="PART_ColorPopup" StaysOpen="False" AllowsTransparency="True" PlacementTarget="{Binding ElementName=BtnColorPicker}" Placement="Bottom" PopupAnimation="Fade" >
-                <Border Background="#101522" BorderBrush="#00F0FF" BorderThickness="2.5" CornerRadius="0" Padding="12" Margin="0,4,0,0">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="20" ShadowDepth="6" Opacity="0.7" Color="#000000"/>
-                    </Border.Effect>
-                    <StackPanel Width="220">
-                        <!-- Top Header: Title & Quick Presets -->
-                        <TextBlock Text="Quick Neon Themes" FontSize="11" FontWeight="Bold" Foreground="#8898B4" Margin="2,0,0,6"/>
-
-                        <!-- 8 Presets in a clean 4x2 UniformGrid with ZERO dead space -->
-                        <UniformGrid Columns="4" Margin="0,0,0,10">
-                            <Button x:Name="PART_Unnamed_Button_19" Style="{StaticResource IconButton}" Margin="2" Tag="Amber"  ToolTip="Radiant Amber">
-                                <Border Width="26" Height="26" CornerRadius="0" Background="#F59E0B" BorderBrush="#FDE68A" BorderThickness="2"/>
-                            </Button>
-                            <Button x:Name="PART_Unnamed_Button_20" Style="{StaticResource IconButton}" Margin="2" Tag="Emerald"  ToolTip="Neon Emerald">
-                                <Border Width="26" Height="26" CornerRadius="0" Background="#10B981" BorderBrush="#A7F3D0" BorderThickness="2"/>
-                            </Button>
-                            <Button x:Name="PART_Unnamed_Button_21" Style="{StaticResource IconButton}" Margin="2" Tag="Violet"  ToolTip="Cyber Violet">
-                                <Border Width="26" Height="26" CornerRadius="0" Background="#8B5CF6" BorderBrush="#DDD6FE" BorderThickness="2"/>
-                            </Button>
-                            <Button x:Name="PART_Unnamed_Button_22" Style="{StaticResource IconButton}" Margin="2" Tag="Cyan"  ToolTip="Electric Cyan">
-                                <Border Width="26" Height="26" CornerRadius="0" Background="#06B6D4" BorderBrush="#A5F3FC" BorderThickness="2"/>
-                            </Button>
-                            <Button x:Name="PART_Unnamed_Button_23" Style="{StaticResource IconButton}" Margin="2" Tag="Rose"  ToolTip="Coral Rose">
-                                <Border Width="26" Height="26" CornerRadius="0" Background="#F43F5E" BorderBrush="#FECDD3" BorderThickness="2"/>
-                            </Button>
-                            <Button x:Name="PART_Unnamed_Button_24" Style="{StaticResource IconButton}" Margin="2" Tag="Obsidian"  ToolTip="Stealth Obsidian">
-                                <Border Width="26" Height="26" CornerRadius="0" Background="#3B82F6" BorderBrush="#93C5FD" BorderThickness="2"/>
-                            </Button>
-                            <Button x:Name="PART_Unnamed_Button_25" Style="{StaticResource IconButton}" Margin="2" Tag="Gold"  ToolTip="Classic Sticky Gold">
-                                <Border Width="26" Height="26" CornerRadius="0" Background="#EAB308" BorderBrush="#FEF08A" BorderThickness="2"/>
-                            </Button>
-                            <Button x:Name="PART_Unnamed_Button_26" Style="{StaticResource IconButton}" Margin="2" Tag="Mint"  ToolTip="Fresh Mint">
-                                <Border Width="26" Height="26" CornerRadius="0" Background="#14B8A6" BorderBrush="#99F6E4" BorderThickness="2"/>
-                            </Button>
-                        </UniformGrid>
-
-                        <Separator Background="#222D42" Margin="0,0,0,10"/>
-
-                        <!-- Classic 2D Saturation / Value Gradient Canvas -->
-                        <TextBlock Text="Custom Palette Canvas" FontSize="11" FontWeight="Bold" Foreground="#8898B4" Margin="2,0,0,6"/>
-
-                        <Border Width="220" Height="120" CornerRadius="0" ClipToBounds="True" BorderBrush="#2C3B58" BorderThickness="1.5" Margin="0,0,0,8" Cursor="Cross">
-                            <Grid x:Name="PART_SatValPickerGrid" Background="Transparent"   >
-                                <!-- Base pure hue rectangle -->
-                                <Rectangle x:Name="PART_HueBaseRect" Fill="#FF0000"/>
-
-                                <!-- Horizontal white gradient (Saturation: 0 to 1) -->
-                                <Rectangle>
-                                    <Rectangle.Fill>
-                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                            <GradientStop Color="#FFFFFFFF" Offset="0.0"/>
-                                            <GradientStop Color="#00FFFFFF" Offset="1.0"/>
-                                        </LinearGradientBrush>
-                                    </Rectangle.Fill>
-                                </Rectangle>
-
-                                <!-- Vertical black gradient (Value: 1 to 0) -->
-                                <Rectangle>
-                                    <Rectangle.Fill>
-                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                            <GradientStop Color="#00000000" Offset="0.0"/>
-                                            <GradientStop Color="#FF000000" Offset="1.0"/>
-                                        </LinearGradientBrush>
-                                    </Rectangle.Fill>
-                                </Rectangle>
-
-                                <!-- Draggable Crosshair Thumb -->
-                                <Canvas x:Name="PART_SatValCanvas" IsHitTestVisible="False">
-                                    <Ellipse x:Name="PART_SatValThumb" Width="14" Height="14" Margin="-7,-7,0,0"
-                                             Stroke="#FFFFFF" StrokeThickness="2.5" Fill="Transparent">
-                                        <Ellipse.Effect>
-                                            <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.9" Color="#000000"/>
-                                        </Ellipse.Effect>
-                                    </Ellipse>
-                                </Canvas>
-                            </Grid>
-                        </Border>
-
-                        <!-- Classic Hue Rainbow Spectrum Bar -->
-                        <Border Width="220" Height="14" CornerRadius="0" ClipToBounds="True" BorderBrush="#2C3B58" BorderThickness="1.5" Margin="0,0,0,10" Cursor="Hand">
-                            <Grid x:Name="PART_HueBarGrid" Background="Transparent"   >
-                                <Rectangle>
-                                    <Rectangle.Fill>
-                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                            <GradientStop Color="#FF0000" Offset="0.0"/>
-                                            <GradientStop Color="#FFFF00" Offset="0.17"/>
-                                            <GradientStop Color="#00FF00" Offset="0.33"/>
-                                            <GradientStop Color="#00FFFF" Offset="0.50"/>
-                                            <GradientStop Color="#0000FF" Offset="0.67"/>
-                                            <GradientStop Color="#FF00FF" Offset="0.83"/>
-                                            <GradientStop Color="#FF0000" Offset="1.0"/>
-                                        </LinearGradientBrush>
-                                    </Rectangle.Fill>
-                                </Rectangle>
-
-                                <!-- Draggable Hue Thumb -->
-                                <Canvas x:Name="PART_HueCanvas" IsHitTestVisible="False">
-                                    <Border x:Name="PART_HueThumb" Width="8" Height="18" Margin="-4,-2,0,0"
-                                            CornerRadius="0" Background="#FFFFFF" BorderBrush="#000000" BorderThickness="1.5">
-                                        <Border.Effect>
-                                            <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.7" Color="#000000"/>
-                                        </Border.Effect>
+                                <!-- Checklist Mode -->
+                                <Grid x:Name="PART_ChecklistModeContainer" Visibility="Collapsed">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                                        <ItemsControl x:Name="PART_ChecklistItemsControl" ItemTemplate="{DynamicResource ChecklistItemTemplate}"/>
+                                    </ScrollViewer>
+                                    <Border Grid.Row="1" BorderBrush="{StaticResource NeonYellow}" BorderThickness="1" Padding="5" Margin="0,5,0,0">
+                                        <Grid>
+                                            <TextBox x:Name="PART_TxtNewTask" Background="Transparent" BorderThickness="0" Foreground="{StaticResource NeonYellow}" FontSize="14" FontFamily="Consolas, Courier New, monospace" CaretBrush="{StaticResource NeonYellow}"/>
+                                            <TextBlock x:Name="PART_TxtNewTaskPlaceholder" Text="> ADD_TASK..." Foreground="{StaticResource MutedYellow}" FontSize="14" FontFamily="Consolas, Courier New, monospace" IsHitTestVisible="False"/>
+                                        </Grid>
                                     </Border>
-                                </Canvas>
+                                </Grid>
+
+                                <!-- Copy Mode -->
+                                <Grid x:Name="PART_CopyModeContainer" Visibility="Collapsed">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                                        <ItemsControl x:Name="PART_CopyItemsControl" ItemTemplate="{DynamicResource CopySnippetItemTemplate}"/>
+                                    </ScrollViewer>
+                                </Grid>
                             </Grid>
                         </Border>
 
-                        <!-- Bottom Controls: Swatch, Hex Input, Apply Button -->
-                        <Grid Width="220" Margin="0,0,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                        <!-- Caution Stripe Decoration Bottom Right -->
+                        <Border Grid.Row="2" Grid.RowSpan="2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="60" Height="15" Background="{StaticResource CautionStripes}" Margin="0,0,10,10"/>
+                        <!-- Decorative cut corner simulation -->
+                        <Polygon Grid.Row="2" Grid.RowSpan="2" Points="0,20 20,0 20,20" Fill="{StaticResource DarkBg}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-2,-2"/>
 
-                            <!-- Live Color Preview Swatch -->
-                            <Border Grid.Column="0" x:Name="PART_CustomColorPreview" Width="30" Height="30" CornerRadius="0" Background="#FF5500" BorderBrush="#FFFFFF" BorderThickness="2" Margin="0,0,8,0"/>
-
-                            <!-- Hex Input Box -->
-                            <TextBox Grid.Column="1" x:Name="PART_TxtCustomHex" Text="#FF5500" Background="#141B2B" BorderBrush="#2F3E5D" BorderThickness="1.5" Foreground="#00F0FF" FontSize="13" FontWeight="Bold" Padding="6,4" VerticalContentAlignment="Center" CaretBrush="#FF003C" Cursor="IBeam" Margin="0,0,8,0" />
-
-                            <!-- Apply Button -->
-                            <Button x:Name="PART_Unnamed_Button_30" Grid.Column="2" Style="{StaticResource PrimaryButton}" Height="30" Content="Apply"  FontSize="12" FontWeight="Bold" Padding="12,0"/>
-                        </Grid>
-
-                        <!-- TRANSPARENCY & DIMMING SECTION -->
-                        <Separator Background="#222D42" Margin="0,2,0,10"/>
-
-                        <TextBlock Text="Transparency &amp; Dimming" FontSize="11" FontWeight="Bold" Foreground="#8898B4" Margin="2,0,0,8"/>
-
-                        <!-- Note Solid Opacity Row -->
-                        <Grid Margin="2,0,2,4">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Note Opacity" FontSize="12" FontWeight="SemiBold" Foreground="#CBD5E1" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="PART_TxtActiveOpacityPercent" Grid.Column="1" Text="100%" FontSize="12" FontWeight="Bold" Foreground="#00F0FF" VerticalAlignment="Center"/>
-                        </Grid>
-                        <Slider x:Name="PART_SliderActiveOpacity" Minimum="30" Maximum="100" Value="100" SmallChange="5" LargeChange="10" Margin="2,0,2,10" />
-
-                        <!-- Unfocused Dimming Toggle -->
-                        <Grid Margin="2,0,2,8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="Dim When Unfocused" FontSize="12" FontWeight="SemiBold" Foreground="#CBD5E1" VerticalAlignment="Center"/>
-                            <CheckBox x:Name="PART_ChkUnfocusedDim" Grid.Column="1" Style="{StaticResource ModernSwitch}" IsChecked="True" />
-                        </Grid>
-
-                        <!-- Unfocused Opacity Factor Slider -->
-                        <StackPanel x:Name="PART_UnfocusedOpacityControlsPanel" Margin="2,0,2,2">
-                            <Grid Margin="0,0,0,4">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="Unfocused Opacity" FontSize="12" FontWeight="SemiBold" Foreground="#94A3B8" VerticalAlignment="Center"/>
-                                <TextBlock x:Name="PART_TxtUnfocusedOpacityPercent" Grid.Column="1" Text="55%" FontSize="12" FontWeight="Bold" Foreground="#06B6D4" VerticalAlignment="Center"/>
-                            </Grid>
-                            <Slider x:Name="PART_SliderUnfocusedOpacity" Minimum="15" Maximum="90" Value="55" SmallChange="5" LargeChange="10" />
-                        </StackPanel>
-                    </StackPanel>
+                    </Grid>
                 </Border>
-            </Popup>
-
+            </Border>
         </Grid>
-    </Border>
-
-    <!-- 8-Way Multi-Directional Window Resize Hit-Zones (Top, Bottom, Left, Right, 4 Corners) -->
-    <Grid x:Name="PART_ResizeOverlayGrid" IsHitTestVisible="True">
-        <!-- 4 Edge Rectangles -->
-        <Rectangle x:Name="PART_ResizeEdgeTop" Height="6" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="14,0,14,0" Fill="Transparent" Cursor="SizeNS" Tag="Top" />
-        <Rectangle x:Name="PART_ResizeEdgeBottom" Height="6" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Margin="14,0,14,0" Fill="Transparent" Cursor="SizeNS" Tag="Bottom" />
-        <Rectangle x:Name="PART_ResizeEdgeLeft" Width="6" HorizontalAlignment="Left" VerticalAlignment="Stretch" Margin="0,14,0,14" Fill="Transparent" Cursor="SizeWE" Tag="Left" />
-        <Rectangle x:Name="PART_ResizeEdgeRight" Width="6" HorizontalAlignment="Right" VerticalAlignment="Stretch" Margin="0,14,0,14" Fill="Transparent" Cursor="SizeWE" Tag="Right" />
-
-        <!-- 4 Corner Rectangles -->
-        <Rectangle x:Name="PART_ResizeCornerTopLeft" Width="14" Height="14" HorizontalAlignment="Left" VerticalAlignment="Top" Fill="Transparent" Cursor="SizeNWSE" Tag="TopLeft" />
-        <Rectangle x:Name="PART_ResizeCornerTopRight" Width="14" Height="14" HorizontalAlignment="Right" VerticalAlignment="Top" Fill="Transparent" Cursor="SizeNESW" Tag="TopRight" />
-        <Rectangle x:Name="PART_ResizeCornerBottomLeft" Width="14" Height="14" HorizontalAlignment="Left" VerticalAlignment="Bottom" Fill="Transparent" Cursor="SizeNESW" Tag="BottomLeft" />
-        <Rectangle x:Name="PART_ResizeCornerBottomRight" Width="18" Height="18" HorizontalAlignment="Right" VerticalAlignment="Bottom" Fill="Transparent" Cursor="SizeNWSE" Tag="BottomRight" />
-    </Grid>
-</Grid>
     </ControlTemplate>
 </ResourceDictionary>
