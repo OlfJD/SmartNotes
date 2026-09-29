@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
+using SmartNotes.UI.Windows;
 
 namespace SmartNotes.Core.Services;
 
@@ -18,7 +19,7 @@ namespace SmartNotes.Core.Services;
 public static class UpdateService
 {
     private const string GitHubApiUrl = "https://api.github.com/repos/OlfJD/SmartNotes/releases/latest";
-    public static readonly Version CurrentVersion = new(2, 0, 0);
+    public static readonly Version CurrentVersion = new(2, 1, 0);
 
     private static readonly HttpClient HttpClient = new()
     {
@@ -51,11 +52,12 @@ public static class UpdateService
             {
                 if (isManualCheck)
                 {
-                    MessageBox.Show(
-                        "Unable to contact GitHub Releases right now. Please check your internet connection.",
-                        "SmartNotes Updater",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information
+                    ModernMessageBox.Show(
+                        LocalizationService.T("Update_ErrorNetwork"),
+                        LocalizationService.T("Update_DialogTitle"),
+                        ModernMessageButtons.OK,
+                        ModernMessageIcon.Warning,
+                        LocalizationService.T("Update_ConnectionNotice")
                     );
                 }
                 return;
@@ -90,16 +92,17 @@ public static class UpdateService
                         }
                     }
 
-                    notifyCallback?.Invoke("SmartNotes Update Available", $"v{latestVer} is ready to install!");
+                    notifyCallback?.Invoke(
+                        LocalizationService.T("Update_ToastTitle"),
+                        LocalizationService.T("Update_ToastMsg", latestVer)
+                    );
 
-                    var result = MessageBox.Show(
-                        $"A new version of SmartNotes is available on GitHub!\n\n" +
-                        $"• Installed Version: v{CurrentVersion}\n" +
-                        $"• Latest Version: v{latestVer}\n\n" +
-                        $"Would you like to download and apply this update now?",
-                        "SmartNotes Update Available",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Information
+                    var result = ModernMessageBox.Show(
+                        LocalizationService.T("Update_AvailableMsg", CurrentVersion, latestVer),
+                        LocalizationService.T("Update_DialogTitle"),
+                        ModernMessageButtons.YesNo,
+                        ModernMessageIcon.Update,
+                        LocalizationService.T("Update_AvailableTitle")
                     );
 
                     if (result == MessageBoxResult.Yes)
@@ -120,11 +123,12 @@ public static class UpdateService
                 }
                 else if (isManualCheck)
                 {
-                    MessageBox.Show(
-                        $"SmartNotes is completely up to date! (v{CurrentVersion})",
-                        "SmartNotes Updater",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information
+                    ModernMessageBox.Show(
+                        LocalizationService.T("Update_UpToDateMsg", CurrentVersion),
+                        LocalizationService.T("Update_DialogTitle"),
+                        ModernMessageButtons.OK,
+                        ModernMessageIcon.Success,
+                        LocalizationService.T("Update_UpToDateTitle")
                     );
                 }
             }
@@ -133,11 +137,12 @@ public static class UpdateService
         {
             if (isManualCheck)
             {
-                MessageBox.Show(
+                ModernMessageBox.Show(
                     $"Update check failed: {ex.Message}",
-                    "SmartNotes Updater",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning
+                    LocalizationService.T("Update_DialogTitle"),
+                    ModernMessageButtons.OK,
+                    ModernMessageIcon.Warning,
+                    LocalizationService.T("Update_ConnectionNotice")
                 );
             }
         }
@@ -185,11 +190,12 @@ exit
         }
         catch (Exception ex)
         {
-            MessageBox.Show(
-                $"Failed to auto-apply update: {ex.Message}\nOpening release page...",
-                "SmartNotes Updater",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning
+            ModernMessageBox.Show(
+                LocalizationService.T("Update_ErrorApply", ex.Message),
+                LocalizationService.T("Update_DialogTitle"),
+                ModernMessageButtons.OK,
+                ModernMessageIcon.Warning,
+                LocalizationService.T("Update_ManualRequired")
             );
             Process.Start(new ProcessStartInfo
             {

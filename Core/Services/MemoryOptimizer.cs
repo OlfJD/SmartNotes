@@ -9,34 +9,67 @@ namespace SmartNotes.Core.Services;
 public static class MemoryOptimizer
 {
     private static DispatcherTimer? _trimTimer;
-
-    [DllImport("kernel32.dll", EntryPoint = "SetProcessWorkingSetSize", ExactSpelling = true, SetLastError = true, CallingConvention = CallingConvention.StdCall)]
-    private static extern bool SetProcessWorkingSetSize(IntPtr hProcess, IntPtr dwMinimumWorkingSetSize, IntPtr dwMaximumWorkingSetSize);
+    private static bool _autoTrimEnabled = true;
 
     [DllImport("psapi.dll", SetLastError = true)]
     private static extern bool EmptyWorkingSet(IntPtr hProcess);
 
-    public static void Initialize()
+    public static bool AutoTrimEnabled
     {
+        get => _autoTrimEnabled;
+        set
+        {
+            _autoTrimEnabled = value;
+            if (_trimTimer != null)
+            {
+                if (_autoTrimEnabled) _trimTimer.Start();
+                else _trimTimer.Stop();
+            }
+        }
+    }
+
+    public static void Initialize(bool autoTrimEnabled = true)
+    {
+        _autoTrimEnabled = autoTrimEnabled;
         _trimTimer = new DispatcherTimer(DispatcherPriority.ApplicationIdle)
         {
-            Interval = TimeSpan.FromMinutes(5)
+            Interval = TimeSpan.FromMinutes(3)
         };
-        _trimTimer.Tick += (s, e) => TrimMemory();
-        _trimTimer.Start();
+        _trimTimer.Tick += (s, e) =>
+        {
+            if (_autoTrimEnabled)
+            {
+                TrimMemory();
+            }
+        };
+
+        if (_autoTrimEnabled)
+        {
+            _trimTimer.Start();
+        }
     }
 
-    public static void ScheduleDelayedTrim(TimeSpan delay)
+    /// <summary>
+    /// Forces full GC compaction and flushes unused working set pages back to Windows via EmptyWorkingSet.
+    /// Returns (BeforeMb, AfterMb, FreedMb).
+    /// </summary>
+    public static (double BeforeMb, double AfterMb, double FreedMb) TrimMemory()
     {
-    }
-
-    public static void TrimMemory()
-    {
+        double beforeMb = GetCurrentMemoryUsageMb();
         try
         {
-            GC.Collect(2, GCCollectionMode.Optimized, false);
+            GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+            GC.Collect(2, GCCollectionMode.Forced, true, true);
+            GC.WaitForPendingFinalizers();
+
+            using var process = Process.GetCurrentProcess();
+            EmptyWorkingSet(process.Handle);
         }
         catch { }
+
+        double afterMb = GetCurrentMemoryUsageMb();
+        double freedMb = Math.Max(0, beforeMb - afterMb);
+        return (beforeMb, afterMb, freedMb);
     }
 
     public static double GetCurrentMemoryUsageMb()

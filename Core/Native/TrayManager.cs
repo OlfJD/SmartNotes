@@ -121,23 +121,29 @@ public class TrayManager : IDisposable
         };
         menu.Renderer = new ModernMenuRenderer();
 
-        var newNoteItem = new ToolStripMenuItem("New Sticky Note", null, (s, e) => _onNewNote())
+        var newNoteItem = new ToolStripMenuItem(LocalizationService.T("Tray_NewNote"), null, (s, e) => _onNewNote())
         {
             Font = new Font("Segoe UI", 9.5f, FontStyle.Bold),
             ForeColor = DrawColor.FromArgb(255, 255, 255)
         };
         menu.Items.Add(newNoteItem);
 
+        var bringAllItem = new ToolStripMenuItem(LocalizationService.T("Tray_BringAllToFront"), null, (s, e) => _onBringAllToFront())
+        {
+            ForeColor = DrawColor.FromArgb(226, 232, 240)
+        };
+        menu.Items.Add(bringAllItem);
+
         menu.Items.Add(new ToolStripSeparator());
 
-        string hideText = _settingsService.Settings.HideAllNotes ? "Show All Notes" : "Hide All Notes";
+        string hideText = _settingsService.Settings.HideAllNotes ? LocalizationService.T("Tray_ShowAll") : LocalizationService.T("Tray_HideAll");
         var toggleHideItem = new ToolStripMenuItem(hideText, null, (s, e) => _onToggleHideAll())
         {
             ForeColor = DrawColor.FromArgb(226, 232, 240)
         };
         menu.Items.Add(toggleHideItem);
 
-        var arrangeItem = new ToolStripMenuItem("Arrange Notes on Desktop", null, (s, e) => _onArrangeNotes())
+        var arrangeItem = new ToolStripMenuItem(LocalizationService.T("Tray_Arrange"), null, (s, e) => _onArrangeNotes())
         {
             ForeColor = DrawColor.FromArgb(226, 232, 240)
         };
@@ -145,7 +151,7 @@ public class TrayManager : IDisposable
 
         // 48-Hour Temporary Trash & Note Recovery Submenu
         var deletedList = _getDeletedNotes();
-        var trashMenu = new ToolStripMenuItem($"Recently Deleted ({deletedList.Count})")
+        var trashMenu = new ToolStripMenuItem($"{LocalizationService.T("Tray_Trash")} ({deletedList.Count})")
         {
             ForeColor = deletedList.Count > 0 ? DrawColor.FromArgb(245, 158, 11) : DrawColor.FromArgb(168, 181, 205)
         };
@@ -157,11 +163,13 @@ public class TrayManager : IDisposable
             foreach (var note in deletedList)
             {
                 TimeSpan remaining = NoteStorageService.TrashRetentionPeriod - (DateTime.Now - (note.DeletedAt ?? DateTime.Now));
-                string timeLeft = remaining.TotalHours >= 1 ? $"{(int)remaining.TotalHours}h left" : $"{(int)Math.Max(1, remaining.TotalMinutes)}m left";
+                string timeLeft = remaining.TotalHours >= 1
+                    ? LocalizationService.T("Tray_TimeLeftHours", (int)remaining.TotalHours)
+                    : LocalizationService.T("Tray_TimeLeftMinutes", (int)Math.Max(1, remaining.TotalMinutes));
                 string title = string.IsNullOrWhiteSpace(note.Title) ? note.SnippetPreview : note.Title;
                 if (title.Length > 24) title = title.Substring(0, 22) + "...";
 
-                var noteItem = new ToolStripMenuItem($"Restore: \"{title}\" ({timeLeft})", null, (s, e) =>
+                var noteItem = new ToolStripMenuItem(LocalizationService.T("Tray_RestoreNote", title, timeLeft), null, (s, e) =>
                 {
                     _onRestoreNote(note.Id);
                     RebuildContextMenu();
@@ -174,7 +182,7 @@ public class TrayManager : IDisposable
 
             trashMenu.DropDownItems.Add(new ToolStripSeparator());
 
-            var restoreAllItem = new ToolStripMenuItem("Restore All Notes", null, (s, e) =>
+            var restoreAllItem = new ToolStripMenuItem(LocalizationService.T("Tray_RestoreAll"), null, (s, e) =>
             {
                 _onRestoreAllNotes();
                 RebuildContextMenu();
@@ -184,7 +192,7 @@ public class TrayManager : IDisposable
             };
             trashMenu.DropDownItems.Add(restoreAllItem);
 
-            var emptyTrashItem = new ToolStripMenuItem("Empty Trash Now", null, (s, e) =>
+            var emptyTrashItem = new ToolStripMenuItem(LocalizationService.T("Tray_EmptyTrash"), null, (s, e) =>
             {
                 _onEmptyTrash();
                 RebuildContextMenu();
@@ -196,7 +204,7 @@ public class TrayManager : IDisposable
         }
         else
         {
-            var emptyItem = new ToolStripMenuItem("(No recently deleted notes)")
+            var emptyItem = new ToolStripMenuItem(LocalizationService.T("Tray_NoTrashNotes"))
             {
                 Enabled = false,
                 ForeColor = DrawColor.FromArgb(120, 136, 164)
@@ -205,7 +213,7 @@ public class TrayManager : IDisposable
         }
 
         trashMenu.DropDownItems.Add(new ToolStripSeparator());
-        var openFolderItem = new ToolStripMenuItem("Open Trash Folder in Explorer...", null, (s, e) => _onOpenTrashFolder())
+        var openFolderItem = new ToolStripMenuItem(LocalizationService.T("Tray_OpenTrashFolder"), null, (s, e) => _onOpenTrashFolder())
         {
             ForeColor = DrawColor.FromArgb(147, 197, 253)
         };
@@ -214,7 +222,7 @@ public class TrayManager : IDisposable
         menu.Items.Add(trashMenu);
         menu.Items.Add(new ToolStripSeparator());
 
-        var startupItem = new ToolStripMenuItem("Start with Windows", null, (s, e) =>
+        var startupItem = new ToolStripMenuItem(LocalizationService.T("Tray_Startup"), null, (s, e) =>
         {
             bool newVal = !_settingsService.Settings.LaunchOnStartup;
             _settingsService.Settings.LaunchOnStartup = newVal;
@@ -227,24 +235,23 @@ public class TrayManager : IDisposable
         };
         menu.Items.Add(startupItem);
 
-        var settingsItem = new ToolStripMenuItem("Settings & Preferences...", null, (s, e) => _onOpenSettings())
+        var settingsItem = new ToolStripMenuItem(LocalizationService.T("Tray_Settings"), null, (s, e) => _onOpenSettings())
         {
             ForeColor = DrawColor.FromArgb(226, 232, 240)
         };
         menu.Items.Add(settingsItem);
 
-        var optimizeItem = new ToolStripMenuItem("Optimize Memory (RAM)", null, (s, e) =>
+        var optimizeItem = new ToolStripMenuItem(LocalizationService.T("Tray_OptimizeRam"), null, (s, e) =>
         {
-            _onTrimMemory();
-            double mb = MemoryOptimizer.GetCurrentMemoryUsageMb();
-            ShowBalloon("SmartNotes", $"RAM footprint optimized! Current usage: {mb:F1} MB", ToolTipIcon.Info);
+            var (before, after, freed) = MemoryOptimizer.TrimMemory();
+            ShowBalloon("SmartNotes", LocalizationService.T("Tray_RamOptimizedBalloon", after, freed), ToolTipIcon.Info);
         })
         {
             ForeColor = DrawColor.FromArgb(245, 158, 11)
         };
         menu.Items.Add(optimizeItem);
 
-        var updateItem = new ToolStripMenuItem("Check for Updates...", null, (s, e) =>
+        var updateItem = new ToolStripMenuItem(LocalizationService.T("Tray_CheckUpdates", UpdateService.CurrentVersion), null, (s, e) =>
         {
             _ = UpdateService.CheckForUpdatesAsync(isManualCheck: true);
         })
@@ -255,7 +262,7 @@ public class TrayManager : IDisposable
 
         menu.Items.Add(new ToolStripSeparator());
 
-        var exitItem = new ToolStripMenuItem("Exit SmartNotes", null, (s, e) => _onExit())
+        var exitItem = new ToolStripMenuItem(LocalizationService.T("Tray_Exit"), null, (s, e) => _onExit())
         {
             ForeColor = DrawColor.FromArgb(248, 113, 113) // Alert Red
         };

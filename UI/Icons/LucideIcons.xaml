@@ -60,7 +60,10 @@
     <StreamGeometry x:Key="LucideIcon_search">M 11 19 C 15.4 19 19 15.4 19 11 C 19 6.6 15.4 3 11 3 C 6.6 3 3 6.6 3 11 C 3 15.4 6.6 19 11 19 Z M 21 21 L 16.65 16.65</StreamGeometry>
 
     <!-- Settings -->
-    <StreamGeometry x:Key="LucideIcon_settings">M 12.22 2 H 11.78 L 11.3 4.2 C 10.47 4.54 9.71 5.01 9.04 5.6 L 6.95 4.74 L 6.64 5.28 L 5.36 7.5 L 5.67 8.04 L 7.46 9.24 C 7.37 9.72 7.33 10.21 7.33 10.7 C 7.33 11.19 7.37 11.68 7.46 12.16 L 5.67 13.36 L 5.36 13.9 L 6.64 16.12 L 6.95 16.66 L 9.04 15.8 C 9.71 16.39 10.47 16.86 11.3 17.2 L 11.78 19.4 H 12.22 L 12.7 17.2 C 13.53 16.86 14.29 16.39 14.96 15.8 L 17.05 16.66 L 17.36 16.12 L 18.64 13.9 L 18.33 13.36 L 16.54 12.16 C 16.63 11.68 16.67 11.19 16.67 10.7 C 16.67 10.21 16.63 9.72 16.54 9.24 L 18.33 8.04 L 18.64 7.5 L 17.36 5.28 L 17.05 4.74 L 14.96 5.6 C 14.29 5.01 13.53 4.54 12.7 4.2 L 12.22 2 Z M 12 15 C 9.79 15 8 13.21 8 11 C 8 8.79 9.79 7 12 7 C 14.21 7 16 8.79 16 11 C 16 13.21 14.21 15 12 15 Z</StreamGeometry>
+    <StreamGeometry x:Key="LucideIcon_settings">M 12.22 2 H 11.78 C 10.68 2 9.78 2.9 9.78 4 V 4.18 C 9.78 4.9 9.4 5.56 8.78 5.91 L 8.35 6.16 C 7.73 6.52 6.96 6.52 6.34 6.16 L 6.19 6.08 C 5.24 5.53 4.02 5.86 3.47 6.81 L 3.25 7.19 C 2.7 8.14 3.03 9.36 3.98 9.91 L 4.13 10 C 4.75 10.36 5.13 11.02 5.13 11.74 V 12.26 C 5.13 12.98 4.75 13.64 4.13 14 L 3.98 14.09 C 3.03 14.64 2.7 15.86 3.25 16.81 L 3.47 17.19 C 4.02 18.14 5.24 18.47 6.19 17.92 L 6.34 17.84 C 6.96 17.48 7.73 17.48 8.35 17.84 L 8.78 18.09 C 9.4 18.44 9.78 19.1 9.78 19.82 V 20 C 9.78 21.1 10.68 22 11.78 22 H 12.22 C 13.32 22 14.22 21.1 14.22 20 V 19.82 C 14.22 19.1 14.6 18.44 15.22 18.09 L 15.65 17.84 C 16.27 17.48 17.04 17.48 17.66 17.84 L 17.81 17.92 C 18.76 18.47 19.98 18.14 20.53 17.19 L 20.75 16.81 C 21.3 15.86 20.97 14.64 20.02 14.09 L 19.87 14 C 19.25 13.64 18.87 12.98 18.87 12.26 V 11.74 C 18.87 11.02 19.25 10.36 19.87 10 L 20.02 9.91 C 20.97 9.36 21.3 8.14 20.75 7.19 L 20.53 6.81 C 19.98 5.86 18.76 5.53 17.81 6.08 L 17.66 6.16 C 17.04 6.52 16.27 6.52 15.65 6.16 L 15.22 5.91 C 14.6 5.56 14.22 4.9 14.22 4.18 V 4 C 14.22 2.9 13.32 2 12.22 2 Z M 12 9 A 3 3 0 1 1 12 15 A 3 3 0 1 1 12 9</StreamGeometry>
+
+    <!-- Book Plus -->
+    <StreamGeometry x:Key="LucideIcon_book-plus">M 4 19.5 V 4 C 4 2.9 4.9 2 6 2 H 20 V 22 H 6 C 4.9 22 4 21.1 4 19.5 Z M 4 19.5 C 4 18.1 5.1 17 6.5 17 H 20 M 12 6 V 12 M 9 9 H 15</StreamGeometry>
 
     <!-- Sliders -->
     <StreamGeometry x:Key="LucideIcon_sliders">M 4 21 V 14 M 4 10 V 3 M 12 21 V 12 M 12 8 V 3 M 20 21 V 16 M 20 12 V 3 M 1 14 H 7 M 9 8 H 15 M 17 16 H 23</StreamGeometry>
@@ -88,11 +91,14 @@
     <!-- External Link -->
     <StreamGeometry x:Key="LucideIcon_external-link">M 18 13 V 19 C 18 20.1 17.1 21 16 21 H 5 C 3.9 21 3 20.1 3 19 V 8 C 3 6.9 3.9 6 5 6 H 11 M 15 3 H 21 V 9 M 10 14 L 21 3</StreamGeometry>
 
-    <!-- Spell Check -->
-    <StreamGeometry x:Key="LucideIcon_spell-check">M 6 16 L 10 4 L 14 16 M 7.5 12 H 12.5 M 16 20 L 18 22 L 22 18</StreamGeometry>
+    <!-- Globe / World / Languages -->
+    <StreamGeometry x:Key="LucideIcon_globe">M 12 2 A 10 10 0 1 0 12 22 A 10 10 0 1 0 12 2 Z M 2 12 H 22 M 12 2 C 16 6 16 18 12 22 M 12 2 C 8 6 8 18 12 22</StreamGeometry>
 
-    <!-- Languages / Translation / Globe -->
-    <StreamGeometry x:Key="LucideIcon_languages">M 5 8 H 11 M 4 5 H 10 M 7 5 V 19 M 10 8 C 10 12 7 15 4 17 M 6 11 C 7 13 9 15 12 16 M 14 19 L 18 9 L 22 19 M 15.5 16 H 20.5</StreamGeometry>
+    <!-- Spell Check -->
+    <StreamGeometry x:Key="LucideIcon_spell-check">M 5 15 L 11 3 L 17 15 M 7 11 H 15 M 15 19 L 18 22 L 23 17</StreamGeometry>
+
+    <!-- Languages / Translation -->
+    <StreamGeometry x:Key="LucideIcon_languages">M 5 8 L 11 14 M 4 14 L 10 8 L 12 5 M 2 5 H 14 M 7 2 H 8 M 22 22 L 17 12 L 12 22 M 14 18 H 20</StreamGeometry>
 
     <!-- Scissors / Cut -->
     <StreamGeometry x:Key="LucideIcon_scissors">M 6 9 A 3 3 0 1 0 6 3 A 3 3 0 0 0 6 9 Z M 6 21 A 3 3 0 1 0 6 15 A 3 3 0 0 0 6 21 Z M 20 4 L 8.12 15.88 M 14.47 14.48 L 20 20 M 8.12 8.12 L 12 12</StreamGeometry>

@@ -59,7 +59,7 @@ public class TextProofingService
             Directory.CreateDirectory(AppFolder);
             if (!File.Exists(CustomDictPath))
             {
-                File.WriteAllText(CustomDictPath, "#LID 1033\r\n");
+                File.WriteAllText(CustomDictPath, "");
             }
         }
         catch { }
@@ -131,6 +131,88 @@ public class TextProofingService
         return new List<string>();
     }
 
+    private static HashSet<string>? _cachedSupportedLangs;
+
+    public static HashSet<string> GetInstalledSpellCheckLanguages()
+    {
+        if (_cachedSupportedLangs != null) return _cachedSupportedLangs;
+
+        var supported = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        try
+        {
+            var asm = typeof(TextBox).Assembly;
+            var factoryType = asm.GetType("System.Windows.Documents.MsSpellCheckLib.SpellCheckerFactory");
+            var singletonProp = factoryType?.GetProperty("Singleton", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+            var singleton = singletonProp?.GetValue(null);
+            var comFactoryProp = singleton?.GetType().GetProperty("ComFactory", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+            var comFactory = comFactoryProp?.GetValue(singleton);
+            var suppLangProp = comFactory?.GetType().GetProperty("SupportedLanguages");
+            var suppLangObj = suppLangProp?.GetValue(comFactory);
+
+            if (suppLangObj is System.Runtime.InteropServices.ComTypes.IEnumString enumString)
+            {
+                string[] items = new string[1];
+                while (enumString.Next(1, items, IntPtr.Zero) == 0)
+                {
+                    if (!string.IsNullOrEmpty(items[0]))
+                    {
+                        supported.Add(items[0]);
+                    }
+                }
+            }
+        }
+        catch { }
+
+        _cachedSupportedLangs = supported;
+        return supported;
+    }
+
+    public static bool IsLanguageSupported(string langCode)
+    {
+        if (string.IsNullOrWhiteSpace(langCode) || langCode.Equals("auto", StringComparison.OrdinalIgnoreCase))
+        {
+            langCode = System.Globalization.CultureInfo.CurrentUICulture.IetfLanguageTag;
+        }
+
+        var installed = GetInstalledSpellCheckLanguages();
+        if (installed.Count == 0) return true; // If COM check not available, assume true
+
+        if (installed.Contains(langCode)) return true;
+
+        // Check language prefix (e.g., 'en' for 'en-US' or 'de' for 'de-DE')
+        string prefix = langCode.Split('-')[0];
+        return installed.Any(l => l.Equals(prefix, StringComparison.OrdinalIgnoreCase) || l.StartsWith(prefix + "-", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static readonly HashSet<string> _registeredLangs = new(StringComparer.OrdinalIgnoreCase);
+
+    public static void EnsureLanguagePackRegistered(string langCode)
+    {
+        if (string.IsNullOrWhiteSpace(langCode) || langCode.Equals("auto", StringComparison.OrdinalIgnoreCase)) return;
+        if (!_registeredLangs.Add(langCode)) return;
+
+        try
+        {
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                try
+                {
+                    using var process = new System.Diagnostics.Process();
+                    process.StartInfo = new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "powershell.exe",
+                        Arguments = $"-NoProfile -NonInteractive -Command \"$l = Get-WinUserLanguageList; if (-not ($l | Where-Object {{ $_.LanguageTag -like '{langCode}*' }})) {{ $l.Add('{langCode}'); Set-WinUserLanguageList $l -Force }}\"",
+                        CreateNoWindow = true,
+                        UseShellExecute = false
+                    };
+                    process.Start();
+                }
+                catch { }
+            });
+        }
+        catch { }
+    }
+
     public void ApplyProofingToTextBox(TextBox textBox, AppSettings settings)
     {
         if (textBox == null) return;
@@ -145,19 +227,24 @@ public class TextProofingService
                 langCode = System.Globalization.CultureInfo.CurrentUICulture.IetfLanguageTag;
             }
 
+            EnsureLanguagePackRegistered(langCode);
+
             try
             {
                 textBox.Language = XmlLanguage.GetLanguage(langCode);
             }
             catch
             {
-                textBox.Language = XmlLanguage.GetLanguage(System.Globalization.CultureInfo.CurrentUICulture.IetfLanguageTag);
+                textBox.Language = XmlLanguage.GetLanguage("en-US");
             }
 
             if (settings.EnableSpellCheck)
             {
                 textBox.SpellCheck.IsEnabled = true;
-                textBox.SpellCheck.SpellingReform = SpellingReform.PreAndPostreform;
+                if (langCode.StartsWith("de", StringComparison.OrdinalIgnoreCase))
+                {
+                    textBox.SpellCheck.SpellingReform = SpellingReform.PreAndPostreform;
+                }
             }
         }
         catch { }

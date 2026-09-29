@@ -253,6 +253,16 @@ public class DesktopWindowManager
 
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
+        const int WM_SYSCOMMAND = 0x0112;
+        const int SC_KEYMENU = 0xF100;
+
+        // Suppress Alt+Space system menu
+        if (msg == WM_SYSCOMMAND && ((int)wParam & 0xFFF0) == SC_KEYMENU)
+        {
+            handled = true;
+            return IntPtr.Zero;
+        }
+
         if (msg == WmBringToFront)
         {
             _window.Dispatcher.Invoke(() =>

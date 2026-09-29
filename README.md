@@ -30,7 +30,12 @@
 
 ## ✨ Features
 
-- **✍️ Native Text Proofing, Spell Checking & Autocorrect Engine (v2.0)**:
+- **🌍 App-Wide Multi-Language Localization (v2.1)**:
+  - **Bilingual English & German UI**: Fully localized settings dashboard, sidebars, note context menus, transparency popups, tray notifications, and updater alerts.
+  - **Dynamic Real-Time Language Switching**: Change display languages instantly from Settings without restarting.
+  - **Startup Language Detection & Prompt**: Automatically detects system locale and offers 1-click configuration on first launch or update.
+
+- **✍️ Native Text Proofing, Spell Checking & Autocorrect Engine (v2.0 - v2.1)**:
   - **Live Spell Checking**: Underlines misspelled words with real-time red squiggles across notes, titles, checklists, and copy compartments.
   - **12 Proofing Languages**: Switch seamlessly between English (US/UK/CA/AU), German, Spanish, French, Italian, Portuguese, Dutch, Polish, and Swedish.
   - **Intelligent Autocorrect as You Type**: Automatically corrects 150+ common typos (e.g., `teh` → `the`, `dont` → `don't`, `recieve` → `receive`) with casing preservation (`TEH` → `THE`).
@@ -39,6 +44,15 @@
   - **Auto-Capitalization**: Automatically capitalizes sentence beginnings and standalone `i` → `I`.
   - **Custom Dictionary & Rules**: Add words directly via the context menu or customize rules in `%APPDATA%\SmartNotes\`.
   - **Obsidian Dark Context Menus**: Sleek right-click menus with spelling suggestions, "Add to Dictionary", "Ignore All", Cut/Copy/Paste, and nested Proofing/Language submenus.
+
+- **⚡ Zero-RAM Idle Architecture & Automatic Memory Trimming (v2.1)**:
+  - **Zero-RAM Dictionaries**: Inactive language dictionaries and unopened notes consume 0 MB of RAM while idle.
+  - **Background Working Set Trimming**: Automatically compacts memory heaps and flushes unreferenced pages back to Windows every 3 minutes.
+  - **1-Click RAM Optimization**: Manual RAM trimming with live Before/After/Freed MB telemetry in Settings and System Tray.
+
+- **⚙️ Redesigned Modern Settings & Preferences Dashboard (v2.1)**:
+  - Comprehensive sidebar navigation across Desktop & System, Note Appearance, Global Hotkeys, Text Proofing, Trash & Recovery, and Memory & Performance.
+  - Real-time interactive Live Note Preview reflecting theme swatches, font scaling, and border stylings as you configure.
 
 - **🧲 Magnetic Stack Leader Dragging & Docking**:
   - Drag notes next to one another to magnetically **snap and stick them together** into connected stacks and clusters.

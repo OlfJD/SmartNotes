@@ -148,7 +148,10 @@ public partial class App : Application
             _storageService = new NoteStorageService();
             LogStartup($"NoteStorageService loaded. Active notes: {_storageService.Notes.Count}");
 
-            MemoryOptimizer.Initialize();
+            LocalizationService.Instance.SetLanguage(_settingsService.Settings.AppLanguage);
+            LogStartup("LocalizationService initialized.");
+
+            MemoryOptimizer.Initialize(_settingsService.Settings.AutoOptimizeMemory);
             LogStartup("MemoryOptimizer initialized.");
             InitDummyHwndHost();
             LogStartup("DummyHwndHost initialized.");
@@ -162,6 +165,9 @@ public partial class App : Application
             // Restore active notes on the desktop at their exact saved coordinates
             RestoreAllDesktopNotes();
             LogStartup("Desktop notes restored.");
+
+            CheckAndPromptLanguageSelection();
+            LogStartup("Language prompt checked.");
         }
         catch (Exception ex)
         {
@@ -437,7 +443,7 @@ public partial class App : Application
             }
         }
 
-        _trayManager.ShowBalloon("SmartNotes", "Sticky notes arranged neatly on your desktop!", ToolTipIcon.Info);
+        _trayManager.ShowBalloon("SmartNotes", LocalizationService.T("Balloon_NotesArranged"), ToolTipIcon.Info);
     }
 
     public void NotifyTransparencySettingsChanged()
@@ -460,6 +466,7 @@ public partial class App : Application
     {
         var dlg = new SettingsDialog(_settingsService, _storageService, () =>
         {
+            UpdateAppLanguage(_settingsService.Settings.AppLanguage);
             _trayManager.RebuildContextMenu();
             _hotKeyManager?.Dispose();
             InitGlobalHotkeys();
@@ -476,6 +483,56 @@ public partial class App : Application
         dlg.ShowDialog();
     }
 
+    private void CheckAndPromptLanguageSelection()
+    {
+        try
+        {
+            bool isUpdateOrFirstRun = string.IsNullOrEmpty(_settingsService.Settings.LastLanguagePromptVersion) ||
+                (Version.TryParse(_settingsService.Settings.LastLanguagePromptVersion, out var lastVer) && lastVer < new Version(2, 1, 0));
+
+            if (!isUpdateOrFirstRun) return;
+
+            var sysCulture = System.Globalization.CultureInfo.InstalledUICulture ?? System.Globalization.CultureInfo.CurrentUICulture;
+            string sysTwoLetter = sysCulture.TwoLetterISOLanguageName.ToLowerInvariant();
+
+            if (sysTwoLetter != "en")
+            {
+                var promptDlg = new LanguagePromptDialog(sysCulture);
+                promptDlg.ShowDialog();
+                if (promptDlg.UserSwitchedLanguage)
+                {
+                    _settingsService.Settings.AppLanguage = promptDlg.SelectedLanguageCode;
+                    _settingsService.Settings.ProofingLanguage = promptDlg.SelectedProofingTag;
+                }
+                else
+                {
+                    _settingsService.Settings.AppLanguage = "en";
+                    _settingsService.Settings.ProofingLanguage = "en-US";
+                }
+            }
+
+            _settingsService.Settings.LastLanguagePromptVersion = "2.1.0";
+            _settingsService.Save();
+            UpdateAppLanguage(_settingsService.Settings.AppLanguage);
+            NotifyProofingSettingsChanged();
+        }
+        catch (Exception ex)
+        {
+            LogStartup($"Error during language prompt check: {ex.Message}");
+        }
+    }
+
+    public void UpdateAppLanguage(string langCode)
+    {
+        LocalizationService.Instance.SetLanguage(langCode);
+        _trayManager?.RebuildContextMenu();
+        UpdateTrayTooltip();
+        foreach (var win in _activeNoteWindows.Values)
+        {
+            win.ApplyLocalizedStrings();
+        }
+    }
+
     public void RestoreNoteFromTrash(Guid id)
     {
         var restored = _storageService.RestoreNoteFromTrash(id);
@@ -484,7 +541,7 @@ public partial class App : Application
             SpawnStickyNoteWindow(restored, bringToFront: true);
             string title = string.IsNullOrWhiteSpace(restored.Title) ? restored.SnippetPreview : restored.Title;
             if (title.Length > 25) title = title.Substring(0, 22) + "...";
-            _trayManager.ShowBalloon("SmartNotes", $"Restored note \"{title}\" to desktop!", ToolTipIcon.Info);
+            _trayManager.ShowBalloon("SmartNotes", LocalizationService.T("Balloon_NoteRestored", title), ToolTipIcon.Info);
             _trayManager.RebuildContextMenu();
         }
     }
@@ -498,7 +555,8 @@ public partial class App : Application
         }
         if (restored.Count > 0)
         {
-            _trayManager.ShowBalloon("SmartNotes", $"Restored {restored.Count} note{(restored.Count == 1 ? "" : "s")} to desktop!", ToolTipIcon.Info);
+            string suffix = restored.Count == 1 ? "" : (LocalizationService.Instance.CurrentLanguage == "de" ? "n" : "s");
+            _trayManager.ShowBalloon("SmartNotes", LocalizationService.T("Balloon_NotesRestoredCount", restored.Count, suffix), ToolTipIcon.Info);
         }
         _trayManager.RebuildContextMenu();
     }
@@ -506,14 +564,15 @@ public partial class App : Application
     public void EmptyTrash()
     {
         _storageService.ClearTrash();
-        _trayManager.ShowBalloon("SmartNotes", "Trash folder emptied.", ToolTipIcon.Info);
+        _trayManager.ShowBalloon("SmartNotes", LocalizationService.T("Balloon_TrashEmptied"), ToolTipIcon.Info);
         _trayManager.RebuildContextMenu();
     }
 
     private void UpdateTrayTooltip()
     {
         int count = _activeNoteWindows.Count;
-        _trayManager.UpdateTooltip($"SmartNotes - {count} sticky note{(count == 1 ? "" : "s")} on desktop");
+        string suffix = count == 1 ? "" : (LocalizationService.Instance.CurrentLanguage == "de" ? "n" : "s");
+        _trayManager.UpdateTooltip(LocalizationService.T("Tray_TooltipCount", count, suffix));
     }
 
     private void StartSingleInstanceListener()
@@ -538,7 +597,7 @@ public partial class App : Application
                             {
                                 BringAllNotesToFront();
                             }
-                            _trayManager?.ShowBalloon("SmartNotes", "Sticky notes active and brought to front!", ToolTipIcon.Info);
+                            _trayManager?.ShowBalloon("SmartNotes", LocalizationService.T("Balloon_BroughtToFront"), ToolTipIcon.Info);
                         });
                     }
                 }
