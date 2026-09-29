@@ -52,7 +52,7 @@
                     <Border x:Name="LeftCompartmentBorder" Background="#182030" BorderBrush="#2F3E5E" BorderThickness="2" CornerRadius="8" Padding="1" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal">
                             <!-- New Note Button -->
-                            <Button Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnNewNote_Click" ToolTip="Create new sticky note (+)">
+                            <Button x:Name="BtnNewNote" Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnNewNote_Click" ToolTip="Create new sticky note (+)">
                                 <controls:LucideIcon IconKey="plus" Size="15" StrokeThickness="2.8" Foreground="#F59E0B" x:Name="IconPlus"/>
                             </Button>
 
@@ -108,7 +108,7 @@
                             </Button>
 
                             <!-- Close / Delete Note Button -->
-                            <Button Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnClose_Click" ToolTip="Delete note">
+                            <Button x:Name="BtnClose" Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnClose_Click" ToolTip="Delete note">
                                 <controls:LucideIcon IconKey="x" Size="15" StrokeThickness="2.8" Foreground="#EF4444"/>
                             </Button>
                         </StackPanel>
@@ -129,6 +129,8 @@
                              Cursor="IBeam"
                              Padding="0"
                              SpellCheck.IsEnabled="True"
+                             PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown"
+                             PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp"
                              ContextMenuOpening="TextBox_ContextMenuOpening"
                              PreviewTextInput="TextBox_PreviewTextInput"
                              PreviewKeyDown="TextBox_PreviewKeyDown"
@@ -164,6 +166,8 @@
                              Cursor="IBeam"
                              Padding="2"
                              SpellCheck.IsEnabled="True"
+                             PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown"
+                             PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp"
                              ContextMenuOpening="TextBox_ContextMenuOpening"
                              PreviewTextInput="TextBox_PreviewTextInput"
                              PreviewKeyDown="TextBox_PreviewKeyDown"
@@ -222,7 +226,7 @@
                                             </CheckBox>
 
                                             <!-- Task Text -->
-                                            <TextBox Grid.Column="1" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="TaskText_Changed" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" VerticalAlignment="Center" SpellCheck.IsEnabled="True" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" PreviewKeyDown="TextBox_PreviewKeyDown" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
+                                            <TextBox Grid.Column="1" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="TaskText_Changed" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" VerticalAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" PreviewKeyDown="TextBox_PreviewKeyDown" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
 
                                             <!-- Delete Task Item Button -->
                                             <Button Grid.Column="2" Style="{StaticResource IconButton}" Width="24" Height="24" Click="BtnDeleteTask_Click" ToolTip="Delete task" Padding="3">
@@ -242,9 +246,9 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="TxtNewTask" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" Cursor="IBeam" VerticalAlignment="Stretch" VerticalContentAlignment="Center" SpellCheck.IsEnabled="True" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" KeyDown="TxtNewTask_KeyDown" TextChanged="TxtNewTask_TextChanged" GotFocus="TxtNewTask_GotFocus" LostFocus="TxtNewTask_LostFocus"/>
+                            <TextBox x:Name="TxtNewTask" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" Cursor="IBeam" VerticalAlignment="Stretch" VerticalContentAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" KeyDown="TxtNewTask_KeyDown" TextChanged="TxtNewTask_TextChanged" GotFocus="TxtNewTask_GotFocus" LostFocus="TxtNewTask_LostFocus"/>
                             <TextBlock x:Name="TxtNewTaskPlaceholder" Text="Add new task (Press Enter)..." Foreground="#64748B" FontSize="14.5" IsHitTestVisible="False" VerticalAlignment="Center" Margin="2,0,0,0"/>
-                            <Button Grid.Column="1" Style="{StaticResource IconButton}" Width="26" Height="26" Click="BtnAddTask_Click" ToolTip="Add task" Cursor="Hand">
+                            <Button x:Name="BtnAddTask" Grid.Column="1" Style="{StaticResource IconButton}" Width="26" Height="26" Click="BtnAddTask_Click" ToolTip="Add task" Cursor="Hand">
                                 <controls:LucideIcon IconKey="plus" Size="15" StrokeThickness="2.8" Foreground="{StaticResource NeonEmeraldGlowBrush}"/>
                             </Button>
                         </Grid>
@@ -277,7 +281,7 @@
                                             </Grid.ColumnDefinitions>
 
                                             <!-- Snippet Text Box -->
-                                            <TextBox Grid.Column="0" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="CopyItemText_Changed" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" Cursor="IBeam" VerticalAlignment="Center" SpellCheck.IsEnabled="True" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" PreviewKeyDown="TextBox_PreviewKeyDown" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
+                                            <TextBox Grid.Column="0" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="CopyItemText_Changed" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" Cursor="IBeam" VerticalAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" PreviewKeyDown="TextBox_PreviewKeyDown" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
 
                                             <!-- Dedicated Copy Button on the right in the same line -->
                                             <Button Grid.Column="1" Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnCopyRow_Click" ToolTip="Copy this line to clipboard" Margin="4,0,2,0" Padding="4">
@@ -302,9 +306,9 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="TxtNewCopyItem" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" Cursor="IBeam" VerticalAlignment="Stretch" VerticalContentAlignment="Center" SpellCheck.IsEnabled="True" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" KeyDown="TxtNewCopyItem_KeyDown" TextChanged="TxtNewCopyItem_TextChanged" GotFocus="TxtNewCopyItem_GotFocus" LostFocus="TxtNewCopyItem_LostFocus"/>
+                            <TextBox x:Name="TxtNewCopyItem" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" Cursor="IBeam" VerticalAlignment="Stretch" VerticalContentAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" KeyDown="TxtNewCopyItem_KeyDown" TextChanged="TxtNewCopyItem_TextChanged" GotFocus="TxtNewCopyItem_GotFocus" LostFocus="TxtNewCopyItem_LostFocus"/>
                             <TextBlock x:Name="TxtNewCopyItemPlaceholder" Text="Add new copy item (Press Enter)..." Foreground="#64748B" FontSize="14.5" IsHitTestVisible="False" VerticalAlignment="Center" Margin="2,0,0,0"/>
-                            <Button Grid.Column="1" Style="{StaticResource IconButton}" Width="26" Height="26" Click="BtnAddCopyItem_Click" ToolTip="Add copy item" Cursor="Hand">
+                            <Button x:Name="BtnAddCopyItem" Grid.Column="1" Style="{StaticResource IconButton}" Width="26" Height="26" Click="BtnAddCopyItem_Click" ToolTip="Add copy item" Cursor="Hand">
                                 <controls:LucideIcon IconKey="plus" Size="15" StrokeThickness="2.8" Foreground="{StaticResource NeonCyanBrush}"/>
                             </Button>
                         </Grid>
@@ -332,7 +336,7 @@
                     <!-- Lock Badge if locked -->
                     <StackPanel x:Name="LockBadge" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,18,0" Visibility="Collapsed">
                         <controls:LucideIcon IconKey="lock" Size="13" StrokeThickness="2.4" Foreground="#F59E0B" Margin="0,0,4,0"/>
-                        <TextBlock Text="LOCKED" FontSize="11.5" FontWeight="Bold" Foreground="#F59E0B"/>
+                        <TextBlock x:Name="TxtLockedBadge" Text="LOCKED" FontSize="11.5" FontWeight="Bold" Foreground="#F59E0B"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -345,32 +349,32 @@
                     </Border.Effect>
                     <StackPanel Width="220">
                         <!-- Top Header: Title & Quick Presets -->
-                        <TextBlock Text="Quick Neon Themes" FontSize="11" FontWeight="Bold" Foreground="#8898B4" Margin="2,0,0,6"/>
+                        <TextBlock x:Name="TxtQuickNeonThemes" Text="Quick Neon Themes" FontSize="11" FontWeight="Bold" Foreground="#8898B4" Margin="2,0,0,6"/>
 
                         <!-- 8 Presets in a clean 4x2 UniformGrid with ZERO dead space -->
                         <UniformGrid Columns="4" Margin="0,0,0,10">
-                            <Button Style="{StaticResource IconButton}" Margin="2" Tag="Amber" Click="ColorSwatch_Click" ToolTip="Radiant Amber">
+                            <Button x:Name="BtnSwatchAmber" Style="{StaticResource IconButton}" Margin="2" Tag="Amber" Click="ColorSwatch_Click" ToolTip="Radiant Amber">
                                 <Border Width="26" Height="26" CornerRadius="13" Background="#F59E0B" BorderBrush="#FDE68A" BorderThickness="2"/>
                             </Button>
-                            <Button Style="{StaticResource IconButton}" Margin="2" Tag="Emerald" Click="ColorSwatch_Click" ToolTip="Neon Emerald">
+                            <Button x:Name="BtnSwatchEmerald" Style="{StaticResource IconButton}" Margin="2" Tag="Emerald" Click="ColorSwatch_Click" ToolTip="Neon Emerald">
                                 <Border Width="26" Height="26" CornerRadius="13" Background="#10B981" BorderBrush="#A7F3D0" BorderThickness="2"/>
                             </Button>
-                            <Button Style="{StaticResource IconButton}" Margin="2" Tag="Violet" Click="ColorSwatch_Click" ToolTip="Cyber Violet">
+                            <Button x:Name="BtnSwatchViolet" Style="{StaticResource IconButton}" Margin="2" Tag="Violet" Click="ColorSwatch_Click" ToolTip="Cyber Violet">
                                 <Border Width="26" Height="26" CornerRadius="13" Background="#8B5CF6" BorderBrush="#DDD6FE" BorderThickness="2"/>
                             </Button>
-                            <Button Style="{StaticResource IconButton}" Margin="2" Tag="Cyan" Click="ColorSwatch_Click" ToolTip="Electric Cyan">
+                            <Button x:Name="BtnSwatchCyan" Style="{StaticResource IconButton}" Margin="2" Tag="Cyan" Click="ColorSwatch_Click" ToolTip="Electric Cyan">
                                 <Border Width="26" Height="26" CornerRadius="13" Background="#06B6D4" BorderBrush="#A5F3FC" BorderThickness="2"/>
                             </Button>
-                            <Button Style="{StaticResource IconButton}" Margin="2" Tag="Rose" Click="ColorSwatch_Click" ToolTip="Coral Rose">
+                            <Button x:Name="BtnSwatchRose" Style="{StaticResource IconButton}" Margin="2" Tag="Rose" Click="ColorSwatch_Click" ToolTip="Coral Rose">
                                 <Border Width="26" Height="26" CornerRadius="13" Background="#F43F5E" BorderBrush="#FECDD3" BorderThickness="2"/>
                             </Button>
-                            <Button Style="{StaticResource IconButton}" Margin="2" Tag="Obsidian" Click="ColorSwatch_Click" ToolTip="Stealth Obsidian">
+                            <Button x:Name="BtnSwatchObsidian" Style="{StaticResource IconButton}" Margin="2" Tag="Obsidian" Click="ColorSwatch_Click" ToolTip="Stealth Obsidian">
                                 <Border Width="26" Height="26" CornerRadius="13" Background="#3B82F6" BorderBrush="#93C5FD" BorderThickness="2"/>
                             </Button>
-                            <Button Style="{StaticResource IconButton}" Margin="2" Tag="Gold" Click="ColorSwatch_Click" ToolTip="Classic Sticky Gold">
+                            <Button x:Name="BtnSwatchGold" Style="{StaticResource IconButton}" Margin="2" Tag="Gold" Click="ColorSwatch_Click" ToolTip="Classic Sticky Gold">
                                 <Border Width="26" Height="26" CornerRadius="13" Background="#EAB308" BorderBrush="#FEF08A" BorderThickness="2"/>
                             </Button>
-                            <Button Style="{StaticResource IconButton}" Margin="2" Tag="Mint" Click="ColorSwatch_Click" ToolTip="Fresh Mint">
+                            <Button x:Name="BtnSwatchMint" Style="{StaticResource IconButton}" Margin="2" Tag="Mint" Click="ColorSwatch_Click" ToolTip="Fresh Mint">
                                 <Border Width="26" Height="26" CornerRadius="13" Background="#14B8A6" BorderBrush="#99F6E4" BorderThickness="2"/>
                             </Button>
                         </UniformGrid>
@@ -378,7 +382,7 @@
                         <Separator Background="#222D42" Margin="0,0,0,10"/>
 
                         <!-- Classic 2D Saturation / Value Gradient Canvas -->
-                        <TextBlock Text="Custom Palette Canvas" FontSize="11" FontWeight="Bold" Foreground="#8898B4" Margin="2,0,0,6"/>
+                        <TextBlock x:Name="TxtCustomPaletteCanvas" Text="Custom Palette Canvas" FontSize="11" FontWeight="Bold" Foreground="#8898B4" Margin="2,0,0,6"/>
 
                         <Border Width="220" Height="120" CornerRadius="8" ClipToBounds="True" BorderBrush="#2C3B58" BorderThickness="1.5" Margin="0,0,0,8" Cursor="Cross">
                             <Grid x:Name="SatValPickerGrid" Background="Transparent" MouseLeftButtonDown="SatValPicker_MouseDown" MouseMove="SatValPicker_MouseMove" MouseLeftButtonUp="SatValPicker_MouseUp">
@@ -461,13 +465,13 @@
                             <TextBox Grid.Column="1" x:Name="TxtCustomHex" Text="#FF5500" Background="#141B2B" BorderBrush="#2F3E5D" BorderThickness="1.5" Foreground="#F8FAFC" FontSize="13" FontWeight="Bold" Padding="6,4" VerticalContentAlignment="Center" CaretBrush="#F59E0B" Cursor="IBeam" Margin="0,0,8,0" TextChanged="TxtCustomHex_TextChanged"/>
 
                             <!-- Apply Button -->
-                            <Button Grid.Column="2" Style="{StaticResource PrimaryButton}" Height="30" Content="Apply" Click="BtnApplyCustomColor_Click" FontSize="12" FontWeight="Bold" Padding="12,0"/>
+                            <Button x:Name="BtnApplyCustomColor" Grid.Column="2" Style="{StaticResource PrimaryButton}" Height="30" Content="Apply" Click="BtnApplyCustomColor_Click" FontSize="12" FontWeight="Bold" Padding="12,0"/>
                         </Grid>
 
                         <!-- TRANSPARENCY & DIMMING SECTION -->
                         <Separator Background="#222D42" Margin="0,2,0,10"/>
 
-                        <TextBlock Text="Transparency &amp; Dimming" FontSize="11" FontWeight="Bold" Foreground="#8898B4" Margin="2,0,0,8"/>
+                        <TextBlock x:Name="TxtTransparencyDimming" Text="Transparency &amp; Dimming" FontSize="11" FontWeight="Bold" Foreground="#8898B4" Margin="2,0,0,8"/>
 
                         <!-- Note Solid Opacity Row -->
                         <Grid Margin="2,0,2,4">
@@ -475,7 +479,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="Note Opacity" FontSize="12" FontWeight="SemiBold" Foreground="#CBD5E1" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtNoteOpacityHeader" Text="Note Opacity" FontSize="12" FontWeight="SemiBold" Foreground="#CBD5E1" VerticalAlignment="Center"/>
                             <TextBlock x:Name="TxtActiveOpacityPercent" Grid.Column="1" Text="100%" FontSize="12" FontWeight="Bold" Foreground="#F59E0B" VerticalAlignment="Center"/>
                         </Grid>
                         <Slider x:Name="SliderActiveOpacity" Minimum="30" Maximum="100" Value="100" SmallChange="5" LargeChange="10" Margin="2,0,2,10" ValueChanged="SliderActiveOpacity_ValueChanged"/>
@@ -486,7 +490,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="Dim When Unfocused" FontSize="12" FontWeight="SemiBold" Foreground="#CBD5E1" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtDimWhenUnfocusedHeader" Text="Dim When Unfocused" FontSize="12" FontWeight="SemiBold" Foreground="#CBD5E1" VerticalAlignment="Center"/>
                             <CheckBox x:Name="ChkUnfocusedDim" Grid.Column="1" Style="{StaticResource ModernSwitch}" IsChecked="True" Click="ChkUnfocusedDim_Click"/>
                         </Grid>
 
@@ -497,7 +501,7 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Unfocused Opacity" FontSize="12" FontWeight="SemiBold" Foreground="#94A3B8" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TxtUnfocusedOpacityHeader" Text="Unfocused Opacity" FontSize="12" FontWeight="SemiBold" Foreground="#94A3B8" VerticalAlignment="Center"/>
                                 <TextBlock x:Name="TxtUnfocusedOpacityPercent" Grid.Column="1" Text="55%" FontSize="12" FontWeight="Bold" Foreground="#06B6D4" VerticalAlignment="Center"/>
                             </Grid>
                             <Slider x:Name="SliderUnfocusedOpacity" Minimum="15" Maximum="90" Value="55" SmallChange="5" LargeChange="10" ValueChanged="SliderUnfocusedOpacity_ValueChanged"/>

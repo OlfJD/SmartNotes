@@ -17,15 +17,20 @@ public class AppSettings
     public bool HideAllNotes { get; set; } = false;
     public bool ConfirmDelete { get; set; } = false;
     public bool KeepBehindAllWindows { get; set; } = true;
-    public bool EnableUnfocusedTransparency { get; set; } = true;
+    public bool EnableUnfocusedTransparency { get; set; } = false;
     public double UnfocusedOpacity { get; set; } = 0.55;
 
-    // Version 2.0: Text Proofing & Autocorrect Engine
+    // Version 2.1: Multi-Language Localization & Text Proofing
+    public string AppLanguage { get; set; } = "en";
+    public string? LastLanguagePromptVersion { get; set; } = null;
     public bool EnableSpellCheck { get; set; } = true;
-    public string ProofingLanguage { get; set; } = "auto";
+    public string ProofingLanguage { get; set; } = "en-US";
     public bool EnableAutocorrect { get; set; } = true;
     public bool AutoCapitalizeSentences { get; set; } = true;
     public bool SmartSymbolReplacements { get; set; } = true;
     public bool CustomReplacementsEnabled { get; set; } = true;
+
+    // Version 2.0.4: Performance & Memory Trimming
+    public bool AutoOptimizeMemory { get; set; } = true;
 }
 

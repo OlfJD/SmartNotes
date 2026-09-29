@@ -260,30 +260,93 @@ To support full design-altering themes (not just colors, but layout, borders, ba
   - Custom user autocorrect rules loaded and saved to `%APPDATA%\SmartNotes\autocorrect_rules.json`.
 - **Obsidian Dark Theme Context Menus (`DarkTheme.xaml`, `StickyNoteWindow.xaml.cs`)**:
   - High-contrast neon dark right-click context menu displaying top spelling suggestions with checkmark accents, "Add to Dictionary", "Ignore All", Cut/Copy/Paste/Select All, and nested Proofing & Language configuration submenus.
-  - Razor-sharp vector Lucide icons for all menu commands (`spell-check`, `check`, `scissors`, `copy`, `clipboard`, `languages`, `eye-off`).
-  - Upgraded `DarkTheme.xaml` `MenuItem` style to support hierarchical submenus with smooth popups and chevron arrow indicators.
-- **Settings & Preferences Dashboard V2.0 Integration (`SettingsDialog.xaml`, `SettingsDialog.xaml.cs`)**:
-  - Added dedicated **"TEXT PROOFING & AUTOCORRECT (VERSION 2.0)"** card with live toggles for Spell Check, Proofing Language dropdown, Autocorrect, Sentence Capitalization, Smart Symbols, and 1-click links to open Custom Dictionary (`custom_dict.lex`) and Custom Rules (`autocorrect_rules.json`).
+  - Razor-sharp vector Lucide icons for all menu commands.
 
-### Version 2.1.0 - Complete Settings & Preferences Dashboard Overhaul (2026-09-28)
+### Version 2.0.1 - Complete Settings & Preferences Dashboard Overhaul (2026-09-28)
 - **Modern Sidebar Rail & Categorized Layout (`SettingsDialog.xaml`, `SettingsDialog.xaml.cs`)**:
-  - Completely redesigned the settings experience from a single cramped, disproportionate scroll list (520x540) to an expansive, beautifully proportioned modern dashboard (800x600).
+  - Completely redesigned the settings experience from a single cramped scroll list to an expansive modern dashboard (800x600).
   - Added a dedicated **Left Sidebar Navigation Rail** (Width: 220px) with custom glowing active indicator pills and razor-sharp Lucide vector icons:
     1. 🖥️ **Desktop & System** (`monitor`, Amber accent)
     2. 🎨 **Note Appearance** (`palette`, Emerald accent)
     3. ⌨️ **Global Hotkeys** (`keyboard`, Cyan accent)
-    4. ✍️ **Text Proofing** (`spell-check`, Violet accent)
+    4. ✍️ **Text Proofing** (`globe`, Violet accent)
     5. 🗑️ **Trash & Recovery** (`trash-2`, Rose accent)
     6. ⚡ **Memory & Performance** (`cpu`, Amber accent)
 - **Note Appearance Visual Palette & Real-Time Note Preview**:
   - Integrated an interactive 8-theme visual color swatch selector (Amber, Emerald, Violet, Cyan, Rose, Obsidian, Gold, Mint) directly alongside the theme combobox.
   - Implemented a live **Note Card Preview** right within the settings panel that immediately renders dynamic theme border colors, header backgrounds, font sizing, and typography as settings are adjusted.
 - **Custom Dark Theme Controls Engine (`DarkTheme.xaml`)**:
-  - Implemented full custom Obsidian Dark styles for `ComboBox`, `ComboBoxItem`, and `ToggleButton`, eliminating bright default Win32 dropdown controls.
-  - Features obsidian surfaces (`#131824`), glowing focus/hover borders (`#FBBF24`), smooth slide popups with dark drop shadows, and Lucide chevron indicators.
-  - Added `SettingsNavRadio` style for responsive navigation tabs with hover and active states.
-- **Enhanced Typography & Proportion Fixes**:
-  - Added comprehensive `TextWrapping="Wrap"` across all settings titles, descriptions, and subtitle blocks to ensure zero text truncation across all screen DPIs.
-  - Converted raw unicode emojis to crisp vector LucideIcons (`book-open`, `wand-2`, `folder`, `trash-2`, `zap`, `check-check`).
-  - Styled global hotkey badges with glowing keycap frames (`Win + Alt + N`, `Win + Alt + H`, `Win + Alt + D`).
+  - Implemented full custom Obsidian Dark styles for `ComboBox`, `ComboBoxItem`, `ToggleButton`, and `ModernSwitch`, eliminating bright default Win32 controls.
+  - Features obsidian surfaces (`#131824`), glowing focus/hover borders (`#FBBF24`), and smooth slide popups.
+
+### Version 2.0.2 - Context Menu Interception, Alt+Space Fix & ClearType High-DPI Engine (2026-09-29)
+- **Obsidian Context Menu Tunneling Interception (`StickyNoteWindow.xaml`, `StickyNoteWindow.xaml.cs`)**:
+  - Attached `PreviewMouseRightButtonDown` and `PreviewMouseRightButtonUp` tunneling event handlers on all note textboxes.
+  - Setting `e.Handled = true` in tunneling right-click completely intercepts and prevents WPF's internal `TextEditorSpelling` from ever popping up its default white Win32 menu.
+- **Alt+Space Windows System Menu Suppression (`StickyNoteWindow.xaml.cs`, `DesktopWindowManager.cs`)**:
+  - Intercepted `WM_SYSCOMMAND` with `SC_KEYMENU` (`0xF100`) inside `DesktopWindowManager.WndProc`.
+  - Suppressed `Alt+Space` and `e.SystemKey == Key.Space` in `PreviewKeyDown`, eliminating the unwanted default Windows titlebar system menu.
+- **Ultra-HD ClearType Subpixel Rendering Engine (`DarkTheme.xaml`, `LucideIcon.cs`)**:
+  - Decoupled drop shadow rasterization from solid content containers, enabling full RGB subpixel `ClearTypeHint="Enabled"` across transparent context menus and submenus.
+  - Enforced `TextOptions.TextFormattingMode="Display"` and `TextOptions.TextHintingMode="Fixed"` to guarantee razor-sharp text on 96 DPI / 1080p monitors.
+  - Enforced `SnapsToDevicePixels="True"` and `UseLayoutRounding="True"` across all Lucide vector canvas, path, and viewbox hierarchies.
+  - Replaced menu separators with crisp 1px device lines (`#222D42`).
+
+### Version 2.0.3 - Modern Obsidian Alert Dialogs, Thread-Safe Updater & Globe Vector Icons (2026-09-29)
+- **Modern Obsidian MessageBox Dialog (`ModernMessageBox.xaml`, `ModernMessageBox.xaml.cs`)**:
+  - Designed and built a custom dark Obsidian modal replacing all standard white Win32 `MessageBox.Show` dialogs across the app.
+  - Features animated neon badge icons (`sparkles` for updates, `check-check` for success, `zap` for alerts, `eye-off` for warnings), draggable glass header bar with close button, and styled Obsidian Amber/Emerald action buttons.
+  - Supports keyboard shortcuts (`Enter` to confirm, `Escape` to dismiss/cancel).
+- **Thread-Safe UI Dispatcher Marshaling (`ModernMessageBox.xaml.cs`, `UpdateService.cs`)**:
+  - Implemented automatic UI thread marshaling (`Application.Current.Dispatcher.Invoke`) inside `ModernMessageBox.Show`, allowing background async update tasks and thread pool workers to safely launch dialogs without cross-thread exceptions.
+- **Razor-Sharp Globe Vector Icon (`LucideIcons.xaml`, `StickyNoteWindow.xaml.cs`, `SettingsDialog.xaml`)**:
+  - Replaced the cramped `spell-check` icon in context menus and settings navigation with the official international `globe` icon with fine-tuned stroke thickness (`1.9`) for maximum visual clarity.
+- **Dynamic Windows Spell Check Dictionary Detection (`TextProofingService.cs`, `SettingsDialog.xaml.cs`)**:
+  - Added `GetInstalledSpellCheckLanguages()` and `IsLanguageSupported(langCode)` in `TextProofingService` querying Windows COM `ISpellCheckerFactory`.
+  - Added live status indicators and guidance in Settings explaining how Windows Language packs activate proofing dictionaries.
+- **Application Metadata & Version Synchronization (`SmartNotes.csproj`, `UpdateService.cs`, `TrayManager.cs`, `StickyNoteWindow.xaml.cs`)**:
+  - Synchronized application versioning to `2.0.3` across project assembly attributes and updater menus.
+
+### Version 2.0.4 - Zero-RAM Multi-Language Architecture & Background Memory Trimming (2026-09-29)
+- **Zero-RAM Multi-Language & Spell Proofing Architecture**:
+  - Clarified and documented memory mechanics: Language packs and dictionaries installed in Windows (or localized resource files) remain dormant on disk in `C:\Windows\System32\` and take **0 MB of RAM** when inactive.
+  - Windows Spell Checking only initializes the lexicon for the note's active language tag (`de-DE` or `en-US`) when actively typing, ensuring multi-language support has zero RAM penalty.
+- **Automatic Background Memory Trimming Engine (`MemoryOptimizer.cs`, `AppSettings.cs`)**:
+  - Implemented real Win32 `EmptyWorkingSet(process.Handle)` and .NET Large Object Heap (LOH) compaction (`GCSettings.LargeObjectHeapCompactionMode = CompactOnce`).
+  - Added background idle timer (`DispatcherTimer`) that automatically flushes unreferenced memory pages every 3 minutes when SmartNotes is idle.
+  - Added persistent `AutoOptimizeMemory` boolean setting in `AppSettings.cs`.
+- **Modern Settings Memory Management UI (`SettingsDialog.xaml`, `SettingsDialog.xaml.cs`)**:
+  - Replaced the confusing static button with an **"Automatic Background RAM Trimming"** modern switch toggle (`ChkAutoTrimMemory`).
+  - Added a dedicated "Trim RAM Now" interactive action with real-time Before / After / Freed MB telemetry calculation.
+  - Added clear architectural callout explaining the Zero-RAM idle model for language dictionaries.
+- **Accurate System Tray RAM Balloon Notifications (`TrayManager.cs`)**:
+  - Updated tray "Optimize Memory (RAM)" action to calculate and report the exact amount of physical memory freed (e.g. `Freed 42.1 MB! Current usage: 28.4 MB`) instead of generic/misleading text.
+
+### Version 2.1.0 - Full App-Wide Localization, Obsidian Dark ToolTips & Startup Language Setup (2026-09-29)
+- **Zero-RAM Multi-Language Subsystem (`LocalizationService.cs`)**:
+  - Comprehensive bilingual support for **English (`en`)** (Default) and **German (`de`)** (Deutsch).
+  - Extended translations across the entire application: all 6 panels in Settings, sidebar navigation, headers/footers, note pin modes (*"📌 Am Desktop fixiert"*, *"📌 Immer im Vordergrund"*), buttons, placeholders, right-click proofing menus, updater dialogs, and tray notifications.
+  - Zero RAM penalty: dictionaries stay lightweight and load on demand.
+- **Real-Time Dynamic UI Translation (`SettingsDialog.xaml`, `SettingsDialog.xaml.cs`)**:
+  - Changing the UI language in Settings immediately updates all visible text blocks, switch descriptions, slider labels, status badges, and action buttons in real time without requiring an application restart.
+- **Custom Obsidian Dark ToolTips (`DarkTheme.xaml`)**:
+  - Replaced the default Windows Win32 white square hover tooltips with an implicit WPF `<Style TargetType="{x:Type ToolTip}">`.
+  - Styled with acrylic deep dark background (`#131824`), sleek border (`#2C3D5E`, 1.5px), rounded corners (`CornerRadius="8"`), high-contrast ClearType typography, and soft ambient drop shadow.
+- **First-Run & Version 2.1 Update Language Prompt Modal (`LanguagePromptDialog.xaml`, `LanguagePromptDialog.xaml.cs`)**:
+  - Implemented an Obsidian Dark modal prompt that triggers on first application launch or when upgrading to Version 2.1.
+  - Automatically queries Windows system culture (`CultureInfo.InstalledUICulture`). If the user's OS is German (or non-English), it prompts:
+    - *"Switch to German (Deutsch)"* (switches UI and proofing dictionary immediately)
+    - *"Keep English (Default)"*
+  - Persists preference and records `LastLanguagePromptVersion = "2.1.0"` in `AppSettings.cs` to avoid nagging.
+- **Full Updater & Modal Dialog Localization (`UpdateService.cs`, `ModernMessageBox.xaml.cs`)**:
+  - Localized all update notices ("SmartNotes is Up to Date!", "New Version Available!", etc.) and button actions (*"Got It" / "Verstanden"*, *"Yes, Update" / "Ja, Jetzt aktualisieren"*, *"Cancel" / "Abbrechen"*).
+- **Full Sticky Note Context Menu & More Options Localization (`StickyNoteWindow.xaml.cs`, `LocalizationService.cs`)**:
+  - Localized the entire sticky note header "More Options" (`...`) context menu:
+    - Font Size submenu: *"Font Size ({0}pt)"* / *"Schriftgröße ({0}pt)"*, *"Increase Font Size (+)"* / *"Schriftgröße vergrößern (+)"*, *"Decrease Font Size (-)"* / *"Schriftgröße verkleinern (-)"*, *"Reset Font Size (16pt)"* / *"Schriftgröße zurücksetzen (16pt)"*.
+    - Opacity submenu: *"Opacity ({0}%)"* / *"Deckkraft ({0}%)"*, preset swatches (*"100% Solid"* / *"100% Vollständig sichtbar"*, *"90% Crisp"* / *"90% Klar"*, *"80% Glass"* / *"80% Glas"*, *"65% Translucent"* / *"65% Durchscheinend"*, *"50% Stealth"* / *"50% Dezent"*), and unfocused dimming toggle (*"Dim When Unfocused"* / *"Bei Inaktivität abdunkeln"*).
+    - Text proofing submenu & toggle items (*"Spell Check Underlines"* / *"Rechtschreibprüfung"*, *"Autocorrect Common Typos"* / *"Häufige Tippfehler korrigieren"*, *"Auto-Capitalize Sentences"* / *"Satzanfänge großschreiben"*, *"Smart Symbols: -> to →"* / *"Sonderzeichen: -> zu →"*, *"Proofing Language ({0})"* / *"Wörterbuch-Sprache ({0})"*).
+    - Note actions: *"Copy All Content (Ctrl+Shift+C)"* / *"Gesamten Inhalt kopieren (Strg+Umschalt+C)"*, *"Export as Markdown (.md)"* / *"Als Markdown exportieren (.md)"*, *"Duplicate Note"* / *"Notiz duplizieren"*, *"Clear Completed Tasks"* / *"Erledigte Aufgaben entfernen"*, *"Settings & Preferences..."* / *"Einstellungen & Optionen..."*, *"Check for Updates..."* / *"Nach Updates suchen..."*, *"Delete Note"* / *"Notiz löschen"*.
+  - Localized all color popup controls, theme preset tooltips, live modified time indicators (*"Just now"* / *"Gerade eben"*, *"Xm ago"* / *"Vor X Min."*, *"Xh ago"* / *"Vor X Std."*), typing/saved badges, markdown export dialogs, and system tray balloon alerts.
+
+
 

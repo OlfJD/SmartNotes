@@ -44,26 +44,29 @@ public class LucideIcon : System.Windows.Controls.UserControl
 
     public LucideIcon()
     {
-        SnapsToDevicePixels = true;
         UseLayoutRounding = true;
+        SnapsToDevicePixels = true;
         HorizontalAlignment = HorizontalAlignment.Center;
         VerticalAlignment = VerticalAlignment.Center;
 
         _path = new Path
         {
             Stroke = Foreground ?? Brushes.White,
-            StrokeThickness = 2.2,
+            StrokeThickness = 2.0,
             StrokeStartLineCap = PenLineCap.Round,
             StrokeEndLineCap = PenLineCap.Round,
             StrokeLineJoin = PenLineJoin.Round,
             Fill = Brushes.Transparent,
+            UseLayoutRounding = true,
             SnapsToDevicePixels = true
         };
+        RenderOptions.SetEdgeMode(_path, EdgeMode.Unspecified);
 
         _canvas = new Canvas
         {
             Width = 24,
             Height = 24,
+            UseLayoutRounding = true,
             SnapsToDevicePixels = true
         };
         _canvas.Children.Add(_path);
@@ -75,8 +78,11 @@ public class LucideIcon : System.Windows.Controls.UserControl
             Width = Size,
             Height = Size,
             HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center
+            VerticalAlignment = VerticalAlignment.Center,
+            UseLayoutRounding = true,
+            SnapsToDevicePixels = true
         };
+        RenderOptions.SetBitmapScalingMode(_viewbox, BitmapScalingMode.HighQuality);
 
         Content = _viewbox;
         Width = Size;

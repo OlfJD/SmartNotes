@@ -33,6 +33,53 @@
         <Setter Property="FontSize" Value="15"/>
     </Style>
 
+    <!-- Global Obsidian Dark ToolTip Style (Replaces Default White Windows Tooltips) -->
+    <Style TargetType="{x:Type ToolTip}">
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="HasDropShadow" Value="True"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Foreground" Value="#F8FAFC"/>
+        <Setter Property="FontSize" Value="12.5"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="FontFamily" Value="Segoe UI, -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="UseLayoutRounding" Value="True"/>
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
+        <Setter Property="TextOptions.TextHintingMode" Value="Fixed"/>
+        <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ToolTip}">
+                    <Grid SnapsToDevicePixels="True" UseLayoutRounding="True" Margin="6">
+                        <!-- Outer Soft Drop Shadow -->
+                        <Border Background="#131824" CornerRadius="8">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="12" ShadowDepth="3" Opacity="0.65" Color="#000000"/>
+                            </Border.Effect>
+                        </Border>
+                        <!-- Dark Obsidian Container with Crisp Border -->
+                        <Border Background="#131824"
+                                BorderBrush="#2C3D5E"
+                                BorderThickness="1.5"
+                                CornerRadius="8"
+                                Padding="10,6"
+                                SnapsToDevicePixels="True"
+                                UseLayoutRounding="True"
+                                RenderOptions.ClearTypeHint="Enabled">
+                            <ContentPresenter SnapsToDevicePixels="True"
+                                              UseLayoutRounding="True"
+                                              TextOptions.TextFormattingMode="Display"
+                                              TextOptions.TextRenderingMode="ClearType"
+                                              TextOptions.TextHintingMode="Fixed"/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- Primary Palette (Deep Obsidian & Vivid Neon Emerald / Amber / Violet / Cyan) -->
     <Color x:Key="BgDarkColor">#0D1017</Color>
     <Color x:Key="SurfaceColor">#131824</Color>
@@ -78,33 +125,41 @@
     <BooleanToVisibilityConverter x:Key="BoolToVis"/>
     <controls:ColorKeyToBrushConverter x:Key="ColorToBrushConv"/>
 
-    <!-- Modern Switch Toggle (2px Thick Border) -->
+    <!-- Modern Switch Toggle -->
     <Style x:Key="ModernSwitch" TargetType="{x:Type CheckBox}">
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
         <Setter Property="FontSize" Value="14"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="UseLayoutRounding" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type CheckBox}">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <Grid Width="38" Height="20" Margin="0,0,8,0">
-                            <Border x:Name="Track" CornerRadius="10" Background="#1E2638" BorderBrush="#3B4C6F" BorderThickness="2"/>
-                            <Ellipse x:Name="Thumb" Width="12" Height="12" Fill="#8898B4" HorizontalAlignment="Left" Margin="3,0,0,0">
-                                <Ellipse.Effect>
-                                    <DropShadowEffect BlurRadius="3" ShadowDepth="1" Opacity="0.35"/>
-                                </Ellipse.Effect>
-                            </Ellipse>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" SnapsToDevicePixels="True">
+                        <Grid Width="42" Height="22" Margin="0,0,8,0" VerticalAlignment="Center" SnapsToDevicePixels="True">
+                            <Border x:Name="Track" CornerRadius="11" Background="#182030" BorderBrush="#334366" BorderThickness="1.5" SnapsToDevicePixels="True"/>
+                            <Border x:Name="Thumb" Width="14" Height="14" CornerRadius="7" Background="#8898B4" HorizontalAlignment="Left" Margin="4,0,0,0" VerticalAlignment="Center" SnapsToDevicePixels="True">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.35" Color="#000000"/>
+                                </Border.Effect>
+                            </Border>
                         </Grid>
                         <ContentPresenter VerticalAlignment="Center"/>
                     </StackPanel>
                     <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Track" Property="BorderBrush" Value="#4C618F"/>
+                        </Trigger>
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="Track" Property="Background" Value="{StaticResource NeonAmberBrush}"/>
                             <Setter TargetName="Track" Property="BorderBrush" Value="{StaticResource NeonAmberGlowBrush}"/>
                             <Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right"/>
-                            <Setter TargetName="Thumb" Property="Margin" Value="0,0,3,0"/>
-                            <Setter TargetName="Thumb" Property="Fill" Value="#FFFFFF"/>
+                            <Setter TargetName="Thumb" Property="Margin" Value="0,0,4,0"/>
+                            <Setter TargetName="Thumb" Property="Background" Value="#FFFFFF"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -323,59 +378,101 @@
         </Setter>
     </Style>
 
-    <!-- Dark ContextMenu Style (3px Thick Border) -->
+    <!-- Dark ContextMenu Style (Ultra-Crisp ClearType & High-DPI Optimized) -->
     <Style TargetType="{x:Type ContextMenu}">
         <Setter Property="Background" Value="#141926"/>
         <Setter Property="BorderBrush" Value="#334368"/>
-        <Setter Property="BorderThickness" Value="2.5"/>
-        <Setter Property="Padding" Value="5"/>
+        <Setter Property="BorderThickness" Value="1.5"/>
+        <Setter Property="Padding" Value="4"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="UseLayoutRounding" Value="True"/>
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
+        <Setter Property="TextOptions.TextHintingMode" Value="Fixed"/>
+        <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled"/>
+        <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
+        <Setter Property="Grid.IsSharedSizeScope" Value="True"/>
+        <Setter Property="HasDropShadow" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ContextMenu}">
-                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="12">
-                        <Border.Effect>
-                            <DropShadowEffect BlurRadius="16" ShadowDepth="4" Opacity="0.5" Color="#000000"/>
-                        </Border.Effect>
-                        <StackPanel IsItemsHost="True" Margin="2"/>
-                    </Border>
+                    <Grid SnapsToDevicePixels="True" UseLayoutRounding="True" Margin="6">
+                        <!-- Outer Drop Shadow Layer -->
+                        <Border Background="#141926" CornerRadius="10" Margin="0">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="14" ShadowDepth="3" Opacity="0.6" Color="#000000"/>
+                            </Border.Effect>
+                        </Border>
+
+                        <!-- Solid Content Layer with ClearTypeHint Enabled for Razor-Sharp Typography -->
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True"
+                                UseLayoutRounding="True"
+                                RenderOptions.ClearTypeHint="Enabled"
+                                TextOptions.TextFormattingMode="Display"
+                                TextOptions.TextRenderingMode="ClearType"
+                                TextOptions.TextHintingMode="Fixed">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" SnapsToDevicePixels="True" UseLayoutRounding="True">
+                                <StackPanel IsItemsHost="True" Margin="1" SnapsToDevicePixels="True" UseLayoutRounding="True"/>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
 
-    <!-- Dark MenuItem Style with Submenu Support -->
+    <!-- Dark MenuItem Style with Submenu Support (High-DPI Razor-Sharp) -->
     <Style TargetType="{x:Type MenuItem}">
         <Setter Property="Foreground" Value="#F8FAFC"/>
-        <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Padding" Value="10,7"/>
+        <Setter Property="FontSize" Value="13.5"/>
+        <Setter Property="Padding" Value="9,5.5"/>
         <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="UseLayoutRounding" Value="True"/>
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
+        <Setter Property="TextOptions.TextHintingMode" Value="Fixed"/>
+        <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type MenuItem}">
-                    <Grid>
-                        <Border x:Name="ItemBd" Background="Transparent" CornerRadius="7" Padding="{TemplateBinding Padding}" Margin="1">
-                            <Grid>
+                    <Grid SnapsToDevicePixels="True" UseLayoutRounding="True">
+                        <Border x:Name="ItemBd" Background="Transparent" CornerRadius="6" Padding="{TemplateBinding Padding}" Margin="2,1" SnapsToDevicePixels="True" UseLayoutRounding="True">
+                            <Grid SnapsToDevicePixels="True" UseLayoutRounding="True">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" MinWidth="22"/>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <ContentPresenter Grid.Column="0" ContentSource="Icon" Margin="0,0,8,0" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                <ContentPresenter Grid.Column="1" ContentSource="Header" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="2" Text="{TemplateBinding InputGestureText}" Foreground="#7888A4" FontSize="11.5" VerticalAlignment="Center" Margin="14,0,0,0"/>
-                                <Path Grid.Column="3" x:Name="RightArrow" Data="M 1 1 L 5 5 L 1 9" Stroke="#7888A4" StrokeThickness="1.6" StrokeStartLineCap="Round" StrokeEndLineCap="Round" VerticalAlignment="Center" Margin="12,0,2,0" Visibility="Collapsed"/>
+                                <ContentPresenter Grid.Column="0" ContentSource="Icon" Margin="0,0,8,0" VerticalAlignment="Center" HorizontalAlignment="Center" SnapsToDevicePixels="True" UseLayoutRounding="True"/>
+                                <ContentPresenter Grid.Column="1" ContentSource="Header" VerticalAlignment="Center" SnapsToDevicePixels="True" UseLayoutRounding="True"
+                                                  TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType" TextOptions.TextHintingMode="Fixed"/>
+                                <TextBlock Grid.Column="2" Text="{TemplateBinding InputGestureText}" Foreground="#7888A4" FontSize="11" VerticalAlignment="Center" Margin="14,0,0,0"
+                                           TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType" TextOptions.TextHintingMode="Fixed" SnapsToDevicePixels="True" UseLayoutRounding="True"/>
+                                <Path Grid.Column="3" x:Name="RightArrow" Data="M 1 1 L 5 5 L 1 9" Stroke="#7888A4" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" VerticalAlignment="Center" Margin="10,0,2,0" Visibility="Collapsed" SnapsToDevicePixels="True" UseLayoutRounding="True"/>
                             </Grid>
                         </Border>
                         <Popup x:Name="PART_Popup" AllowsTransparency="True" Focusable="False" IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}" Placement="Right" PopupAnimation="Fade" VerticalOffset="-4" HorizontalOffset="2">
-                            <Border Background="#141926" BorderBrush="#334368" BorderThickness="2.5" CornerRadius="12" Padding="5" MinWidth="180">
-                                <Border.Effect>
-                                    <DropShadowEffect BlurRadius="18" ShadowDepth="4" Opacity="0.7" Color="#000000"/>
-                                </Border.Effect>
-                                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                                    <StackPanel IsItemsHost="True" Margin="2"/>
-                                </ScrollViewer>
-                            </Border>
+                            <Grid SnapsToDevicePixels="True" UseLayoutRounding="True" Margin="6">
+                                <Border Background="#141926" CornerRadius="10">
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="14" ShadowDepth="3" Opacity="0.65" Color="#000000"/>
+                                    </Border.Effect>
+                                </Border>
+                                <Border Background="#141926" BorderBrush="#334368" BorderThickness="1.5" CornerRadius="10" Padding="4" MinWidth="180"
+                                        SnapsToDevicePixels="True" UseLayoutRounding="True" RenderOptions.ClearTypeHint="Enabled"
+                                        TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType" TextOptions.TextHintingMode="Fixed">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" SnapsToDevicePixels="True" UseLayoutRounding="True">
+                                        <StackPanel IsItemsHost="True" Margin="1" SnapsToDevicePixels="True" UseLayoutRounding="True"/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Grid>
                         </Popup>
                     </Grid>
                     <ControlTemplate.Triggers>
@@ -383,11 +480,11 @@
                             <Setter TargetName="RightArrow" Property="Visibility" Value="Visible"/>
                         </Trigger>
                         <Trigger Property="IsHighlighted" Value="True">
-                            <Setter TargetName="ItemBd" Property="Background" Value="#25324E"/>
+                            <Setter TargetName="ItemBd" Property="Background" Value="#222D42"/>
                             <Setter TargetName="RightArrow" Property="Stroke" Value="#F8FAFC"/>
                         </Trigger>
                         <Trigger Property="IsSubmenuOpen" Value="True">
-                            <Setter TargetName="ItemBd" Property="Background" Value="#25324E"/>
+                            <Setter TargetName="ItemBd" Property="Background" Value="#222D42"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.45"/>
@@ -398,11 +495,12 @@
         </Setter>
     </Style>
 
-
     <Style TargetType="{x:Type Separator}">
-        <Setter Property="Background" Value="#2A3752"/>
-        <Setter Property="Height" Value="2"/>
-        <Setter Property="Margin" Value="4,5"/>
+        <Setter Property="Background" Value="#222D42"/>
+        <Setter Property="Height" Value="1"/>
+        <Setter Property="Margin" Value="4,4"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="UseLayoutRounding" Value="True"/>
     </Style>
 
     <!-- Modern ResizeGrip Style (Offset inward 10px from right and bottom) -->

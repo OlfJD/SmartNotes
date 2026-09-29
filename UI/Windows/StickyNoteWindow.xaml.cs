@@ -114,6 +114,19 @@ public partial class StickyNoteWindow : Window
             _desktopWindowManager.BringToFront();
             ApplyFocusOpacity(true);
         };
+        PreviewKeyDown += (s, e) =>
+        {
+            // Suppress Alt+Space Windows system menu
+            if ((e.Key == Key.System && e.SystemKey == Key.Space) ||
+                ((Keyboard.Modifiers & ModifierKeys.Alt) != 0 && (e.Key == Key.Space || e.SystemKey == Key.Space)))
+            {
+                e.Handled = true;
+            }
+        };
+        Closed += (s, e) =>
+        {
+            LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
+        };
     }
 
     private void InitDebounceTimer()
@@ -134,6 +147,9 @@ public partial class StickyNoteWindow : Window
         WindowBlurHelper.ApplyModernWindowStyles(this);
         _desktopWindowManager.ApplyPinMode(_note.PinMode);
         ApplyProofingSettings();
+        ApplyLocalizedStrings();
+        LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
+
         if (_startInForeground || _note.PinMode == NotePinMode.AlwaysOnTop)
         {
             _desktopWindowManager.BringToFront();
@@ -141,6 +157,50 @@ public partial class StickyNoteWindow : Window
         }
         _isLoaded = true;
         ApplyFocusOpacity(IsActive || _startInForeground);
+    }
+
+    public void ApplyLocalizedStrings()
+    {
+        if (BtnNewNote != null) BtnNewNote.ToolTip = LocalizationService.T("Tooltip_NewNote");
+        if (BtnColorPicker != null) BtnColorPicker.ToolTip = LocalizationService.T("Tooltip_ColorPalette");
+        if (BtnClose != null) BtnClose.ToolTip = LocalizationService.T("Tooltip_DeleteNote");
+        if (BtnMore != null) BtnMore.ToolTip = LocalizationService.T("Tooltip_MoreOptions");
+        if (BtnAddTask != null) BtnAddTask.ToolTip = LocalizationService.T("Tooltip_AddTask");
+        if (BtnAddCopyItem != null) BtnAddCopyItem.ToolTip = LocalizationService.T("Tooltip_AddSnippet");
+
+        if (TxtQuickNeonThemes != null) TxtQuickNeonThemes.Text = LocalizationService.T("ColorPopup_QuickThemes");
+        if (TxtCustomPaletteCanvas != null) TxtCustomPaletteCanvas.Text = LocalizationService.T("ColorPopup_CustomCanvas");
+        if (BtnApplyCustomColor != null) BtnApplyCustomColor.Content = LocalizationService.T("ColorPopup_Apply");
+        if (TxtTransparencyDimming != null) TxtTransparencyDimming.Text = LocalizationService.T("ColorPopup_TransparencyDimming");
+        if (TxtNoteOpacityHeader != null) TxtNoteOpacityHeader.Text = LocalizationService.T("ColorPopup_NoteOpacity");
+        if (TxtDimWhenUnfocusedHeader != null) TxtDimWhenUnfocusedHeader.Text = LocalizationService.T("ColorPopup_DimUnfocused");
+        if (TxtUnfocusedOpacityHeader != null) TxtUnfocusedOpacityHeader.Text = LocalizationService.T("ColorPopup_UnfocusedOpacity");
+
+        if (BtnSwatchAmber != null) BtnSwatchAmber.ToolTip = LocalizationService.T("Theme_Amber");
+        if (BtnSwatchEmerald != null) BtnSwatchEmerald.ToolTip = LocalizationService.T("Theme_Emerald");
+        if (BtnSwatchViolet != null) BtnSwatchViolet.ToolTip = LocalizationService.T("Theme_Violet");
+        if (BtnSwatchCyan != null) BtnSwatchCyan.ToolTip = LocalizationService.T("Theme_Cyan");
+        if (BtnSwatchRose != null) BtnSwatchRose.ToolTip = LocalizationService.T("Theme_Rose");
+        if (BtnSwatchObsidian != null) BtnSwatchObsidian.ToolTip = LocalizationService.T("Theme_Obsidian");
+        if (BtnSwatchGold != null) BtnSwatchGold.ToolTip = LocalizationService.T("Theme_Gold");
+        if (BtnSwatchMint != null) BtnSwatchMint.ToolTip = LocalizationService.T("Theme_Mint");
+
+        if (TxtLockedBadge != null) TxtLockedBadge.Text = LocalizationService.T("Status_Locked");
+
+        UpdatePinModeUI(_note.PinMode);
+        UpdateViewMode(_note.ViewMode);
+        UpdateLockUI(_note.IsLocked);
+        UpdateModifiedTime();
+
+        if (TxtTitlePlaceholder != null) TxtTitlePlaceholder.Text = LocalizationService.T("Placeholder_Title");
+        if (TxtContentPlaceholder != null) TxtContentPlaceholder.Text = LocalizationService.T("Placeholder_Content");
+        if (TxtNewTaskPlaceholder != null) TxtNewTaskPlaceholder.Text = LocalizationService.T("Placeholder_NewChecklist");
+        if (TxtNewCopyItemPlaceholder != null) TxtNewCopyItemPlaceholder.Text = LocalizationService.T("Placeholder_NewSnippet");
+    }
+
+    private void OnLanguageChanged()
+    {
+        Dispatcher.Invoke(ApplyLocalizedStrings);
     }
 
     private void ApplyNoteData()
@@ -214,9 +274,9 @@ public partial class StickyNoteWindow : Window
         if (IconChecklistMode != null) IconChecklistMode.Foreground = (mode == NoteViewMode.Checklist) ? EmeraldBrush : MutedBrush;
         if (IconCopyMode != null) IconCopyMode.Foreground = (mode == NoteViewMode.CopyCompartments) ? CyanBrush : MutedBrush;
 
-        if (BtnTextMode != null) BtnTextMode.ToolTip = (mode == NoteViewMode.Text) ? "Active: Plain Text Mode" : "Switch to Plain Text Mode";
-        if (BtnChecklistMode != null) BtnChecklistMode.ToolTip = (mode == NoteViewMode.Checklist) ? "Active: Checklist Mode" : "Switch to Checklist Mode";
-        if (BtnCopyMode != null) BtnCopyMode.ToolTip = (mode == NoteViewMode.CopyCompartments) ? "Active: Copy Compartments Mode" : "Switch to Copy Compartments Mode";
+        if (BtnTextMode != null) BtnTextMode.ToolTip = (mode == NoteViewMode.Text) ? LocalizationService.T("Tooltip_ActiveTextMode") : LocalizationService.T("Tooltip_TextMode");
+        if (BtnChecklistMode != null) BtnChecklistMode.ToolTip = (mode == NoteViewMode.Checklist) ? LocalizationService.T("Tooltip_ActiveChecklistMode") : LocalizationService.T("Tooltip_ChecklistMode");
+        if (BtnCopyMode != null) BtnCopyMode.ToolTip = (mode == NoteViewMode.CopyCompartments) ? LocalizationService.T("Tooltip_ActiveCopyMode") : LocalizationService.T("Tooltip_CopyMode");
     }
 
     private void UpdatePinModeUI(NotePinMode mode)
@@ -229,24 +289,24 @@ public partial class StickyNoteWindow : Window
         switch (mode)
         {
             case NotePinMode.DesktopStuck:
-                TxtPinIndicator.Text = "📌 Stuck to Desktop";
+                TxtPinIndicator.Text = LocalizationService.T("Pin_StuckToDesktop");
                 IconPin.IconKey = "pin";
                 IconPin.Foreground = EmeraldBrush;
-                BtnPinMode.ToolTip = "Mode: Stuck to Desktop (Behind all apps). Click to Float Always on Top";
+                BtnPinMode.ToolTip = LocalizationService.T("Tooltip_Pin_StuckToDesktop");
                 break;
 
             case NotePinMode.AlwaysOnTop:
-                TxtPinIndicator.Text = "📌 Always on Top";
+                TxtPinIndicator.Text = LocalizationService.T("Pin_AlwaysOnTop");
                 IconPin.IconKey = "pin";
                 IconPin.Foreground = AmberBrush;
-                BtnPinMode.ToolTip = "Mode: Always on Top (Floating). Click to Stick to Desktop";
+                BtnPinMode.ToolTip = LocalizationService.T("Tooltip_Pin_AlwaysOnTop");
                 break;
 
             case NotePinMode.Normal:
-                TxtPinIndicator.Text = "📌 Normal Window";
+                TxtPinIndicator.Text = LocalizationService.T("Pin_Normal");
                 IconPin.IconKey = "pin-off";
                 IconPin.Foreground = MutedBrush;
-                BtnPinMode.ToolTip = "Mode: Normal Window. Click to Stick to Desktop";
+                BtnPinMode.ToolTip = LocalizationService.T("Tooltip_Pin_Normal");
                 break;
         }
     }
@@ -274,7 +334,7 @@ public partial class StickyNoteWindow : Window
         }
         if (BtnLock != null)
         {
-            BtnLock.ToolTip = isLocked ? "Note is Locked (Click to Unlock)" : "Lock note position & text";
+            BtnLock.ToolTip = isLocked ? LocalizationService.T("Tooltip_UnlockNote") : LocalizationService.T("Tooltip_LockNote");
         }
     }
 
@@ -283,15 +343,15 @@ public partial class StickyNoteWindow : Window
         var elapsed = DateTime.Now - _note.ModifiedAt;
         if (elapsed.TotalMinutes < 1)
         {
-            TxtModifiedTime.Text = "Just now";
+            TxtModifiedTime.Text = LocalizationService.T("Time_JustNow");
         }
         else if (elapsed.TotalMinutes < 60)
         {
-            TxtModifiedTime.Text = $"{(int)elapsed.TotalMinutes}m ago";
+            TxtModifiedTime.Text = LocalizationService.T("Time_MinutesAgo", (int)elapsed.TotalMinutes);
         }
         else if (elapsed.TotalHours < 24)
         {
-            TxtModifiedTime.Text = $"{(int)elapsed.TotalHours}h ago";
+            TxtModifiedTime.Text = LocalizationService.T("Time_HoursAgo", (int)elapsed.TotalHours);
         }
         else
         {
@@ -308,7 +368,7 @@ public partial class StickyNoteWindow : Window
         TypingIndicatorContainer.Visibility = Visibility.Visible;
         IconTypingStatus.IconKey = "pen-line";
         IconTypingStatus.Foreground = _currentGlowBrush;
-        TxtTypingStatus.Text = "Typing...";
+        TxtTypingStatus.Text = LocalizationService.T("Status_Typing");
         TxtTypingStatus.Foreground = _currentGlowBrush;
     }
 
@@ -321,7 +381,7 @@ public partial class StickyNoteWindow : Window
         TypingIndicatorContainer.Visibility = Visibility.Visible;
         IconTypingStatus.IconKey = "check";
         IconTypingStatus.Foreground = EmeraldBrush;
-        TxtTypingStatus.Text = "Saved";
+        TxtTypingStatus.Text = LocalizationService.T("Status_Saved");
         TxtTypingStatus.Foreground = EmeraldBrush;
 
         _savedStatusResetTimer = new DispatcherTimer
@@ -857,27 +917,27 @@ public partial class StickyNoteWindow : Window
         var menu = new ContextMenu();
 
         // Font Size Submenu
-        var fontMenu = new MenuItem { Header = $"Font Size ({TxtContent.FontSize:F0}pt)" };
-        fontMenu.Items.Add(CreateMenuItem("Increase Font Size (+)", () => AdjustFontSize(2)));
-        fontMenu.Items.Add(CreateMenuItem("Decrease Font Size (-)", () => AdjustFontSize(-2)));
-        fontMenu.Items.Add(CreateMenuItem("Reset Font Size (16pt)", () => SetFontSize(16)));
+        var fontMenu = new MenuItem { Header = LocalizationService.T("Menu_FontSize", $"{TxtContent.FontSize:F0}") };
+        fontMenu.Items.Add(CreateMenuItem(LocalizationService.T("Menu_IncreaseFontSize"), () => AdjustFontSize(2)));
+        fontMenu.Items.Add(CreateMenuItem(LocalizationService.T("Menu_DecreaseFontSize"), () => AdjustFontSize(-2)));
+        fontMenu.Items.Add(CreateMenuItem(LocalizationService.T("Menu_ResetFontSize"), () => SetFontSize(16)));
         menu.Items.Add(fontMenu);
 
         // Opacity Submenu
-        var opacityMenu = new MenuItem { Header = $"Opacity ({(int)(_userConfiguredOpacity * 100)}%)" };
-        opacityMenu.Items.Add(CreateMenuItem("100% Solid", () => SetNoteOpacity(1.0)));
-        opacityMenu.Items.Add(CreateMenuItem("90% Crisp", () => SetNoteOpacity(0.9)));
-        opacityMenu.Items.Add(CreateMenuItem("80% Glass", () => SetNoteOpacity(0.8)));
-        opacityMenu.Items.Add(CreateMenuItem("65% Translucent", () => SetNoteOpacity(0.65)));
-        opacityMenu.Items.Add(CreateMenuItem("50% Stealth", () => SetNoteOpacity(0.5)));
+        var opacityMenu = new MenuItem { Header = LocalizationService.T("Menu_OpacityHeader", (int)(_userConfiguredOpacity * 100)) };
+        opacityMenu.Items.Add(CreateMenuItem(LocalizationService.T("Menu_Opacity100"), () => SetNoteOpacity(1.0)));
+        opacityMenu.Items.Add(CreateMenuItem(LocalizationService.T("Menu_Opacity90"), () => SetNoteOpacity(0.9)));
+        opacityMenu.Items.Add(CreateMenuItem(LocalizationService.T("Menu_Opacity80"), () => SetNoteOpacity(0.8)));
+        opacityMenu.Items.Add(CreateMenuItem(LocalizationService.T("Menu_Opacity65"), () => SetNoteOpacity(0.65)));
+        opacityMenu.Items.Add(CreateMenuItem(LocalizationService.T("Menu_Opacity50"), () => SetNoteOpacity(0.5)));
         opacityMenu.Items.Add(new Separator());
 
         bool isDimEnabled = _settingsService.Settings.EnableUnfocusedTransparency;
         var toggleDimItem = new MenuItem
         {
-            Header = isDimEnabled ? "✓ Dim When Unfocused (Enabled)" : "Dim When Unfocused (Disabled)"
+            Header = isDimEnabled ? $"✓ {LocalizationService.T("Menu_DimUnfocusedEnabled")}" : LocalizationService.T("Menu_DimUnfocusedDisabled")
         };
-        toggleDimItem.Click += (s, e) =>
+        toggleDimItem.Click += (s, ev) =>
         {
             _settingsService.Settings.EnableUnfocusedTransparency = !isDimEnabled;
             _settingsService.Save();
@@ -887,13 +947,13 @@ public partial class StickyNoteWindow : Window
         menu.Items.Add(opacityMenu);
 
         // Text Proofing Submenu
-        var proofingMenu = new MenuItem { Header = "Text Proofing & Language" };
+        var proofingMenu = new MenuItem { Header = LocalizationService.T("Menu_Proofing") };
         bool isSpellCheck = _settingsService.Settings.EnableSpellCheck;
         var toggleSpellCheckItem = new MenuItem
         {
-            Header = isSpellCheck ? "✓ Spell Check Underlines (Enabled)" : "Spell Check Underlines (Disabled)"
+            Header = isSpellCheck ? $"✓ {LocalizationService.T("Menu_SpellCheckEnabled")}" : LocalizationService.T("Menu_SpellCheckDisabled")
         };
-        toggleSpellCheckItem.Click += (s, e) =>
+        toggleSpellCheckItem.Click += (s, ev) =>
         {
             _settingsService.Settings.EnableSpellCheck = !isSpellCheck;
             _settingsService.Save();
@@ -904,9 +964,9 @@ public partial class StickyNoteWindow : Window
         bool isAutocorrect = _settingsService.Settings.EnableAutocorrect;
         var toggleAutocorrectItem = new MenuItem
         {
-            Header = isAutocorrect ? "✓ Autocorrect Common Typos (Enabled)" : "Autocorrect Common Typos (Disabled)"
+            Header = isAutocorrect ? $"✓ {LocalizationService.T("Menu_AutocorrectEnabled")}" : LocalizationService.T("Menu_AutocorrectDisabled")
         };
-        toggleAutocorrectItem.Click += (s, e) =>
+        toggleAutocorrectItem.Click += (s, ev) =>
         {
             _settingsService.Settings.EnableAutocorrect = !isAutocorrect;
             _settingsService.Save();
@@ -916,9 +976,9 @@ public partial class StickyNoteWindow : Window
         bool isAutoCap = _settingsService.Settings.AutoCapitalizeSentences;
         var toggleAutoCapItem = new MenuItem
         {
-            Header = isAutoCap ? "✓ Auto-Capitalize Sentences (Enabled)" : "Auto-Capitalize Sentences (Disabled)"
+            Header = isAutoCap ? $"✓ {LocalizationService.T("Menu_AutoCapitalizeEnabled")}" : LocalizationService.T("Menu_AutoCapitalizeDisabled")
         };
-        toggleAutoCapItem.Click += (s, e) =>
+        toggleAutoCapItem.Click += (s, ev) =>
         {
             _settingsService.Settings.AutoCapitalizeSentences = !isAutoCap;
             _settingsService.Save();
@@ -928,9 +988,9 @@ public partial class StickyNoteWindow : Window
         bool isSymbols = _settingsService.Settings.SmartSymbolReplacements;
         var toggleSymbolsItem = new MenuItem
         {
-            Header = isSymbols ? "✓ Smart Symbols: -> to → (Enabled)" : "Smart Symbols (Disabled)"
+            Header = isSymbols ? $"✓ {LocalizationService.T("Menu_SmartSymbolsEnabled")}" : LocalizationService.T("Menu_SmartSymbolsDisabled")
         };
-        toggleSymbolsItem.Click += (s, e) =>
+        toggleSymbolsItem.Click += (s, ev) =>
         {
             _settingsService.Settings.SmartSymbolReplacements = !isSymbols;
             _settingsService.Save();
@@ -942,7 +1002,7 @@ public partial class StickyNoteWindow : Window
         var activeLangOption = TextProofingService.SupportedLanguages.FirstOrDefault(l => l.Code.Equals(_settingsService.Settings.ProofingLanguage, StringComparison.OrdinalIgnoreCase))
             ?? TextProofingService.SupportedLanguages[0];
 
-        var langSubmenu = new MenuItem { Header = $"Proofing Language ({activeLangOption.DisplayName})" };
+        var langSubmenu = new MenuItem { Header = LocalizationService.T("Menu_ProofingLang", activeLangOption.DisplayName) };
         foreach (var lang in TextProofingService.SupportedLanguages)
         {
             bool isSelected = string.Equals(lang.Code, _settingsService.Settings.ProofingLanguage, StringComparison.OrdinalIgnoreCase);
@@ -951,7 +1011,7 @@ public partial class StickyNoteWindow : Window
                 Header = isSelected ? $"✓ {lang.DisplayName}" : lang.DisplayName,
                 FontWeight = isSelected ? FontWeights.Bold : FontWeights.Normal
             };
-            langItem.Click += (s, e) =>
+            langItem.Click += (s, ev) =>
             {
                 _settingsService.Settings.ProofingLanguage = lang.Code;
                 _settingsService.Save();
@@ -965,13 +1025,13 @@ public partial class StickyNoteWindow : Window
         menu.Items.Add(new Separator());
 
         // Copy Note Content
-        menu.Items.Add(CreateMenuItem("Copy All Content (Ctrl+Shift+C)", CopyAllContent));
+        menu.Items.Add(CreateMenuItem(LocalizationService.T("Menu_CopyAllContent"), CopyAllContent));
 
         // Export Note as Markdown
-        menu.Items.Add(CreateMenuItem("Export as Markdown (.md)", ExportNoteAsMarkdown));
+        menu.Items.Add(CreateMenuItem(LocalizationService.T("Menu_ExportMarkdown"), ExportNoteAsMarkdown));
 
         // Duplicate Note
-        menu.Items.Add(CreateMenuItem("Duplicate Note", () =>
+        menu.Items.Add(CreateMenuItem(LocalizationService.T("Menu_DuplicateNote"), () =>
         {
             var clone = _note.Clone();
             _storageService.AddNote(clone);
@@ -983,15 +1043,15 @@ public partial class StickyNoteWindow : Window
         // Clear completed checklist items if in checklist mode
         if (_note.ViewMode == NoteViewMode.Checklist)
         {
-            menu.Items.Add(CreateMenuItem("Clear Completed Tasks", ClearCompletedTasks));
+            menu.Items.Add(CreateMenuItem(LocalizationService.T("Menu_ClearCompletedTasks"), ClearCompletedTasks));
             menu.Items.Add(new Separator());
         }
 
         // Settings & Preferences
-        menu.Items.Add(CreateMenuItem("Settings & Preferences...", OpenSettings));
+        menu.Items.Add(CreateMenuItem(LocalizationService.T("Tray_Settings"), OpenSettings));
 
         // Check for Updates
-        menu.Items.Add(CreateMenuItem("Check for Updates... (v2.0.1)", () =>
+        menu.Items.Add(CreateMenuItem(LocalizationService.T("Tray_CheckUpdates", UpdateService.CurrentVersion), () =>
         {
             _ = UpdateService.CheckForUpdatesAsync(isManualCheck: true);
         }));
@@ -999,7 +1059,7 @@ public partial class StickyNoteWindow : Window
         menu.Items.Add(new Separator());
 
         // Delete Note
-        menu.Items.Add(CreateMenuItem("Delete Note", DeleteNote));
+        menu.Items.Add(CreateMenuItem(LocalizationService.T("Menu_DeleteNote"), DeleteNote));
 
         menu.PlacementTarget = BtnMore;
         menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
@@ -1012,6 +1072,9 @@ public partial class StickyNoteWindow : Window
         {
             ApplyTheme(_note.ColorKey);
             ApplyFocusOpacity(IsActive);
+            ApplyProofingSettings();
+            App.Instance?.NotifyProofingSettingsChanged();
+            App.Instance?.NotifyTransparencySettingsChanged();
             MemoryOptimizer.TrimMemory();
         });
         dlg.Owner = this;
@@ -1237,7 +1300,7 @@ public partial class StickyNoteWindow : Window
         {
             var sfd = new SaveFileDialog
             {
-                Filter = "Markdown File (*.md)|*.md|Text File (*.txt)|*.txt",
+                Filter = LocalizationService.T("Export_Filter"),
                 FileName = string.IsNullOrWhiteSpace(_note.Title) ? "SmartNote.md" : $"{_note.Title}.md"
             };
             if (sfd.ShowDialog() == true)
@@ -1254,7 +1317,13 @@ public partial class StickyNoteWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Failed to export note: {ex.Message}", "SmartNotes Export", MessageBoxButton.OK, MessageBoxImage.Warning);
+            ModernMessageBox.Show(
+                LocalizationService.T("Export_Failed", ex.Message),
+                LocalizationService.T("Export_DialogTitle"),
+                ModernMessageButtons.OK,
+                ModernMessageIcon.Warning,
+                LocalizationService.T("Export_Heading")
+            );
         }
     }
 
@@ -1483,6 +1552,21 @@ public partial class StickyNoteWindow : Window
         var proofing = TextProofingService.Instance;
         var settings = _settingsService.Settings;
 
+        string langCode = settings.ProofingLanguage;
+        if (string.IsNullOrWhiteSpace(langCode) || langCode.Equals("auto", StringComparison.OrdinalIgnoreCase))
+        {
+            langCode = System.Globalization.CultureInfo.CurrentUICulture.IetfLanguageTag;
+        }
+
+        try
+        {
+            this.Language = XmlLanguage.GetLanguage(langCode);
+        }
+        catch
+        {
+            this.Language = XmlLanguage.GetLanguage("en-US");
+        }
+
         proofing.ApplyProofingToTextBox(TxtContent, settings);
         proofing.ApplyProofingToTextBox(TxtTitle, settings);
         proofing.ApplyProofingToTextBox(TxtNewTask, settings);
@@ -1536,11 +1620,36 @@ public partial class StickyNoteWindow : Window
         }
     }
 
+    private void TextBox_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is TextBox tb)
+        {
+            tb.Focus();
+            Point mousePos = e.GetPosition(tb);
+            int charIdx = tb.GetCharacterIndexFromPoint(mousePos, snapToText: true);
+            if (charIdx >= 0)
+            {
+                tb.CaretIndex = charIdx;
+            }
+        }
+    }
+
+    private void TextBox_PreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is not TextBox tb) return;
+        e.Handled = true; // Intercepts tunneling right-click to completely suppress WPF's default white menu!
+
+        ShowObsidianContextMenu(tb, e.GetPosition(tb));
+    }
+
     private void TextBox_ContextMenuOpening(object sender, ContextMenuEventArgs e)
     {
         if (sender is not TextBox tb) return;
-        e.Handled = true; // Prevent default Windows context menu
+        e.Handled = true; // Suppress any fallback system menu
+    }
 
+    private void ShowObsidianContextMenu(TextBox tb, Point mousePos)
+    {
         var menu = new ContextMenu();
         if (Application.Current.TryFindResource(typeof(ContextMenu)) is Style cmStyle)
         {
@@ -1549,28 +1658,60 @@ public partial class StickyNoteWindow : Window
 
         var settings = _settingsService.Settings;
 
-        // 1. Spelling Suggestions if right-clicked on an error
-        Point mousePos = Mouse.GetPosition(tb);
+        // 1. Spelling Suggestions if right-clicked on or adjacent to an error
         int charIndex = tb.GetCharacterIndexFromPoint(mousePos, snapToText: true);
-        SpellingError? error = (charIndex >= 0) ? tb.GetSpellingError(charIndex) : null;
+        SpellingError? error = null;
+        int targetIndex = -1;
+
+        if (charIndex >= 0)
+        {
+            error = tb.GetSpellingError(charIndex);
+            if (error != null)
+            {
+                targetIndex = charIndex;
+            }
+            else if (charIndex > 0)
+            {
+                error = tb.GetSpellingError(charIndex - 1);
+                if (error != null)
+                {
+                    targetIndex = charIndex - 1;
+                }
+            }
+        }
+
         if (error == null && tb.CaretIndex >= 0)
         {
             error = tb.GetSpellingError(tb.CaretIndex);
+            if (error != null)
+            {
+                targetIndex = tb.CaretIndex;
+            }
+            else if (tb.CaretIndex > 0)
+            {
+                error = tb.GetSpellingError(tb.CaretIndex - 1);
+                if (error != null)
+                {
+                    targetIndex = tb.CaretIndex - 1;
+                }
+            }
         }
 
-        if (error != null)
+        if (error != null && targetIndex >= 0)
         {
             var headerItem = new MenuItem
             {
-                Header = "SPELLING SUGGESTIONS",
+                Header = LocalizationService.T("Menu_SpellingSuggestions"),
                 IsEnabled = false,
                 FontWeight = FontWeights.Bold,
-                Foreground = AmberBrush
+                FontSize = 11.5,
+                Foreground = AmberBrush,
+                Opacity = 1.0,
+                Padding = new Thickness(9, 4, 9, 2)
             };
             menu.Items.Add(headerItem);
             
             var suggestions = error.Suggestions.Take(5).ToList();
-            int targetIndex = (charIndex >= 0 && tb.GetSpellingError(charIndex) != null) ? charIndex : tb.CaretIndex;
             int errStart = tb.GetSpellingErrorStart(targetIndex);
             int errLen = tb.GetSpellingErrorLength(targetIndex);
             string misspelled = (errStart >= 0 && errStart + errLen <= tb.Text.Length) ? tb.Text.Substring(errStart, errLen) : "";
@@ -1583,8 +1724,9 @@ public partial class StickyNoteWindow : Window
                     {
                         Header = suggestion,
                         FontWeight = FontWeights.SemiBold,
+                        FontSize = 13.5,
                         Foreground = new SolidColorBrush(Colors.White),
-                        Icon = new LucideIcon { IconKey = "check", Size = 15, StrokeThickness = 3, Foreground = EmeraldBrush }
+                        Icon = new LucideIcon { IconKey = "check", Size = 13, StrokeThickness = 2.0, Foreground = EmeraldBrush }
                     };
                     suggItem.Click += (s, ev) =>
                     {
@@ -1598,9 +1740,9 @@ public partial class StickyNoteWindow : Window
             {
                 var noSugg = new MenuItem
                 {
-                    Header = "(No spelling suggestions)",
+                    Header = LocalizationService.T("Menu_NoSuggestions"),
                     IsEnabled = false,
-                    Icon = new LucideIcon { IconKey = "spell-check", Size = 13, StrokeThickness = 2.4, Foreground = MutedBrush }
+                    Icon = new LucideIcon { IconKey = "spell-check", Size = 13, StrokeThickness = 1.8, Foreground = MutedBrush }
                 };
                 menu.Items.Add(noSugg);
             }
@@ -1611,8 +1753,8 @@ public partial class StickyNoteWindow : Window
             {
                 var addDictItem = new MenuItem
                 {
-                    Header = $"Add \"{misspelled}\" to Dictionary",
-                    Icon = new LucideIcon { IconKey = "book-plus", Size = 14, StrokeThickness = 2.4, Foreground = AmberBrush }
+                    Header = LocalizationService.T("Menu_AddToDict", misspelled),
+                    Icon = new LucideIcon { IconKey = "book-plus", Size = 14, StrokeThickness = 1.8, Foreground = AmberBrush }
                 };
                 addDictItem.Click += (s, ev) =>
                 {
@@ -1624,8 +1766,8 @@ public partial class StickyNoteWindow : Window
 
             var ignoreItem = new MenuItem
             {
-                Header = "Ignore All Occurrences",
-                Icon = new LucideIcon { IconKey = "eye-off", Size = 14, StrokeThickness = 2.4, Foreground = MutedBrush }
+                Header = LocalizationService.T("Menu_IgnoreAll"),
+                Icon = new LucideIcon { IconKey = "eye-off", Size = 14, StrokeThickness = 1.8, Foreground = MutedBrush }
             };
             ignoreItem.Click += (s, ev) =>
             {
@@ -1639,40 +1781,40 @@ public partial class StickyNoteWindow : Window
         // 2. Standard Clipboard Actions
         var cutItem = new MenuItem
         {
-            Header = "Cut",
+            Header = LocalizationService.T("Menu_Cut"),
             InputGestureText = "Ctrl+X",
             IsEnabled = !tb.IsReadOnly && tb.SelectionLength > 0,
-            Icon = new LucideIcon { IconKey = "scissors", Size = 13, StrokeThickness = 2.4, Foreground = MutedBrush }
+            Icon = new LucideIcon { IconKey = "scissors", Size = 13, StrokeThickness = 1.8, Foreground = MutedBrush }
         };
         cutItem.Click += (s, ev) => tb.Cut();
         menu.Items.Add(cutItem);
 
         var copyItem = new MenuItem
         {
-            Header = "Copy",
+            Header = LocalizationService.T("Menu_Copy"),
             InputGestureText = "Ctrl+C",
             IsEnabled = tb.SelectionLength > 0,
-            Icon = new LucideIcon { IconKey = "copy", Size = 13, StrokeThickness = 2.4, Foreground = MutedBrush }
+            Icon = new LucideIcon { IconKey = "copy", Size = 13, StrokeThickness = 1.8, Foreground = MutedBrush }
         };
         copyItem.Click += (s, ev) => tb.Copy();
         menu.Items.Add(copyItem);
 
         var pasteItem = new MenuItem
         {
-            Header = "Paste",
+            Header = LocalizationService.T("Menu_Paste"),
             InputGestureText = "Ctrl+V",
             IsEnabled = !tb.IsReadOnly && Clipboard.ContainsText(),
-            Icon = new LucideIcon { IconKey = "clipboard", Size = 13, StrokeThickness = 2.4, Foreground = MutedBrush }
+            Icon = new LucideIcon { IconKey = "clipboard", Size = 13, StrokeThickness = 1.8, Foreground = MutedBrush }
         };
         pasteItem.Click += (s, ev) => tb.Paste();
         menu.Items.Add(pasteItem);
 
         var selectAllItem = new MenuItem
         {
-            Header = "Select All",
+            Header = LocalizationService.T("Menu_SelectAll"),
             InputGestureText = "Ctrl+A",
             IsEnabled = tb.Text.Length > 0,
-            Icon = new LucideIcon { IconKey = "square", Size = 13, StrokeThickness = 2.4, Foreground = MutedBrush }
+            Icon = new LucideIcon { IconKey = "square", Size = 13, StrokeThickness = 1.8, Foreground = MutedBrush }
         };
         selectAllItem.Click += (s, ev) => tb.SelectAll();
         menu.Items.Add(selectAllItem);
@@ -1682,14 +1824,14 @@ public partial class StickyNoteWindow : Window
         // 3. Text Proofing & Language Submenu
         var proofingMenu = new MenuItem
         {
-            Header = "Text Proofing & Language",
-            Icon = new LucideIcon { IconKey = "spell-check", Size = 14, StrokeThickness = 2.6, Foreground = AmberBrush }
+            Header = LocalizationService.T("Menu_Proofing"),
+            Icon = new LucideIcon { IconKey = "globe", Size = 14, StrokeThickness = 1.9, Foreground = AmberBrush }
         };
 
         // Spell Check Toggle
         var spellCheckToggle = new MenuItem
         {
-            Header = settings.EnableSpellCheck ? "✓ Spell Check (Enabled)" : "Spell Check (Disabled)"
+            Header = settings.EnableSpellCheck ? $"✓ {LocalizationService.T("Menu_SpellCheck")}" : LocalizationService.T("Menu_SpellCheck")
         };
         spellCheckToggle.Click += (s, ev) =>
         {
@@ -1702,7 +1844,7 @@ public partial class StickyNoteWindow : Window
         // Autocorrect Toggle
         var autocorrectToggle = new MenuItem
         {
-            Header = settings.EnableAutocorrect ? "✓ Autocorrect Common Typos (Enabled)" : "Autocorrect Common Typos (Disabled)"
+            Header = settings.EnableAutocorrect ? $"✓ {LocalizationService.T("Menu_Autocorrect")}" : LocalizationService.T("Menu_Autocorrect")
         };
         autocorrectToggle.Click += (s, ev) =>
         {
@@ -1714,7 +1856,7 @@ public partial class StickyNoteWindow : Window
         // Sentence Capitalization Toggle
         var autoCapToggle = new MenuItem
         {
-            Header = settings.AutoCapitalizeSentences ? "✓ Auto-Capitalize Sentences (Enabled)" : "Auto-Capitalize Sentences (Disabled)"
+            Header = settings.AutoCapitalizeSentences ? $"✓ {LocalizationService.T("Menu_AutoCapitalize")}" : LocalizationService.T("Menu_AutoCapitalize")
         };
         autoCapToggle.Click += (s, ev) =>
         {
@@ -1726,7 +1868,7 @@ public partial class StickyNoteWindow : Window
         // Smart Symbols Toggle
         var smartSymToggle = new MenuItem
         {
-            Header = settings.SmartSymbolReplacements ? "✓ Smart Symbols: -> to → (Enabled)" : "Smart Symbols (Disabled)"
+            Header = settings.SmartSymbolReplacements ? $"✓ {LocalizationService.T("Menu_SmartSymbols")}" : LocalizationService.T("Menu_SmartSymbols")
         };
         smartSymToggle.Click += (s, ev) =>
         {
@@ -1743,8 +1885,8 @@ public partial class StickyNoteWindow : Window
 
         var langSubmenu = new MenuItem
         {
-            Header = $"Language ({activeLangOption.DisplayName})",
-            Icon = new LucideIcon { IconKey = "languages", Size = 13, StrokeThickness = 2.4, Foreground = MutedBrush }
+            Header = $"{LocalizationService.T("Menu_Language")} ({activeLangOption.DisplayName})",
+            Icon = new LucideIcon { IconKey = "languages", Size = 13, StrokeThickness = 1.8, Foreground = MutedBrush }
         };
 
         foreach (var lang in TextProofingService.SupportedLanguages)
@@ -1767,7 +1909,9 @@ public partial class StickyNoteWindow : Window
 
         menu.Items.Add(proofingMenu);
 
+        tb.ContextMenu = menu;
         menu.PlacementTarget = tb;
+        menu.Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint;
         menu.IsOpen = true;
     }
 }

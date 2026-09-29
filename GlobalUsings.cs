@@ -16,3 +16,4 @@ global using MessageBox = System.Windows.MessageBox;
 global using Clipboard = System.Windows.Clipboard;
 global using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 global using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
+global using XmlLanguage = System.Windows.Markup.XmlLanguage;
