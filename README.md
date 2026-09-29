@@ -2,15 +2,16 @@
 
 # 📝 SmartNotes
 
-**Sleek Desktop Sticky Notes for Windows with Win32 Permanent Layer Sticking & Magnetic Stack Docking**
+**High-Performance Desktop Sticky Notes for Windows with Win32 Permanent Layer Sticking, Multi-Language Proofing & Magnetic Stack Docking**
 
 [![Download Latest Release](https://img.shields.io/badge/Download-Latest_Release_(Windows)-06B6D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/OlfJD/SmartNotes/releases/latest/download/SmartNotes-win-x64.zip)
 [![GitHub Release](https://img.shields.io/github/v/release/OlfJD/SmartNotes?style=for-the-badge&color=10B981)](https://github.com/OlfJD/SmartNotes/releases/latest)
 [![Platform](https://img.shields.io/badge/Platform-Windows_10_%2F_11-3B82F6?style=for-the-badge&logo=windows)](https://github.com/OlfJD/SmartNotes)
+[![Framework](https://img.shields.io/badge/.NET-10.0_WPF-8B5CF6?style=for-the-badge&logo=dotnet)](https://dotnet.microsoft.com/)
 
 ### 📥 [👉 Click Here to Download SmartNotes for Windows (.zip)](https://github.com/OlfJD/SmartNotes/releases/latest/download/SmartNotes-win-x64.zip)
 
-*(No installation required — just extract and run!)*
+*(Standalone portable app — no installation required, simply extract and run!)*
 
 <br/>
 
@@ -28,63 +29,129 @@
 
 ---
 
-## ✨ Features
+## ✨ Key Features
 
-- **🌍 App-Wide Multi-Language Localization (v2.1)**:
-  - **Bilingual English & German UI**: Fully localized settings dashboard, sidebars, note context menus, transparency popups, tray notifications, and updater alerts.
-  - **Dynamic Real-Time Language Switching**: Change display languages instantly from Settings without restarting.
-  - **Startup Language Detection & Prompt**: Automatically detects system locale and offers 1-click configuration on first launch or update.
+### 🌍 App-Wide Multi-Language Localization (v2.1)
+- **Bilingual English (`en`) & German (`de`) UI**: Fully translated Settings & Preferences dashboard, note context menus, transparency popups, tray menus, timestamps (*"Just now"* / *"Gerade eben"*), and updater alerts.
+- **Dynamic Real-Time UI Switching**: Change display languages in Settings with instant live re-rendering across all open notes without restarting.
+- **Startup System Detection & Prompt**: Automatically detects your Windows locale (`CultureInfo.InstalledUICulture`) on first launch and offers 1-click language setup.
 
-- **✍️ Native Text Proofing, Spell Checking & Autocorrect Engine (v2.0 - v2.1)**:
-  - **Live Spell Checking**: Underlines misspelled words with real-time red squiggles across notes, titles, checklists, and copy compartments.
-  - **12 Proofing Languages**: Switch seamlessly between English (US/UK/CA/AU), German, Spanish, French, Italian, Portuguese, Dutch, Polish, and Swedish.
-  - **Intelligent Autocorrect as You Type**: Automatically corrects 150+ common typos (e.g., `teh` → `the`, `dont` → `don't`, `recieve` → `receive`) with casing preservation (`TEH` → `THE`).
-  - **Instant Backspace Undo**: Changed your mind? Pressing `Backspace` immediately after an autocorrect reverts the word back to your exact typed input.
-  - **Smart Typography & Symbols**: Converts shortcuts on the fly (`->` to `→`, `<-` to `←`, `=>` to `⇒`, `!=` to `≠`, `--` to `—`, `(c)` to `©`, `(r)` to `®`, `+-` to `±`, etc.).
-  - **Auto-Capitalization**: Automatically capitalizes sentence beginnings and standalone `i` → `I`.
-  - **Custom Dictionary & Rules**: Add words directly via the context menu or customize rules in `%APPDATA%\SmartNotes\`.
-  - **Obsidian Dark Context Menus**: Sleek right-click menus with spelling suggestions, "Add to Dictionary", "Ignore All", Cut/Copy/Paste, and nested Proofing/Language submenus.
+### ✍️ Native Text Proofing, Spell Checking & Autocorrect (v2.0 - v2.1)
+- **Real-Time Spell Checking**: Red squiggly underlines on misspelled words across note text, titles, checklists, and copy compartments.
+- **12 International Proofing Dictionaries**: Seamlessly switch between English (US/UK/CA/AU), German (`de-DE`), Spanish, French, Italian, Portuguese, Dutch, Polish, and Swedish.
+- **Intelligent Autocorrect As You Type**: Automatically fixes 150+ common typos (e.g., `teh` → `the`, `dont` → `don't`, `recieve` → `receive`, `seperate` → `separate`) with casing preservation (`TEH` → `THE`).
+- **Instant Backspace Undo UX**: Pressing `Backspace` immediately after an autocorrect reverts the word back to your exact typed characters.
+- **Smart Typography & Symbol Replacements**: Converts shortcuts on the fly (`->` to `→`, `<-` to `←`, `=>` to `⇒`, `!=` to `≠`, `--` to `—`, `(c)` to `©`, `(r)` to `®`, `+-` to `±`, etc.).
+- **Auto-Capitalization**: Automatically capitalizes sentence beginnings and standalone `i` → `I`.
+- **Custom User Dictionary & Rules**: Add words directly via the context menu (`custom_dict.lex`) or define text expansion macros in `%APPDATA%\SmartNotes\autocorrect_rules.json`.
 
-- **⚡ Zero-RAM Idle Architecture & Automatic Memory Trimming (v2.1)**:
-  - **Zero-RAM Dictionaries**: Inactive language dictionaries and unopened notes consume 0 MB of RAM while idle.
-  - **Background Working Set Trimming**: Automatically compacts memory heaps and flushes unreferenced pages back to Windows every 3 minutes.
-  - **1-Click RAM Optimization**: Manual RAM trimming with live Before/After/Freed MB telemetry in Settings and System Tray.
+### ⚙️ Modern Settings & Preferences Dashboard
+- **6-Category Sidebar Navigation**:
+  1. 🖥️ **Desktop & System**: Language selection, Windows startup, background transparency, and desktop sticking.
+  2. 🎨 **Note Appearance**: Default theme palettes, font scaling, and interactive live card preview.
+  3. ⌨️ **Global Hotkeys**: System-wide keyboard shortcut toggles.
+  4. ✍️ **Text Proofing**: Spellcheck, proofing dictionaries, autocorrect, sentence capitalization, and symbol rules.
+  5. 🗑️ **Trash & Recovery**: 48-hour accidental deletion protection and explorer management.
+  6. ⚡ **Memory & Performance**: Live RAM telemetry, auto-trimming switches, and cache compaction.
+- **Interactive Live Note Preview**: Renders theme colors, typography scaling, and border weights in real time as you adjust settings.
 
-- **⚙️ Redesigned Modern Settings & Preferences Dashboard (v2.1)**:
-  - Comprehensive sidebar navigation across Desktop & System, Note Appearance, Global Hotkeys, Text Proofing, Trash & Recovery, and Memory & Performance.
-  - Real-time interactive Live Note Preview reflecting theme swatches, font scaling, and border stylings as you configure.
+### ⚡ Zero-RAM Idle Architecture & Memory Optimizer
+- **Zero-RAM Dictionaries**: Inactive language dictionaries, lexicons, and closed notes stay on disk and consume **0 MB of RAM** while idle.
+- **Automatic Background Memory Trimming**: Flushes unreferenced memory pages directly back to the Windows OS kernel every 3 minutes when idle.
+- **1-Click Manual RAM Optimization**: Interactive RAM optimization with live Before / After / Freed MB telemetry.
 
-- **🧲 Magnetic Stack Leader Dragging & Docking**:
-  - Drag notes next to one another to magnetically **snap and stick them together** into connected stacks and clusters.
-  - **Highest Note (Stack Leader)**: Drag the highest note of any docked cluster to move the entire stack around together seamlessly.
-  - **Effortless Peeling & Separation**: Drag any middle or lower note to instantly peel it away from the stack independently (no keyboard shortcuts needed!).
+### 📌 Permanent Desktop Layer Sticking (`HWND_BOTTOM`)
+- **Lives on Desktop Wallpaper**: Notes live on the desktop wallpaper level underneath open browser windows, IDEs, and full-screen games.
+- **Never Steals Focus**: When switching between foreground apps, sticky notes remain quietly docked to your desktop.
+- **Per-Note Pin Modes**: Toggle between **📌 Desktop Stuck (Behind Apps)**, **📌 Always on Top (Floating)**, or **📌 Normal Window**.
 
-- **🎨 Professional 2D Drawing-App Color Picker (v1.1.3)**:
-  - Integrated 2D Saturation / Value gradient canvas with interactive crosshair target thumb (identical to Photoshop, Figma, and Procreate).
-  - Smooth 0–360° Hue spectrum slider, real-time live swatch preview, #Hex code input, and 8 centered obsidian neon presets.
+### 🧲 Magnetic Stack Leader Dragging & Docking
+- **Magnetic Snapping**: Drag notes next to one another to snap and dock them into clean clusters.
+- **Stack Leader Mechanics**: Drag the highest note of any docked cluster to move the entire stack together.
+- **Effortless Single-Note Peeling**: Drag any middle or lower note to peel it away independently without shortcuts.
 
-- **🔄 Automatic Update System (v1.1.3)**:
-  - Automatically scans GitHub for new releases whenever SmartNotes starts up.
-  - Seamless 1-click in-place update download, extraction, and auto-restart.
-  - Manual update checks available in the 3-dot note menu (`⋯`) and system tray.
+### 🎨 2D Drawing-App Color Picker & Neon Themes
+- **2D Saturation / Value Gradient Canvas**: Full 0–100% saturation and brightness adjustment with live mouse dragging.
+- **0–360° Hue Rainbow Spectrum Bar**: Smooth color spectrum bar with interactive thumb indicator.
+- **8 Signature Neon Obsidian Presets**: Radiant Amber, Neon Emerald, Cyber Violet, Electric Cyan, Coral Rose, Stealth Obsidian, Classic Sticky Gold, and Fresh Mint.
 
-- **📌 Permanent Desktop Layer Sticking (Below All Applications)**:
-  - Notes live on the desktop wallpaper level (`HWND_BOTTOM`).
-  - When opening Chrome, games, IDEs, or full-screen apps, SmartNotes stays quietly beneath them without popping over or stealing focus.
-  - Per-note Pin Mode toggle: Switch between **📌 Desktop Stuck (Behind Apps)** and **📌 Always on Top (Floating)**.
+### 📝 3 Specialized Note Modes
+1. **📝 Plain Text / Markdown**: Multiline note taking with live typing indicators, auto-saving, and 1-click Markdown (`.md`) export.
+2. **☑️ Todo Checklist**: Interactive task checkboxes with strike-through, progress indicators, and "Clear Completed Tasks" action.
+3. **📋 Copy Compartments**: Quick-copy snippet rows with dedicated 1-click `[ 📋 ]` copy buttons on every line with green checkmark confirmation.
 
-- **3 Specialized Note Modes**:
-  - **📝 Plain Text / Markdown**: Multiline note taking with markdown export and live auto-save indicators.
-  - **☑️ Todo Checklist**: Interactive task checkboxes with strike-through and progress tracking.
-  - **📋 Copy Compartments**: Quick-copy snippet rows with dedicated 1-click `[ 📋 ]` copy buttons on every line with green checkmark confirmation.
+### 🗑️ 48-Hour Temporary Trash & Note Recovery
+- Safeguards against accidental deletions by retaining deleted notes locally for 48 hours before permanent purging.
+- Restore individual notes, restore all notes, or open the trash folder in Windows Explorer directly from the system tray or settings.
 
-- **Exact Coordinate & Dimension Persistence**:
-  - Automatically remembers every note's exact `(X, Y)` position, `Width`, `Height`, font size, opacity, and color.
-  - Changes save continuously in the background to `%APPDATA%\SmartNotes\notes.json`.
+### 🔄 Seamless In-Place Auto-Updater
+- Automatically checks GitHub Releases for new updates.
+- 1-click automatic background downloading, extraction, in-place updating, and restart.
 
-- **5px Crisp Vector Borders & Zero Black Pixel Artifacts**:
-  - Premium Obsidian dark aesthetics with thick 5px vector borders and seamless antialiased rounded corners.
+---
 
-- **Global System Shortcuts**:
-  - `Win + Alt + N` : Spawn a new sticky note anywhere on your desktop.
-  - `Win + Alt + D` : Toggle Show / Hide all sticky notes on desktop.
+## ⌨️ Keyboard Shortcuts & Gestures
+
+| Shortcut / Action | Function |
+| :--- | :--- |
+| `Win + Alt + N` | Spawn a new sticky note at mouse location |
+| `Win + Alt + D` | Toggle Show / Hide all sticky notes on desktop |
+| `Ctrl + Shift + C` | Copy all content of the active note to clipboard |
+| `Ctrl + X` / `Ctrl + C` / `Ctrl + V` | Standard Cut / Copy / Paste |
+| `Ctrl + A` | Select all text in current note |
+| `Backspace` (after autocorrect) | Undo autocorrect typo fix and restore original text |
+| `Enter` (in Checklist / Copy mode) | Insert new task or snippet line |
+| `Right-Click` on note text | Open Obsidian Dark context menu with spelling suggestions |
+| `Header Drag` | Move note across virtual monitors |
+| `Edge / Corner Drag` | 8-way multi-directional window resizing |
+
+---
+
+## 🛠️ Architecture & Technical Specifications
+
+- **Runtime**: C# / WPF on **.NET 10.0** (`net10.0-windows`, `win-x64`).
+- **Native Subsystem (`Core/Native/`)**:
+  - `Win32Api.cs` & `DesktopWindowManager.cs`: Win32 `HWND_BOTTOM` Z-order enforcement, `WS_EX_TOOLWINDOW` style assignment, and `WM_WINDOWPOSCHANGING` interception.
+  - `WindowBlurHelper.cs`: DWM immersive dark mode (`DWMWA_USE_IMMERSIVE_DARK_MODE`) and corner clip enforcement (`DWMWCP_DONOTROUND`).
+  - `GlobalHotKeyManager.cs`: System-wide hotkey engine via `RegisterHotKey` / `UnregisterHotKey`.
+  - `TrayManager.cs`: Windows Notification Area (System Tray) integration with custom dark context menu and balloon tooltips.
+  - `MemoryOptimizer.cs`: Native `EmptyWorkingSet` memory flush and LOH heap compaction.
+- **Persistence (`Core/Services/`)**:
+  - `NoteStorageService.cs`: Debounced JSON storage to `%APPDATA%\SmartNotes\notes.json`.
+  - `SettingsService.cs`: JSON configuration storage to `%APPDATA%\SmartNotes\settings.json`.
+  - `LocalizationService.cs`: Zero-RAM on-demand string dictionary provider for English and German.
+  - `TextProofingService.cs`: Windows COM `ISpellCheckerFactory` bridge and typo replacement engine.
+- **Typography & Vector Rendering**:
+  - Per-monitor DPI awareness (`PerMonitorV2`).
+  - Subpixel ClearType display formatting (`TextFormattingMode="Display"`, `ClearTypeHint="Enabled"`).
+  - High-precision Lucide vector icons (`LucideIcon.cs`).
+
+---
+
+## 💻 Building from Source
+
+### Prerequisites
+- Windows 10 or Windows 11 (64-bit)
+- [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+
+### Clone & Run
+```bash
+# Clone the repository
+git clone https://github.com/OlfJD/SmartNotes.git
+cd SmartNotes
+
+# Build and run the app
+dotnet run
+```
+
+### Compile Release Binary
+```bash
+dotnet publish -c Release
+```
+The compiled self-contained files will be in `bin/Release/net10.0-windows/win-x64/publish/`.
+
+---
+
+## 📄 License
+
+SmartNotes is open-source software licensed under the **MIT License**. Feel free to use, modify, and distribute it!
