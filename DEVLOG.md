@@ -350,3 +350,16 @@ To support full design-altering themes (not just colors, but layout, borders, ba
 
 
 
+
+### Unreleased (after 2.1.0) - Data Safety & Stability Fixes (2026-11-04)
+- **Notes could be wiped by a damaged `notes.json` (`Core/Services/NoteStorageService.cs`)**: saves overwrote the file in place, so a crash, forced kill or power loss mid-write left it truncated. On the next launch the parse failed, the list was empty, and `Load()` treated that as a first run and **overwrote the file with the welcome notes**, so every note was lost.
+  - Saves are now atomic (`Core/Services/AtomicFile.cs`: write `.tmp`, then `File.Replace`) and keep the previous version as `notes.json.bak`.
+  - If `notes.json` can't be read, it's moved aside as `notes.corrupt-<timestamp>.json` (never overwritten), and notes are recovered from `notes.json.bak` when possible.
+  - Welcome notes are only created on a genuine first run. Before, they also came back 48 h after the user deleted every note and the trash expired.
+  - Trash files and `settings.json` use the same atomic write.
+- **Last edits lost on exit**: changes made within the 400 ms save debounce were dropped when quitting from the tray, updating, or shutting down Windows. `App.OnExit` now flushes every note's pending save (`StickyNoteWindow.FlushPendingSave`).
+- **Updater killed the app mid-save**: `apply_update.bat` force-killed SmartNotes 1 s after launch. It now waits up to ~15 s for a clean exit and only force-kills as a last resort.
+- **Updater version can't drift**: `UpdateService.CurrentVersion` is read from the assembly version (csproj `<Version>`) instead of a hard-coded `2.1.0` that had to be bumped by hand.
+- **Tray menu leak (`Core/Native/TrayManager.cs`)**: every right-click and state change built a new `ContextMenuStrip` and two fonts without disposing the old ones. Because the rebuild ran *after* WinForms had already opened the old menu, it was also wasted work. There's now one menu that repopulates itself in `Opening`, so it's always current.
+- A stray UI exception no longer crashes the app (`DispatcherUnhandledException` is logged and marked handled), so unsaved notes survive it.
+- `startup.log` (appended on every launch) is reset once it exceeds 512 KB and now includes the date.

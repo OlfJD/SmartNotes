@@ -54,13 +54,25 @@ public partial class App : Application
         return result;
     }
 
+    private static bool _logRotated;
+
     private static void LogStartup(string msg)
     {
         try
         {
             string appFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SmartNotes");
             Directory.CreateDirectory(appFolder);
-            File.AppendAllText(Path.Combine(appFolder, "startup.log"), $"[{DateTime.Now:HH:mm:ss.fff}] {msg}\n");
+            string logPath = Path.Combine(appFolder, "startup.log");
+
+            // The log is appended on every launch; start fresh once it passes 512 KB
+            if (!_logRotated)
+            {
+                _logRotated = true;
+                var info = new FileInfo(logPath);
+                if (info.Exists && info.Length > 512 * 1024) info.Delete();
+            }
+
+            File.AppendAllText(logPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] {msg}\n");
         }
         catch { }
     }
@@ -77,6 +89,8 @@ public partial class App : Application
         DispatcherUnhandledException += (s, ev) =>
         {
             LogStartup($"[DispatcherUnhandledException] {ev.Exception}\n{ev.Exception.StackTrace}");
+            // Keep the tray app (and any unsaved note edits) alive instead of crashing on a stray UI exception
+            ev.Handled = true;
         };
 
         bool ownsMutex = false;
@@ -622,6 +636,11 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         LogStartup($"OnExit called with ExitCode: {e.ApplicationExitCode}");
+        // Edits made within the last 400 ms are still sitting in each note's save debounce
+        foreach (var win in _activeNoteWindows.Values.ToList())
+        {
+            try { win.FlushPendingSave(); } catch { }
+        }
         try { _trayManager?.Dispose(); } catch { }
         try { _hotKeyManager?.Dispose(); } catch { }
         try { _instanceEvent?.Dispose(); } catch { }

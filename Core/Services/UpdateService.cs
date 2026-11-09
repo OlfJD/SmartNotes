@@ -19,7 +19,15 @@ namespace SmartNotes.Core.Services;
 public static class UpdateService
 {
     private const string GitHubApiUrl = "https://api.github.com/repos/OlfJD/SmartNotes/releases/latest";
-    public static readonly Version CurrentVersion = new(2, 1, 0);
+    // Read from the assembly (csproj <Version>) so it can't drift from the shipped build; a stale
+    // hard-coded value would keep offering the same "update" forever.
+    public static readonly Version CurrentVersion = GetAssemblyVersion();
+
+    private static Version GetAssemblyVersion()
+    {
+        var v = Assembly.GetExecutingAssembly().GetName().Version;
+        return v == null ? new Version(0, 0, 0) : new Version(v.Major, v.Minor, Math.Max(0, v.Build));
+    }
 
     private static readonly HttpClient HttpClient = new()
     {
@@ -168,10 +176,22 @@ public static class UpdateService
             int currentPid = Environment.ProcessId;
 
             string scriptPath = Path.Combine(tempDir, "apply_update.bat");
+            // Wait (up to ~15 s) for the app to exit on its own so pending note saves are flushed;
+            // only force-kill as a last resort.
             string scriptContent = $@"@echo off
+set /a tries=0
+:waitloop
+tasklist /FI ""PID eq {currentPid}"" 2>nul | find ""{currentPid}"" >nul
+if errorlevel 1 goto apply
+set /a tries+=1
+if %tries% geq 30 (
+    taskkill /F /PID {currentPid} > nul 2>&1
+    timeout /t 1 /nobreak > nul
+    goto apply
+)
 timeout /t 1 /nobreak > nul
-taskkill /F /PID {currentPid} > nul 2>&1
-timeout /t 1 /nobreak > nul
+goto waitloop
+:apply
 xcopy /Y /E /I ""{extractPath}\*"" ""{appDir}\"" > nul
 start """" ""{Path.Combine(appDir, "SmartNotes.exe")}""
 exit
