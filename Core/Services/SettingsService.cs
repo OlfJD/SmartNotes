@@ -49,7 +49,7 @@ public class SettingsService
         {
             Directory.CreateDirectory(AppFolder);
             string json = JsonSerializer.Serialize(Settings, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(SettingsPath, json);
+            AtomicFile.WriteAllText(SettingsPath, json);
             AutoStartManager.SyncStartupRegistration(Settings.LaunchOnStartup);
         }
         catch (Exception ex)

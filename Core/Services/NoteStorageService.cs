@@ -14,8 +14,9 @@ public class NoteStorageService
         "SmartNotes"
     );
     private static readonly string NotesFilePath = Path.Combine(AppFolder, "notes.json");
-    private static readonly string BackupsFolder = Path.Combine(AppFolder, "backups");
+    private static readonly string NotesBackupPath = Path.Combine(AppFolder, "notes.json.bak");
     private static readonly string TrashFolder = Path.Combine(AppFolder, "trash");
+    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
     public static readonly TimeSpan TrashRetentionPeriod = TimeSpan.FromHours(48);
 
@@ -45,6 +46,8 @@ public class NoteStorageService
         lock (_lock)
         {
             _notes.Clear();
+            bool isFirstRun = false;
+            bool recoveredFromBackup = false;
             try
             {
                 Directory.CreateDirectory(AppFolder);
@@ -53,23 +56,32 @@ public class NoteStorageService
                 // Auto-purge any deleted files older than 48 hours
                 PurgeExpiredTrash();
 
-                if (File.Exists(NotesFilePath))
+                isFirstRun = !File.Exists(NotesFilePath) && !File.Exists(NotesBackupPath);
+
+                var list = TryReadNotes(NotesFilePath, out bool mainFileCorrupt);
+                if (mainFileCorrupt)
                 {
-                    string json = File.ReadAllText(NotesFilePath);
-                    var list = JsonSerializer.Deserialize<List<NoteItem>>(json);
-                    if (list != null && list.Count > 0)
+                    // Never let a damaged notes.json be overwritten: keep it aside for manual recovery
+                    PreserveCorruptFile(NotesFilePath);
+                }
+                if (list == null && File.Exists(NotesBackupPath))
+                {
+                    list = TryReadNotes(NotesBackupPath, out _);
+                    recoveredFromBackup = list != null;
+                }
+
+                if (list != null)
+                {
+                    foreach (var item in list)
                     {
-                        foreach (var item in list)
+                        // Migrate legacy inline deleted notes into dedicated 48h trash folder
+                        if (item.IsDeleted)
                         {
-                            // Migrate legacy inline deleted notes into dedicated 48h trash folder
-                            if (item.IsDeleted)
-                            {
-                                SaveToTrash(item);
-                            }
-                            else
-                            {
-                                _notes.Add(item);
-                            }
+                            SaveToTrash(item);
+                        }
+                        else
+                        {
+                            _notes.Add(item);
                         }
                     }
                 }
@@ -79,12 +91,49 @@ public class NoteStorageService
                 System.Diagnostics.Debug.WriteLine($"Error loading notes: {ex.Message}");
             }
 
-            // If completely empty, create initial welcome notes demonstrating capabilities!
-            if (_notes.Count == 0 && GetDeletedNotes().Count == 0)
+            // Welcome notes only on a genuine first run - not when the file failed to load
+            // (that used to replace every note with the welcome set) or when the user deleted them all
+            if (isFirstRun)
             {
                 CreateDefaultWelcomeNotes();
                 Save();
             }
+            else if (recoveredFromBackup)
+            {
+                Save();
+            }
+        }
+    }
+
+    /// <summary>Returns null if the file is missing or unreadable; <paramref name="corrupt"/> tells which.</summary>
+    private static List<NoteItem>? TryReadNotes(string path, out bool corrupt)
+    {
+        corrupt = false;
+        if (!File.Exists(path)) return null;
+        try
+        {
+            var list = JsonSerializer.Deserialize<List<NoteItem>>(File.ReadAllText(path));
+            if (list == null) corrupt = true;
+            return list;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Unreadable notes file {path}: {ex.Message}");
+            corrupt = true;
+            return null;
+        }
+    }
+
+    private static void PreserveCorruptFile(string path)
+    {
+        try
+        {
+            string target = Path.Combine(AppFolder, $"notes.corrupt-{DateTime.Now:yyyyMMdd-HHmmss}.json");
+            File.Move(path, target, overwrite: true);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Could not preserve corrupt notes file: {ex.Message}");
         }
     }
 
@@ -95,8 +144,8 @@ public class NoteStorageService
             try
             {
                 Directory.CreateDirectory(AppFolder);
-                string json = JsonSerializer.Serialize(_notes, new JsonSerializerOptions { WriteIndented = true });
-                File.WriteAllText(NotesFilePath, json);
+                string json = JsonSerializer.Serialize(_notes, JsonOptions);
+                AtomicFile.WriteAllText(NotesFilePath, json, NotesBackupPath);
             }
             catch (Exception ex)
             {
@@ -172,8 +221,8 @@ public class NoteStorageService
         {
             Directory.CreateDirectory(TrashFolder);
             string filePath = Path.Combine(TrashFolder, $"note_{note.Id:N}.json");
-            string json = JsonSerializer.Serialize(note, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(filePath, json);
+            string json = JsonSerializer.Serialize(note, JsonOptions);
+            AtomicFile.WriteAllText(filePath, json);
         }
         catch (Exception ex)
         {
@@ -350,7 +399,7 @@ public class NoteStorageService
     {
         lock (_lock)
         {
-            return JsonSerializer.Serialize(_notes, new JsonSerializerOptions { WriteIndented = true });
+            return JsonSerializer.Serialize(_notes, JsonOptions);
         }
     }
 

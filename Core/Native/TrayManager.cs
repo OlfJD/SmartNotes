@@ -31,6 +31,12 @@ public class TrayManager : IDisposable
     private readonly Action _onOpenTrashFolder;
     private readonly Action _onTrimMemory;
 
+    // One menu whose items are rebuilt each time it opens (previously a brand-new menu + fonts was
+    // created on every right-click/state change and the old one never disposed)
+    private readonly ContextMenuStrip _menu;
+    private readonly Font _menuFont = new("Segoe UI", 9.5f);
+    private readonly Font _menuBoldFont = new("Segoe UI", 9.5f, FontStyle.Bold);
+
     public TrayManager(
         SettingsService settingsService,
         Action onNewNote,
@@ -94,7 +100,17 @@ public class TrayManager : IDisposable
             Icon = appIcon ?? SystemIcons.Application
         };
 
-        RebuildContextMenu();
+        _menu = new ContextMenuStrip
+        {
+            ShowImageMargin = true,
+            Font = _menuFont,
+            ForeColor = DrawColor.FromArgb(241, 245, 249),
+            BackColor = DrawColor.FromArgb(13, 16, 23),
+            Renderer = new ModernMenuRenderer()
+        };
+        // Rebuilt right before it shows, so trash list, language and checkmarks are always current
+        _menu.Opening += (s, e) => PopulateContextMenu();
+        _notifyIcon.ContextMenuStrip = _menu;
 
         _notifyIcon.DoubleClick += (s, e) => _onBringAllToFront();
         _notifyIcon.MouseClick += (s, e) =>
@@ -103,27 +119,29 @@ public class TrayManager : IDisposable
             {
                 _onBringAllToFront();
             }
-            else if (e.Button == MouseButtons.Right)
-            {
-                RebuildContextMenu();
-            }
         };
     }
 
+    /// <summary>
+    /// Kept for callers that change state shown in the menu. The menu repopulates itself every time
+    /// it opens, so there is nothing to do here (rebuilding from inside an item's Click handler would
+    /// dispose the item that is still raising the event).
+    /// </summary>
     public void RebuildContextMenu()
     {
-        var menu = new ContextMenuStrip
-        {
-            ShowImageMargin = true,
-            Font = new Font("Segoe UI", 9.5f),
-            ForeColor = DrawColor.FromArgb(241, 245, 249),
-            BackColor = DrawColor.FromArgb(13, 16, 23)
-        };
-        menu.Renderer = new ModernMenuRenderer();
+    }
+
+    private void PopulateContextMenu()
+    {
+        var menu = _menu;
+        var oldItems = new List<ToolStripItem>();
+        foreach (ToolStripItem item in menu.Items) oldItems.Add(item);
+        menu.Items.Clear();
+        foreach (var item in oldItems) item.Dispose();
 
         var newNoteItem = new ToolStripMenuItem(LocalizationService.T("Tray_NewNote"), null, (s, e) => _onNewNote())
         {
-            Font = new Font("Segoe UI", 9.5f, FontStyle.Bold),
+            Font = _menuBoldFont,
             ForeColor = DrawColor.FromArgb(255, 255, 255)
         };
         menu.Items.Add(newNoteItem);
@@ -267,8 +285,6 @@ public class TrayManager : IDisposable
             ForeColor = DrawColor.FromArgb(248, 113, 113) // Alert Red
         };
         menu.Items.Add(exitItem);
-
-        _notifyIcon.ContextMenuStrip = menu;
     }
 
     public void UpdateTooltip(string text)
@@ -294,6 +310,9 @@ public class TrayManager : IDisposable
     {
         _notifyIcon.Visible = false;
         _notifyIcon.Dispose();
+        _menu.Dispose();
+        _menuFont.Dispose();
+        _menuBoldFont.Dispose();
         GC.SuppressFinalize(this);
     }
 }

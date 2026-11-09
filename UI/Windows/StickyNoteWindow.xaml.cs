@@ -398,6 +398,16 @@ public partial class StickyNoteWindow : Window
         _savedStatusResetTimer.Start();
     }
 
+    /// <summary>Writes any change still waiting on the save debounce (called on app exit).</summary>
+    public void FlushPendingSave()
+    {
+        if (_saveDebounceTimer?.IsEnabled == true)
+        {
+            _saveDebounceTimer.Stop();
+            SaveNoteState();
+        }
+    }
+
     private void RequestSave(bool isTyping = true)
     {
         if (!_isLoaded) return;
