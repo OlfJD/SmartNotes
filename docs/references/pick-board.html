@@ -1,0 +1,138 @@
+<title>SmartNotes Pick Board</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&family=Russo+One&family=Chakra+Petch:wght@500&family=Orbitron:wght@500;800&family=Audiowide&family=Oxanium:wght@500&family=Zen+Dots&family=Tomorrow:wght@500&family=Silkscreen&family=VT323&family=Rubik+Glitch&family=Share+Tech+Mono&family=Pirata+One&family=IM+Fell+English&family=UnifrakturMaguntia&family=MedievalSharp&family=Uncial+Antiqua&family=Almendra&family=Grenze+Gotisch:wght@700&family=Eagle+Lake&family=Metamorphous&family=Macondo&display=swap">
+<style>
+  /* Layout: three stacked decision sections, each a wrapping grid of lettered option cards. */
+  :root {
+    --bg: #f3f4f8; --surface: #ffffff; --fg: #171a26; --muted: #5d6478; --line: #d9dce6; --accent: #4b53d6;
+    --tile: #7c83ff; --glyph: #12142b;
+    --ui: "Inter", "Segoe UI", system-ui, sans-serif; --head: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #10121a; --surface: #181b26; --fg: #eceef6; --muted: #9aa1b6; --line: #2a2e3d; --accent: #9aa0ff; color-scheme: dark } }
+  :root[data-theme="dark"] { --bg: #10121a; --surface: #181b26; --fg: #eceef6; --muted: #9aa1b6; --line: #2a2e3d; --accent: #9aa0ff; color-scheme: dark }
+
+  body { background: var(--bg); color: var(--fg); font-family: var(--ui); font-size: 15px; line-height: 1.5;
+         padding-block: 28px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .wrap { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+  h1 { font-family: var(--head); font-size: 28px; margin: 0 0 6px; text-wrap: balance; }
+  h2 { font-family: var(--head); font-size: 20px; margin: 0 0 4px; text-wrap: balance; }
+  p { margin: 0; color: var(--muted); max-width: 65ch; }
+  section { display: flex; flex-direction: column; gap: 16px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .opt { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .tag { display: flex; align-items: baseline; gap: 8px; font-weight: 600; }
+  .tag b { font-family: var(--head); color: var(--accent); font-size: 17px; }
+  .tag span { color: var(--muted); font-weight: 400; font-size: 13px; }
+  .now { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 0 5px; }
+
+  /* Fixed-look sample surfaces (they imitate the skins, so they do not follow the page theme) */
+  .cy { background: #071318; border: 1.5px solid #22d3ee; color: #dff8fd; padding: 14px 14px 16px; clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px)); }
+  .cy .t { color: #22d3ee; font-size: 21px; line-height: 1.2; margin-bottom: 8px; overflow-wrap: anywhere; }
+  .cy .b { font-size: 16px; line-height: 1.45; overflow-wrap: anywhere; }
+  .el { background: #e6d3a3; background-image: radial-gradient(ellipse at 30% 40%, #efe0b6 0, transparent 60%), radial-gradient(ellipse at 80% 90%, #c9aa72 0, transparent 55%); border: 1px solid #4a3620; color: #2a1b0c; padding: 14px 16px 16px; }
+  .el .t { color: #7a1f1f; font-size: 26px; line-height: 1.15; margin-bottom: 6px; overflow-wrap: anywhere; }
+  .el .b { font-size: 17px; line-height: 1.4; overflow-wrap: anywhere; }
+
+  .icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
+  .sizes { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+  .sizes svg { display: block; }
+  .strip { background: #1b1d24; border-radius: 6px; padding: 6px 10px; display: flex; gap: 14px; align-items: center; width: fit-content; }
+  .swatches { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .swatches button { width: 34px; height: 34px; border-radius: 8px; border: 2px solid var(--line); cursor: pointer; padding: 0; }
+  .swatches button[aria-pressed="true"] { border-color: var(--fg); }
+  .swatches button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .swatches span { color: var(--muted); font-size: 13px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>SmartNotes: pick fonts and an icon</h1>
+    <p>Tell me the letters you want, for example "Cyber C, Elden D, icon 2 in teal". The samples use the real fonts.</p>
+  </header>
+
+  <section>
+    <div><h2>Cyberpunk fonts</h2><p>Title on top, note text below. A is what the skin uses now.</p></div>
+    <div class="grid">
+      <div class="opt"><div class="tag"><b>A</b>Russo One + Chakra Petch <span class="now">now</span></div>
+        <div class="cy"><div class="t" style="font-family:'Russo One',sans-serif">Release checklist</div><div class="b" style="font-family:'Chakra Petch',sans-serif;font-weight:500">Ship the skin system. Keep every feature working. 0123456789</div></div></div>
+      <div class="opt"><div class="tag"><b>B</b>Orbitron throughout</div>
+        <div class="cy"><div class="t" style="font-family:'Orbitron',sans-serif;font-weight:800">Release checklist</div><div class="b" style="font-family:'Orbitron',sans-serif;font-weight:500">Ship the skin system. Keep every feature working. 0123456789</div></div></div>
+      <div class="opt"><div class="tag"><b>C</b>Audiowide + Oxanium</div>
+        <div class="cy"><div class="t" style="font-family:'Audiowide',sans-serif">Release checklist</div><div class="b" style="font-family:'Oxanium',sans-serif;font-weight:500">Ship the skin system. Keep every feature working. 0123456789</div></div></div>
+      <div class="opt"><div class="tag"><b>D</b>Zen Dots + Tomorrow</div>
+        <div class="cy"><div class="t" style="font-family:'Zen Dots',sans-serif">Release checklist</div><div class="b" style="font-family:'Tomorrow',sans-serif;font-weight:500">Ship the skin system. Keep every feature working. 0123456789</div></div></div>
+      <div class="opt"><div class="tag"><b>E</b>Silkscreen + VT323 <span>pixel terminal</span></div>
+        <div class="cy"><div class="t" style="font-family:'Silkscreen',monospace">Release checklist</div><div class="b" style="font-family:'VT323',monospace;font-size:21px;line-height:1.15">Ship the skin system. Keep every feature working. 0123456789</div></div></div>
+      <div class="opt"><div class="tag"><b>F</b>Rubik Glitch + Share Tech Mono</div>
+        <div class="cy"><div class="t" style="font-family:'Rubik Glitch',sans-serif">Release checklist</div><div class="b" style="font-family:'Share Tech Mono',monospace">Ship the skin system. Keep every feature working. 0123456789</div></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div><h2>Elden Ring fonts</h2><p>The more ornate the text face, the harder long notes are to read; B and D are the heaviest.</p></div>
+    <div class="grid">
+      <div class="opt"><div class="tag"><b>A</b>Pirata One + IM Fell English <span class="now">now</span></div>
+        <div class="el"><div class="t" style="font-family:'Pirata One',serif">Release checklist</div><div class="b" style="font-family:'IM Fell English',serif">Ship the skin system. Keep every feature working. 0123456789</div></div></div>
+      <div class="opt"><div class="tag"><b>B</b>Unifraktur Maguntia + MedievalSharp</div>
+        <div class="el"><div class="t" style="font-family:'UnifrakturMaguntia',serif">Release checklist</div><div class="b" style="font-family:'MedievalSharp',serif">Ship the skin system. Keep every feature working. 0123456789</div></div></div>
+      <div class="opt"><div class="tag"><b>C</b>Uncial Antiqua + Almendra</div>
+        <div class="el"><div class="t" style="font-family:'Uncial Antiqua',serif;font-size:22px">Release checklist</div><div class="b" style="font-family:'Almendra',serif">Ship the skin system. Keep every feature working. 0123456789</div></div></div>
+      <div class="opt"><div class="tag"><b>D</b>Grenze Gotisch + Eagle Lake</div>
+        <div class="el"><div class="t" style="font-family:'Grenze Gotisch',serif;font-weight:700">Release checklist</div><div class="b" style="font-family:'Eagle Lake',serif;font-size:15px">Ship the skin system. Keep every feature working. 0123456789</div></div></div>
+      <div class="opt"><div class="tag"><b>E</b>Metamorphous + Macondo</div>
+        <div class="el"><div class="t" style="font-family:'Metamorphous',serif;font-size:21px">Release checklist</div><div class="b" style="font-family:'Macondo',serif">Ship the skin system. Keep every feature working. 0123456789</div></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div><h2>App icon</h2><p>Flat like the MacroMaster icon: one colour tile, one dark shape, no letter. Each is shown large and at the 32 and 16 pixel sizes Windows uses in the taskbar and tray.</p></div>
+    <div class="swatches" role="group" aria-label="Tile colour">
+      <span>Tile colour</span>
+      <button id="c-teal" style="background:#35d0b0" aria-pressed="true" title="Teal" data-c="#35d0b0"></button>
+      <button id="c-coral" style="background:#ff7d6b" aria-pressed="false" title="Coral" data-c="#ff7d6b"></button>
+      <button id="c-sky" style="background:#56b8ff" aria-pressed="false" title="Sky" data-c="#56b8ff"></button>
+      <button id="c-pink" style="background:#f78fd0" aria-pressed="false" title="Pink" data-c="#f78fd0"></button>
+      <button id="c-peri" style="background:#7c83ff" aria-pressed="false" title="Periwinkle (same as MacroMaster)" data-c="#7c83ff"></button>
+    </div>
+
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <symbol id="i1" viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="var(--tile)"/><path d="M19 15h26a3 3 0 0 1 3 3v17L35 49H19a3 3 0 0 1-3-3V18a3 3 0 0 1 3-3z" fill="var(--glyph)"/><path d="M39 49V41a3 3 0 0 1 3-3h7z" fill="var(--glyph)" opacity=".55"/></symbol>
+      <symbol id="i2" viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="var(--tile)"/><rect x="23" y="13" width="28" height="28" rx="4" fill="var(--glyph)" opacity=".45"/><rect x="13" y="23" width="28" height="28" rx="4" fill="var(--glyph)"/></symbol>
+      <symbol id="i3" viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="var(--tile)"/><rect x="15" y="19" width="34" height="32" rx="4" fill="var(--glyph)"/><circle cx="32" cy="19" r="9" fill="var(--tile)"/><circle cx="32" cy="18" r="5.5" fill="var(--glyph)"/></symbol>
+      <symbol id="i4" viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="var(--tile)"/><rect x="14" y="14" width="36" height="36" rx="5" fill="var(--glyph)"/><path d="M23 33l7 7 12-15" fill="none" stroke="var(--tile)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i5" viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="var(--tile)"/><path d="M18 15h28a3 3 0 0 1 3 3v16a15 15 0 0 1-15 15H18a3 3 0 0 1-3-3V18a3 3 0 0 1 3-3z" fill="var(--glyph)"/><path d="M49 34a15 15 0 0 1-15 15v-10a5 5 0 0 1 5-5z" fill="var(--tile)" opacity=".6"/></symbol>
+    </svg>
+
+    <div class="icons" id="icons"></div>
+  </section>
+</div>
+
+<script>
+  var concepts = [
+    ["1", "Folded corner", "A note with its corner turned up."],
+    ["2", "Stacked notes", "Two notes, one behind the other."],
+    ["3", "Pinned note", "A note with a pin at the top."],
+    ["4", "Checked note", "A note with a tick cut out of it."],
+    ["5", "Peeling note", "A sticky note lifting at one corner."]
+  ];
+  var host = document.getElementById("icons");
+  concepts.forEach(function (c, n) {
+    var id = "#i" + (n + 1);
+    var card = document.createElement("div");
+    card.className = "opt";
+    card.innerHTML =
+      '<div class="tag"><b>' + c[0] + "</b>" + c[1] + "</div>" +
+      '<div class="sizes"><svg width="112" height="112"><use href="' + id + '"/></svg>' +
+      '<div class="strip"><svg width="32" height="32"><use href="' + id + '"/></svg><svg width="16" height="16"><use href="' + id + '"/></svg></div></div>' +
+      "<p>" + c[2] + "</p>";
+    host.appendChild(card);
+  });
+  var buttons = document.querySelectorAll(".swatches button");
+  buttons.forEach(function (b) {
+    b.addEventListener("click", function () {
+      document.documentElement.style.setProperty("--tile", b.dataset.c);
+      buttons.forEach(function (o) { o.setAttribute("aria-pressed", o === b ? "true" : "false"); });
+    });
+  });
+  document.documentElement.style.setProperty("--tile", "#35d0b0");
+</script>

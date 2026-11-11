@@ -106,6 +106,8 @@ public class LocalizationService
             ["Appearance_SectionDesc"] = "Choose default theme palettes, font size, and visual styling for newly created notes.",
             ["Appearance_DefaultColorTitle"] = "Default Theme Color",
             ["Appearance_DefaultColorDesc"] = "Primary neon accent and card tint for new sticky notes.",
+            ["Appearance_DefaultSkinTitle"] = "Default Note Style",
+            ["Appearance_DefaultSkinDesc"] = "Shape, typeface and ornaments for new sticky notes.",
             ["Appearance_QuickSwatches"] = "Quick Preset Swatches (Click to Select)",
             ["Appearance_DefaultFontSizeTitle"] = "Default Font Size",
             ["Appearance_DefaultFontSizeDesc"] = "Default text scaling for note content, checklists, and copy rows.",
@@ -251,6 +253,10 @@ public class LocalizationService
             ["Menu_DeleteNote"] = "Delete Note",
 
             // Color Palette & Transparency Popup
+            ["ColorPopup_NoteStyle"] = "Note Style",
+            ["Skin_Classic"] = "Classic",
+            ["Skin_Cyberpunk"] = "Cyberpunk",
+            ["Skin_EldenRing"] = "Elden Ring",
             ["ColorPopup_QuickThemes"] = "Quick Neon Themes",
             ["ColorPopup_CustomCanvas"] = "Custom Palette Canvas",
             ["ColorPopup_Apply"] = "Apply",
@@ -378,6 +384,8 @@ public class LocalizationService
             ["Appearance_SectionDesc"] = "Standard-Farbschemata, Schriftgrößen und Design für neue Notizen festlegen.",
             ["Appearance_DefaultColorTitle"] = "Standard-Farbschema",
             ["Appearance_DefaultColorDesc"] = "Neon-Akzentfarbe und Kartentönung für neu erstellte Notizen.",
+            ["Appearance_DefaultSkinTitle"] = "Standard-Notizstil",
+            ["Appearance_DefaultSkinDesc"] = "Form, Schriftart und Verzierungen für neu erstellte Notizen.",
             ["Appearance_QuickSwatches"] = "Farbauswahl (Klicken zum Auswählen)",
             ["Appearance_DefaultFontSizeTitle"] = "Standard-Schriftgröße",
             ["Appearance_DefaultFontSizeDesc"] = "Standardschriftgröße für Notiztext, Checklisten und Textbausteine.",
@@ -523,6 +531,10 @@ public class LocalizationService
             ["Menu_DeleteNote"] = "Notiz löschen",
 
             // Color Palette & Transparency Popup
+            ["ColorPopup_NoteStyle"] = "Notiz-Stil",
+            ["Skin_Classic"] = "Klassisch",
+            ["Skin_Cyberpunk"] = "Cyberpunk",
+            ["Skin_EldenRing"] = "Elden Ring",
             ["ColorPopup_QuickThemes"] = "Neon-Farbschemata",
             ["ColorPopup_CustomCanvas"] = "Eigene Farbauswahl",
             ["ColorPopup_Apply"] = "Anwenden",

@@ -6,6 +6,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="UI/Icons/LucideIcons.xaml"/>
+                <ResourceDictionary Source="UI/Icons/SkinIcons.xaml"/>
                 <ResourceDictionary Source="UI/Themes/DarkTheme.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

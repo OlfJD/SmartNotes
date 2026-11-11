@@ -4,6 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:SmartNotes.UI.Controls"
+        xmlns:skins="clr-namespace:SmartNotes.UI.Skins"
+        xmlns:sys="clr-namespace:System;assembly=System.Runtime"
         mc:Ignorable="d"
         Title="SmartNote"
         WindowStyle="None"
@@ -21,13 +23,56 @@
         MouseLeave="Window_MouseLeave"
         PreviewKeyDown="Window_PreviewKeyDown">
 
-    <Grid>
+    <Window.Resources>
+        <!-- Skin tokens: defaults = Classic skin. StickyNoteWindow.ApplySkin() overwrites them per note (see NoteSkin.cs). -->
+        <SolidColorBrush x:Key="SkinAccentBrush" Color="#FBBF24"/>
+        <SolidColorBrush x:Key="SkinAccentDimBrush" Color="#614418"/>
+        <SolidColorBrush x:Key="SkinPanelBgBrush" Color="#141A28"/>
+        <SolidColorBrush x:Key="SkinPanelBorderBrush" Color="#26334D"/>
+        <SolidColorBrush x:Key="SkinItemBgBrush" Color="#141824"/>
+        <SolidColorBrush x:Key="SkinItemBorderBrush" Color="#2A3752"/>
+        <SolidColorBrush x:Key="SkinInputBgBrush" Color="#161D2E"/>
+        <SolidColorBrush x:Key="SkinInputBorderBrush" Color="#303E5C"/>
+        <SolidColorBrush x:Key="SkinItemTextBrush" Color="#F8FAFC"/>
+        <SolidColorBrush x:Key="SkinCheckBgBrush" Color="#1E2638"/>
+        <SolidColorBrush x:Key="SkinCheckBorderBrush" Color="#3B4C6F"/>
+        <SolidColorBrush x:Key="SkinCheckMarkBrush" Color="#10B981"/>
+        <SolidColorBrush x:Key="SkinCheckOnBgBrush" Color="#0F2922"/>
+        <CornerRadius x:Key="SkinCheckRadius">5</CornerRadius>
+        <sys:Double x:Key="SkinCompartmentCut">0</sys:Double>
+        <sys:Double x:Key="SkinItemCut">0</sys:Double>
+        <CornerRadius x:Key="SkinCompartmentRadius">8</CornerRadius>
+        <Thickness x:Key="SkinCompartmentBorder">2</Thickness>
+        <CornerRadius x:Key="SkinItemRadius">8</CornerRadius>
+        <Thickness x:Key="SkinItemBorder">2</Thickness>
+        <CornerRadius x:Key="SkinInputRadius">9</CornerRadius>
+        <Thickness x:Key="SkinInputBorder">2.5</Thickness>
+        <FontFamily x:Key="SkinFont">Segoe UI, Segoe UI Variable, sans-serif</FontFamily>
+        <FontFamily x:Key="SkinTitleFont">Segoe UI, Segoe UI Variable, sans-serif</FontFamily>
+        <FontFamily x:Key="SkinMetaFont">Segoe UI, Segoe UI Variable, sans-serif</FontFamily>
+        <FontWeight x:Key="SkinBodyWeight">Normal</FontWeight>
+        <FontWeight x:Key="SkinTitleWeight">Bold</FontWeight>
+        <!-- Chrome ink: icons / helper text sitting directly on the note surface -->
+        <SolidColorBrush x:Key="SkinMutedBrush" Color="#A8B5CD"/>
+        <SolidColorBrush x:Key="SkinFaintBrush" Color="#64748B"/>
+        <SolidColorBrush x:Key="SkinPlaceholderBrush" Color="#7888A4"/>
+        <SolidColorBrush x:Key="SkinDangerBrush" Color="#EF4444"/>
+        <SolidColorBrush x:Key="SkinAmberBrush" Color="#F59E0B"/>
+        <SolidColorBrush x:Key="SkinEmeraldBrush" Color="#34D399"/>
+        <SolidColorBrush x:Key="SkinCyanBrush" Color="#06B6D4"/>
+        <SolidColorBrush x:Key="SkinCaretBrush" Color="#F59E0B"/>
+    </Window.Resources>
+
+    <Grid x:Name="RootGrid">
+        <!-- Custom-art skins paint their whole (non-rectangular) body here; see UI/Skins/*Art.cs -->
+        <skins:DrawingHost x:Name="SkinArtHost" IsHitTestVisible="False"/>
+
         <!-- True Single-Border Rounded Card (Thick 5px vector border, zero black outer pixels, zero inner seams) -->
         <Border x:Name="NoteCardBorder" CornerRadius="16" Background="#1C1710" BorderBrush="#5A3E16" BorderThickness="5">
-        <Grid Margin="-1">
+        <Grid x:Name="ContentGrid" Margin="-1">
             <Grid.RowDefinitions>
                 <!-- 1. Header & Actions Bar -->
-                <RowDefinition Height="44"/>
+                <RowDefinition x:Name="HeaderRow" Height="44"/>
                 <!-- 2. Title Input -->
                 <RowDefinition Height="Auto"/>
                 <!-- 3. Note Content Body (Text, Checklist, or Copy Compartments) -->
@@ -49,7 +94,7 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Left Action Buttons (New Note & Pin Mode Compartment) -->
-                    <Border x:Name="LeftCompartmentBorder" Background="#182030" BorderBrush="#2F3E5E" BorderThickness="2" CornerRadius="8" Padding="1" VerticalAlignment="Center">
+                    <skins:CutBorder Cut="{DynamicResource SkinCompartmentCut}" x:Name="LeftCompartmentBorder" Background="#182030" BorderBrush="#2F3E5E" BorderThickness="{DynamicResource SkinCompartmentBorder}" CornerRadius="{DynamicResource SkinCompartmentRadius}" Padding="1" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal">
                             <!-- New Note Button -->
                             <Button x:Name="BtnNewNote" Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnNewNote_Click" ToolTip="Create new sticky note (+)">
@@ -58,15 +103,15 @@
 
                             <!-- Pin / Stick Mode Toggle Button -->
                             <Button x:Name="BtnPinMode" Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnPinMode_Click" ToolTip="Toggle Desktop Stuck (Behind Apps) / Always on Top" Margin="1,0,0,0">
-                                <controls:LucideIcon x:Name="IconPin" IconKey="pin" Size="15" StrokeThickness="2.6" Foreground="#A8B5CD"/>
+                                <controls:LucideIcon x:Name="IconPin" IconKey="pin" Size="15" StrokeThickness="2.6" Foreground="{DynamicResource SkinMutedBrush}"/>
                             </Button>
                         </StackPanel>
-                    </Border>
+                    </skins:CutBorder>
 
                     <!-- Right Action Buttons -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                         <!-- Mode Switcher Compartment (Text, Checklist, Copy Compartments) -->
-                        <Border x:Name="ModeCompartmentBorder" Background="#141A28" BorderBrush="#26334D" BorderThickness="2" CornerRadius="8" Margin="0,0,5,0" Padding="1">
+                        <skins:CutBorder Cut="{DynamicResource SkinCompartmentCut}" x:Name="ModeCompartmentBorder" Background="#141A28" BorderBrush="#26334D" BorderThickness="{DynamicResource SkinCompartmentBorder}" CornerRadius="{DynamicResource SkinCompartmentRadius}" Margin="0,0,5,0" Padding="1">
                             <StackPanel Orientation="Horizontal">
                                 <!-- Text Mode Button -->
                                 <Button x:Name="BtnTextMode" Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnTextMode_Click" ToolTip="Switch to Text Note Mode">
@@ -75,41 +120,41 @@
 
                                 <!-- Checklist Mode Button -->
                                 <Button x:Name="BtnChecklistMode" Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnChecklistMode_Click" ToolTip="Switch to Checklist Mode" Margin="1,0,0,0">
-                                    <controls:LucideIcon x:Name="IconChecklistMode" IconKey="list-todo" Size="15" StrokeThickness="2.6" Foreground="#A8B5CD"/>
+                                    <controls:LucideIcon x:Name="IconChecklistMode" IconKey="list-todo" Size="15" StrokeThickness="2.6" Foreground="{DynamicResource SkinMutedBrush}"/>
                                 </Button>
 
                                 <!-- Copy Compartments Mode Button -->
                                 <Button x:Name="BtnCopyMode" Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnCopyMode_Click" ToolTip="Switch to Copy Compartments Mode (Quick-Copy rows)" Margin="1,0,0,0">
-                                    <controls:LucideIcon x:Name="IconCopyMode" IconKey="copy" Size="15" StrokeThickness="2.6" Foreground="#A8B5CD"/>
+                                    <controls:LucideIcon x:Name="IconCopyMode" IconKey="copy" Size="15" StrokeThickness="2.6" Foreground="{DynamicResource SkinMutedBrush}"/>
                                 </Button>
                             </StackPanel>
-                        </Border>
+                        </skins:CutBorder>
 
                         <!-- Note Tools Compartment (Color, Lock) -->
-                        <Border x:Name="ToolsCompartmentBorder" Background="#141A28" BorderBrush="#26334D" BorderThickness="2" CornerRadius="8" Margin="0,0,5,0" Padding="1">
+                        <skins:CutBorder Cut="{DynamicResource SkinCompartmentCut}" x:Name="ToolsCompartmentBorder" Background="#141A28" BorderBrush="#26334D" BorderThickness="{DynamicResource SkinCompartmentBorder}" CornerRadius="{DynamicResource SkinCompartmentRadius}" Margin="0,0,5,0" Padding="1">
                             <StackPanel Orientation="Horizontal">
                                 <!-- Color & Transparency Picker Button with Popup -->
                                 <Button x:Name="BtnColorPicker" Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnColorPicker_Click" ToolTip="Colors, Themes &amp; Transparency">
-                                    <controls:LucideIcon IconKey="palette" Size="15" StrokeThickness="2.6" Foreground="#A8B5CD"/>
+                                    <controls:LucideIcon IconKey="palette" Size="15" StrokeThickness="2.6" Foreground="{DynamicResource SkinMutedBrush}"/>
                                 </Button>
 
                                 <!-- Lock Note Button -->
                                 <Button x:Name="BtnLock" Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnLock_Click" ToolTip="Lock note position &amp; text" Margin="1,0,0,0">
-                                    <controls:LucideIcon x:Name="IconLock" IconKey="unlock" Size="15" StrokeThickness="2.6" Foreground="#A8B5CD"/>
+                                    <controls:LucideIcon x:Name="IconLock" IconKey="unlock" Size="15" StrokeThickness="2.6" Foreground="{DynamicResource SkinMutedBrush}"/>
                                 </Button>
                             </StackPanel>
-                        </Border>
+                        </skins:CutBorder>
 
                         <!-- Window & Overflow Controls (More, Close) -->
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <!-- More Menu Button -->
                             <Button x:Name="BtnMore" Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnMore_Click" ToolTip="More options..." Margin="0,0,2,0">
-                                <controls:LucideIcon IconKey="more-horizontal" Size="15" StrokeThickness="2.6" Foreground="#A8B5CD"/>
+                                <controls:LucideIcon IconKey="more-horizontal" Size="15" StrokeThickness="2.6" Foreground="{DynamicResource SkinMutedBrush}"/>
                             </Button>
 
                             <!-- Close / Delete Note Button -->
                             <Button x:Name="BtnClose" Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnClose_Click" ToolTip="Delete note">
-                                <controls:LucideIcon IconKey="x" Size="15" StrokeThickness="2.8" Foreground="#EF4444"/>
+                                <controls:LucideIcon IconKey="x" Size="15" StrokeThickness="2.8" Foreground="{DynamicResource SkinDangerBrush}"/>
                             </Button>
                         </StackPanel>
                     </StackPanel>
@@ -123,8 +168,9 @@
                              Background="Transparent"
                              BorderThickness="0"
                              Foreground="#FFFBEB"
+                             FontFamily="{DynamicResource SkinTitleFont}"
                              FontSize="16.5"
-                             FontWeight="Bold"
+                             FontWeight="{DynamicResource SkinTitleWeight}"
                              CaretBrush="#F59E0B"
                              Cursor="IBeam"
                              Padding="0"
@@ -139,7 +185,8 @@
                              LostFocus="TxtTitle_LostFocus"/>
                     <TextBlock x:Name="TxtTitlePlaceholder"
                                Text="Title (optional)..."
-                               Foreground="#7888A4"
+                               Foreground="{DynamicResource SkinPlaceholderBrush}"
+                               FontFamily="{DynamicResource SkinTitleFont}"
                                FontSize="16.5"
                                FontWeight="SemiBold"
                                IsHitTestVisible="False"
@@ -157,7 +204,8 @@
                              BorderThickness="0"
                              Foreground="#FFFBEB"
                              FontSize="16"
-                             FontFamily="Segoe UI, Segoe UI Variable, sans-serif"
+                             FontFamily="{DynamicResource SkinFont}"
+                             FontWeight="{DynamicResource SkinBodyWeight}"
                              AcceptsReturn="True"
                              AcceptsTab="True"
                              TextWrapping="Wrap"
@@ -176,7 +224,8 @@
                              LostFocus="TxtContent_LostFocus"/>
                     <TextBlock x:Name="TxtContentPlaceholder"
                                Text="Type your note here..."
-                               Foreground="#64748B"
+                               Foreground="{DynamicResource SkinFaintBrush}"
+                               FontFamily="{DynamicResource SkinFont}"
                                FontSize="16"
                                FontStyle="Italic"
                                IsHitTestVisible="False"
@@ -198,7 +247,7 @@
                         <ItemsControl x:Name="ChecklistItemsControl">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="#141824" BorderBrush="#2A3752" BorderThickness="2" CornerRadius="8" Margin="0,2,0,4" Padding="8,6">
+                                    <skins:CutBorder Cut="{DynamicResource SkinItemCut}" Background="{DynamicResource SkinItemBgBrush}" BorderBrush="{DynamicResource SkinItemBorderBrush}" BorderThickness="{DynamicResource SkinItemBorder}" CornerRadius="{DynamicResource SkinItemRadius}" Margin="0,2,0,4" Padding="8,6">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
@@ -211,13 +260,13 @@
                                                 <CheckBox.Template>
                                                     <ControlTemplate TargetType="{x:Type CheckBox}">
                                                         <Grid Width="20" Height="20">
-                                                            <Border x:Name="Box" CornerRadius="5" Background="#1E2638" BorderBrush="#3B4C6F" BorderThickness="2.5"/>
-                                                            <Path x:Name="CheckMark" Data="M 3.5 10 L 8 14.5 L 16.5 4.5" Stroke="#10B981" StrokeThickness="2.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Visibility="Collapsed"/>
+                                                            <Border x:Name="Box" CornerRadius="{DynamicResource SkinCheckRadius}" Background="{DynamicResource SkinCheckBgBrush}" BorderBrush="{DynamicResource SkinCheckBorderBrush}" BorderThickness="2.5"/>
+                                                            <Path x:Name="CheckMark" Data="M 3.5 10 L 8 14.5 L 16.5 4.5" Stroke="{DynamicResource SkinCheckMarkBrush}" StrokeThickness="2.8" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Visibility="Collapsed"/>
                                                         </Grid>
                                                         <ControlTemplate.Triggers>
                                                             <Trigger Property="IsChecked" Value="True">
-                                                                 <Setter TargetName="Box" Property="Background" Value="#0F2922"/>
-                                                                <Setter TargetName="Box" Property="BorderBrush" Value="#10B981"/>
+                                                                 <Setter TargetName="Box" Property="Background" Value="{DynamicResource SkinCheckOnBgBrush}"/>
+                                                                <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource SkinCheckMarkBrush}"/>
                                                                 <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
                                                             </Trigger>
                                                         </ControlTemplate.Triggers>
@@ -226,33 +275,33 @@
                                             </CheckBox>
 
                                             <!-- Task Text -->
-                                            <TextBox Grid.Column="1" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="TaskText_Changed" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" VerticalAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" PreviewKeyDown="TextBox_PreviewKeyDown" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
+                                            <TextBox Grid.Column="1" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="TaskText_Changed" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SkinItemTextBrush}" FontFamily="{DynamicResource SkinFont}" FontWeight="{DynamicResource SkinBodyWeight}" FontSize="15" CaretBrush="{DynamicResource SkinCaretBrush}" VerticalAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" PreviewKeyDown="TextBox_PreviewKeyDown" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
 
                                             <!-- Delete Task Item Button -->
                                             <Button Grid.Column="2" Style="{StaticResource IconButton}" Width="24" Height="24" Click="BtnDeleteTask_Click" ToolTip="Delete task" Padding="3">
-                                                <controls:LucideIcon IconKey="x" Size="13" StrokeThickness="2.6" Foreground="#7888A4"/>
+                                                <controls:LucideIcon IconKey="x" Size="13" StrokeThickness="2.6" Foreground="{DynamicResource SkinPlaceholderBrush}"/>
                                             </Button>
                                         </Grid>
-                                    </Border>
+                                    </skins:CutBorder>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
 
                     <!-- Add Item Row (2.5px thick border) -->
-                    <Border x:Name="NewTaskContainer" Grid.Row="1" Background="#161D2E" CornerRadius="9" BorderBrush="#303E5C" BorderThickness="2.5" Padding="8,4" Cursor="IBeam" MouseLeftButtonDown="NewTaskContainer_MouseLeftButtonDown">
+                    <skins:CutBorder Cut="{DynamicResource SkinItemCut}" x:Name="NewTaskContainer" Grid.Row="1" Background="{DynamicResource SkinInputBgBrush}" CornerRadius="{DynamicResource SkinInputRadius}" BorderBrush="{DynamicResource SkinInputBorderBrush}" BorderThickness="{DynamicResource SkinInputBorder}" Padding="8,4" Cursor="IBeam" MouseLeftButtonDown="NewTaskContainer_MouseLeftButtonDown">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="TxtNewTask" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" Cursor="IBeam" VerticalAlignment="Stretch" VerticalContentAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" KeyDown="TxtNewTask_KeyDown" TextChanged="TxtNewTask_TextChanged" GotFocus="TxtNewTask_GotFocus" LostFocus="TxtNewTask_LostFocus"/>
-                            <TextBlock x:Name="TxtNewTaskPlaceholder" Text="Add new task (Press Enter)..." Foreground="#64748B" FontSize="14.5" IsHitTestVisible="False" VerticalAlignment="Center" Margin="2,0,0,0"/>
+                            <TextBox x:Name="TxtNewTask" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SkinItemTextBrush}" FontFamily="{DynamicResource SkinFont}" FontWeight="{DynamicResource SkinBodyWeight}" FontSize="15" CaretBrush="{DynamicResource SkinCaretBrush}" Cursor="IBeam" VerticalAlignment="Stretch" VerticalContentAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" KeyDown="TxtNewTask_KeyDown" TextChanged="TxtNewTask_TextChanged" GotFocus="TxtNewTask_GotFocus" LostFocus="TxtNewTask_LostFocus"/>
+                            <TextBlock x:Name="TxtNewTaskPlaceholder" Text="Add new task (Press Enter)..." Foreground="{DynamicResource SkinFaintBrush}" FontFamily="{DynamicResource SkinFont}" FontSize="14.5" IsHitTestVisible="False" VerticalAlignment="Center" Margin="2,0,0,0"/>
                             <Button x:Name="BtnAddTask" Grid.Column="1" Style="{StaticResource IconButton}" Width="26" Height="26" Click="BtnAddTask_Click" ToolTip="Add task" Cursor="Hand">
-                                <controls:LucideIcon IconKey="plus" Size="15" StrokeThickness="2.8" Foreground="{StaticResource NeonEmeraldGlowBrush}"/>
+                                <controls:LucideIcon IconKey="plus" Size="15" StrokeThickness="2.8" Foreground="{DynamicResource SkinEmeraldBrush}"/>
                             </Button>
                         </Grid>
-                    </Border>
+                    </skins:CutBorder>
                 </Grid>
 
                 <!-- MODE C: Interactive Copy Compartments Container -->
@@ -269,7 +318,7 @@
                         <ItemsControl x:Name="CopyItemsControl">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="#141824" BorderBrush="#2A3752" BorderThickness="2" CornerRadius="8" Margin="0,2,0,4" Padding="8,5">
+                                    <skins:CutBorder Cut="{DynamicResource SkinItemCut}" Background="{DynamicResource SkinItemBgBrush}" BorderBrush="{DynamicResource SkinItemBorderBrush}" BorderThickness="{DynamicResource SkinItemBorder}" CornerRadius="{DynamicResource SkinItemRadius}" Margin="0,2,0,4" Padding="8,5">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <!-- Snippet Text Input -->
@@ -281,38 +330,38 @@
                                             </Grid.ColumnDefinitions>
 
                                             <!-- Snippet Text Box -->
-                                            <TextBox Grid.Column="0" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="CopyItemText_Changed" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" Cursor="IBeam" VerticalAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" PreviewKeyDown="TextBox_PreviewKeyDown" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
+                                            <TextBox Grid.Column="0" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="CopyItemText_Changed" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SkinItemTextBrush}" FontFamily="{DynamicResource SkinFont}" FontWeight="{DynamicResource SkinBodyWeight}" FontSize="15" CaretBrush="{DynamicResource SkinCaretBrush}" Cursor="IBeam" VerticalAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" PreviewKeyDown="TextBox_PreviewKeyDown" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
 
                                             <!-- Dedicated Copy Button on the right in the same line -->
                                             <Button Grid.Column="1" Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnCopyRow_Click" ToolTip="Copy this line to clipboard" Margin="4,0,2,0" Padding="4">
-                                                <controls:LucideIcon IconKey="copy" Size="14" StrokeThickness="2.6" Foreground="{StaticResource NeonCyanBrush}"/>
+                                                <controls:LucideIcon IconKey="copy" Size="14" StrokeThickness="2.6" Foreground="{DynamicResource SkinCyanBrush}"/>
                                             </Button>
 
                                             <!-- Delete Row Button -->
                                             <Button Grid.Column="2" Style="{StaticResource IconButton}" Width="24" Height="24" Click="BtnDeleteCopyItem_Click" ToolTip="Delete item" Padding="3">
-                                                <controls:LucideIcon IconKey="x" Size="13" StrokeThickness="2.6" Foreground="#7888A4"/>
+                                                <controls:LucideIcon IconKey="x" Size="13" StrokeThickness="2.6" Foreground="{DynamicResource SkinPlaceholderBrush}"/>
                                             </Button>
                                         </Grid>
-                                    </Border>
+                                    </skins:CutBorder>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
 
                     <!-- Add Copy Item Row -->
-                    <Border x:Name="NewCopyItemContainer" Grid.Row="1" Background="#161D2E" CornerRadius="9" BorderBrush="#303E5C" BorderThickness="2.5" Padding="8,4" Cursor="IBeam" MouseLeftButtonDown="NewCopyItemContainer_MouseLeftButtonDown">
+                    <skins:CutBorder Cut="{DynamicResource SkinItemCut}" x:Name="NewCopyItemContainer" Grid.Row="1" Background="{DynamicResource SkinInputBgBrush}" CornerRadius="{DynamicResource SkinInputRadius}" BorderBrush="{DynamicResource SkinInputBorderBrush}" BorderThickness="{DynamicResource SkinInputBorder}" Padding="8,4" Cursor="IBeam" MouseLeftButtonDown="NewCopyItemContainer_MouseLeftButtonDown">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="TxtNewCopyItem" Background="Transparent" BorderThickness="0" Foreground="#F8FAFC" FontSize="15" CaretBrush="#F59E0B" Cursor="IBeam" VerticalAlignment="Stretch" VerticalContentAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" KeyDown="TxtNewCopyItem_KeyDown" TextChanged="TxtNewCopyItem_TextChanged" GotFocus="TxtNewCopyItem_GotFocus" LostFocus="TxtNewCopyItem_LostFocus"/>
-                            <TextBlock x:Name="TxtNewCopyItemPlaceholder" Text="Add new copy item (Press Enter)..." Foreground="#64748B" FontSize="14.5" IsHitTestVisible="False" VerticalAlignment="Center" Margin="2,0,0,0"/>
+                            <TextBox x:Name="TxtNewCopyItem" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SkinItemTextBrush}" FontFamily="{DynamicResource SkinFont}" FontWeight="{DynamicResource SkinBodyWeight}" FontSize="15" CaretBrush="{DynamicResource SkinCaretBrush}" Cursor="IBeam" VerticalAlignment="Stretch" VerticalContentAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" KeyDown="TxtNewCopyItem_KeyDown" TextChanged="TxtNewCopyItem_TextChanged" GotFocus="TxtNewCopyItem_GotFocus" LostFocus="TxtNewCopyItem_LostFocus"/>
+                            <TextBlock x:Name="TxtNewCopyItemPlaceholder" Text="Add new copy item (Press Enter)..." Foreground="{DynamicResource SkinFaintBrush}" FontFamily="{DynamicResource SkinFont}" FontSize="14.5" IsHitTestVisible="False" VerticalAlignment="Center" Margin="2,0,0,0"/>
                             <Button x:Name="BtnAddCopyItem" Grid.Column="1" Style="{StaticResource IconButton}" Width="26" Height="26" Click="BtnAddCopyItem_Click" ToolTip="Add copy item" Cursor="Hand">
-                                <controls:LucideIcon IconKey="plus" Size="15" StrokeThickness="2.8" Foreground="{StaticResource NeonCyanBrush}"/>
+                                <controls:LucideIcon IconKey="plus" Size="15" StrokeThickness="2.8" Foreground="{DynamicResource SkinCyanBrush}"/>
                             </Button>
                         </Grid>
-                    </Border>
+                    </skins:CutBorder>
                 </Grid>
             </Grid>
 
@@ -321,25 +370,33 @@
             <Border Grid.Row="3" Background="Transparent" Padding="14,0,10,6" VerticalAlignment="Bottom">
                 <Grid>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock x:Name="TxtPinIndicator" Text="📌 Stuck to Desktop" FontSize="12" FontWeight="SemiBold" Foreground="#A8B5CD" Margin="0,0,12,0"/>
+                        <TextBlock x:Name="TxtPinIndicator" Text="📌 Stuck to Desktop" FontFamily="{DynamicResource SkinMetaFont}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource SkinMutedBrush}" Margin="0,0,12,0"/>
                         
                         <!-- Default Modified Timestamp -->
-                        <TextBlock x:Name="TxtModifiedTime" Text="Just now" FontSize="12" Foreground="#64748B" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtModifiedTime" Text="Just now" FontFamily="{DynamicResource SkinMetaFont}" FontSize="12" Foreground="{DynamicResource SkinFaintBrush}" VerticalAlignment="Center"/>
 
                         <!-- Live Typing & Save Status Indicator -->
                         <StackPanel x:Name="TypingIndicatorContainer" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
                             <controls:LucideIcon x:Name="IconTypingStatus" IconKey="pen-line" Size="12" StrokeThickness="2.4" Foreground="#F59E0B" Margin="0,0,4,0" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="TxtTypingStatus" Text="Typing..." FontSize="12" FontWeight="SemiBold" Foreground="#F59E0B" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtTypingStatus" Text="Typing..." FontFamily="{DynamicResource SkinMetaFont}" FontSize="12" FontWeight="SemiBold" Foreground="#F59E0B" VerticalAlignment="Center"/>
                         </StackPanel>
                     </StackPanel>
 
                     <!-- Lock Badge if locked -->
                     <StackPanel x:Name="LockBadge" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,18,0" Visibility="Collapsed">
-                        <controls:LucideIcon IconKey="lock" Size="13" StrokeThickness="2.4" Foreground="#F59E0B" Margin="0,0,4,0"/>
-                        <TextBlock x:Name="TxtLockedBadge" Text="LOCKED" FontSize="11.5" FontWeight="Bold" Foreground="#F59E0B"/>
+                        <controls:LucideIcon IconKey="lock" Size="13" StrokeThickness="2.4" Foreground="{DynamicResource SkinAmberBrush}" Margin="0,0,4,0"/>
+                        <TextBlock x:Name="TxtLockedBadge" Text="LOCKED" FontFamily="{DynamicResource SkinMetaFont}" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource SkinAmberBrush}"/>
                     </StackPanel>
                 </Grid>
             </Border>
+
+            <!-- Elden Ring: ornamental rule under the title -->
+            <Grid x:Name="EldenTitleDivider" Grid.Row="1" VerticalAlignment="Bottom" Height="7" Margin="14,0,14,-3" IsHitTestVisible="False" Visibility="Collapsed">
+                <Rectangle x:Name="EldenDividerLine" Height="1" VerticalAlignment="Center"/>
+                <Rectangle Width="5" Height="5" Fill="{DynamicResource SkinAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                    <Rectangle.RenderTransform><RotateTransform Angle="45"/></Rectangle.RenderTransform>
+                </Rectangle>
+            </Grid>
 
             <!-- COLOR PALETTE POPUP (Obsidian Theme with Classic 2D Drawing-App Color Picker) -->
             <Popup x:Name="ColorPopup" StaysOpen="False" AllowsTransparency="True" PlacementTarget="{Binding ElementName=BtnColorPicker}" Placement="Bottom" PopupAnimation="Fade" Opened="ColorPopup_Opened">
@@ -348,6 +405,22 @@
                         <DropShadowEffect BlurRadius="20" ShadowDepth="6" Opacity="0.7" Color="#000000"/>
                     </Border.Effect>
                     <StackPanel Width="220">
+                        <!-- Note Style (skin) selector -->
+                        <TextBlock x:Name="TxtNoteStyleHeader" Text="Note Style" FontSize="11" FontWeight="Bold" Foreground="#8898B4" Margin="2,0,0,6"/>
+                        <UniformGrid Columns="3" Margin="0,0,0,10">
+                            <Button x:Name="BtnSkinClassic" Style="{StaticResource GlowButton}" BorderThickness="2" Padding="2,5" Margin="2" Tag="Classic" Click="SkinButton_Click">
+                                <TextBlock x:Name="TxtSkinClassic" Text="Classic" FontSize="11" FontWeight="SemiBold"/>
+                            </Button>
+                            <Button x:Name="BtnSkinCyberpunk" Style="{StaticResource GlowButton}" BorderThickness="2" Padding="2,5" Margin="2" Tag="Cyberpunk" Click="SkinButton_Click">
+                                <TextBlock x:Name="TxtSkinCyberpunk" Text="Cyberpunk" FontSize="11" FontWeight="SemiBold" FontFamily="Cascadia Mono, Consolas, monospace"/>
+                            </Button>
+                            <Button x:Name="BtnSkinEldenRing" Style="{StaticResource GlowButton}" BorderThickness="2" Padding="2,5" Margin="2" Tag="EldenRing" Click="SkinButton_Click">
+                                <TextBlock x:Name="TxtSkinEldenRing" Text="Elden Ring" FontSize="11.5" FontWeight="SemiBold" FontFamily="Palatino Linotype, Georgia, serif"/>
+                            </Button>
+                        </UniformGrid>
+
+                        <Separator Background="#222D42" Margin="0,0,0,10"/>
+
                         <!-- Top Header: Title & Quick Presets -->
                         <TextBlock x:Name="TxtQuickNeonThemes" Text="Quick Neon Themes" FontSize="11" FontWeight="Bold" Foreground="#8898B4" Margin="2,0,0,6"/>
 

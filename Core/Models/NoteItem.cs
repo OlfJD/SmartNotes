@@ -30,6 +30,7 @@ public class NoteItem
 
     // Appearance & Pinning
     public string ColorKey { get; set; } = "Amber";
+    public string SkinKey { get; set; } = "Classic";
     public NotePinMode PinMode { get; set; } = NotePinMode.DesktopStuck;
     public bool IsLocked { get; set; } = false;
     public bool IsCollapsed { get; set; } = false;
@@ -75,6 +76,7 @@ public class NoteItem
             Width = Width,
             Height = Height,
             ColorKey = ColorKey,
+            SkinKey = SkinKey,
             PinMode = PinMode,
             IsLocked = false,
             IsCollapsed = IsCollapsed,

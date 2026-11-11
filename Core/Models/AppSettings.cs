@@ -6,6 +6,7 @@ public class AppSettings
 {
     public bool LaunchOnStartup { get; set; } = true;
     public string DefaultColorKey { get; set; } = "Amber";
+    public string DefaultSkinKey { get; set; } = "Classic";
     public NotePinMode DefaultPinMode { get; set; } = NotePinMode.DesktopStuck;
     public double DefaultFontSize { get; set; } = 16.0;
     public double DefaultOpacity { get; set; } = 1.0;
