@@ -83,6 +83,7 @@ public partial class SettingsDialog : Window
             // Populate Colors
             CmbDefaultColor.ItemsSource = new List<string> { "Amber", "Emerald", "Violet", "Cyan", "Rose", "Obsidian", "Gold", "Mint" };
             CmbDefaultColor.SelectedItem = s.DefaultColorKey;
+            PopulateSkinCombo(s.DefaultSkinKey);
 
             // Populate Font Sizes
             CmbDefaultFontSize.ItemsSource = new List<string> { "12 pt (Compact)", "14 pt (Default)", "16 pt (Large)", "18 pt (Extra Large)", "20 pt (Headline)" };
@@ -140,6 +141,15 @@ public partial class SettingsDialog : Window
         TxtSection2Subtitle.Text = LocalizationService.T("Appearance_SectionDesc");
         TxtDefaultColorTitle.Text = LocalizationService.T("Appearance_DefaultColorTitle");
         TxtDefaultColorDesc.Text = LocalizationService.T("Appearance_DefaultColorDesc");
+        TxtDefaultSkinTitle.Text = LocalizationService.T("Appearance_DefaultSkinTitle");
+        TxtDefaultSkinDesc.Text = LocalizationService.T("Appearance_DefaultSkinDesc");
+        if (CmbDefaultSkin.Items.Count > 0)
+        {
+            bool wasSuppressed = _suppressEvents;
+            _suppressEvents = true;
+            PopulateSkinCombo(CmbDefaultSkin.SelectedValue as string);
+            _suppressEvents = wasSuppressed;
+        }
         TxtQuickSwatchesTitle.Text = LocalizationService.T("Appearance_QuickSwatches");
         TxtDefaultFontSizeTitle.Text = LocalizationService.T("Appearance_DefaultFontSizeTitle");
         TxtDefaultFontSizeDesc.Text = LocalizationService.T("Appearance_DefaultFontSizeDesc");
@@ -289,6 +299,17 @@ public partial class SettingsDialog : Window
         }
     }
 
+    private void PopulateSkinCombo(string? selectedKey)
+    {
+        var items = new List<KeyValuePair<string, string>>();
+        foreach (var skin in NoteSkin.All)
+        {
+            items.Add(new KeyValuePair<string, string>(skin.Key, LocalizationService.T(skin.LocalizationKey)));
+        }
+        CmbDefaultSkin.ItemsSource = items;
+        CmbDefaultSkin.SelectedValue = NoteSkin.Get(selectedKey).Key;
+    }
+
     private void ThemeSwatchBtn_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is string colorKey)
@@ -316,13 +337,23 @@ public partial class SettingsDialog : Window
             return;
 
         string? colorKey = CmbDefaultColor.SelectedItem as string;
-        var theme = NoteColorTheme.Get(colorKey);
+        var skin = NoteSkin.Get(CmbDefaultSkin.SelectedValue as string);
+        var theme = skin.Tint(NoteColorTheme.Get(colorKey));
+
+        PreviewNoteCard.CornerRadius = new CornerRadius(Math.Min(12, skin.CardRadius));
+        PreviewNoteCard.BorderThickness = new Thickness(Math.Min(3.5, skin.CardBorder));
+        PreviewNoteHeader.CornerRadius = new CornerRadius(Math.Min(9, skin.HeaderRadius), Math.Min(9, skin.HeaderRadius), 0, 0);
+        PreviewNoteTitle.FontFamily = skin.TitleFont;
+        PreviewNoteTitle.FontWeight = skin.TitleWeight;
+        PreviewNoteTitle.FontSize = 13.5 * skin.TitleScale;
+        PreviewNoteBody.FontWeight = skin.BodyWeight;
+        PreviewNoteBody.FontFamily = skin.Font;
 
         PreviewNoteCard.Background = theme.BgBrush;
         PreviewNoteCard.BorderBrush = theme.BorderBrush;
         PreviewNoteHeader.Background = theme.HeaderBgBrush;
         PreviewNoteHeader.BorderBrush = theme.BorderBrush;
-        PreviewNoteTitle.Foreground = theme.TextPrimaryBrush;
+        PreviewNoteTitle.Foreground = skin.AccentTitle ? theme.GlowBrush : theme.TextPrimaryBrush;
         PreviewNoteBody.Foreground = theme.TextPrimaryBrush;
         if (PreviewNoteIcon != null)
         {
@@ -474,6 +505,11 @@ public partial class SettingsDialog : Window
         if (CmbDefaultColor.SelectedItem is string color)
         {
             s.DefaultColorKey = color;
+        }
+
+        if (CmbDefaultSkin.SelectedValue is string skinKey)
+        {
+            s.DefaultSkinKey = skinKey;
         }
 
         s.DefaultFontSize = CmbDefaultFontSize.SelectedIndex switch

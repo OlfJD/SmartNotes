@@ -1,0 +1,77 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Per-skin icon packs for the icons that sit on the note itself (24x24 grid, like Lucide).
+        Key format:  {Pack}Icon_{key}      -> stroked outline
+                     {Pack}IconFill_{key}  -> solid shape (filled with the icon colour)
+        An icon may define either or both. Anything a pack does not define falls back to Lucide.
+        See LucideIcon.Pack.
+    -->
+
+    <!-- ============ CYBER: blocky, angular, square-cut ============ -->
+    <StreamGeometry x:Key="CyberIconFill_plus">M 10 3 H 14 V 10 H 21 V 14 H 14 V 21 H 10 V 14 H 3 V 10 H 10 Z</StreamGeometry>
+    <StreamGeometry x:Key="CyberIconFill_x">M 5.5 3 L 12 9.5 L 18.5 3 L 21 5.5 L 14.5 12 L 21 18.5 L 18.5 21 L 12 14.5 L 5.5 21 L 3 18.5 L 9.5 12 L 3 5.5 Z</StreamGeometry>
+
+    <StreamGeometry x:Key="CyberIconFill_pin">M 7 2 H 17 V 10 L 20 13 V 16 H 13.5 V 22 H 10.5 V 16 H 4 V 13 L 7 10 Z</StreamGeometry>
+    <StreamGeometry x:Key="CyberIcon_pin-off">M 8 3 H 16 V 10.5 L 19 13.5 V 15 H 5 V 13.5 L 8 10.5 Z M 12 15 V 22 M 3 3 L 21 21</StreamGeometry>
+
+    <StreamGeometry x:Key="CyberIcon_file-text">M 5 3 H 14 L 19 8 V 21 H 5 Z</StreamGeometry>
+    <StreamGeometry x:Key="CyberIconFill_file-text">M 8 11 H 16 V 13 H 8 Z M 8 15.5 H 13 V 17.5 H 8 Z</StreamGeometry>
+
+    <StreamGeometry x:Key="CyberIconFill_list-todo">M 3 4 H 8 V 9 H 3 Z M 3 15 H 8 V 20 H 3 Z M 11 5.25 H 21 V 7.75 H 11 Z M 11 16.25 H 21 V 18.75 H 11 Z</StreamGeometry>
+
+    <StreamGeometry x:Key="CyberIcon_copy">M 9 8 H 17 L 21 12 V 21 H 9 Z M 5.5 16 H 3 V 3 H 12 L 15 6</StreamGeometry>
+
+    <StreamGeometry x:Key="CyberIcon_palette">M 12 2 L 20.5 7 V 17 L 12 22 L 3.5 17 V 7 Z</StreamGeometry>
+    <StreamGeometry x:Key="CyberIconFill_palette">M 12 7.5 L 16 9.8 V 14.2 L 12 16.5 L 8 14.2 V 9.8 Z</StreamGeometry>
+
+    <StreamGeometry x:Key="CyberIcon_lock">M 8 11 V 6 L 10 4 H 14 L 16 6 V 11</StreamGeometry>
+    <StreamGeometry x:Key="CyberIconFill_lock">M 4 11 H 20 V 19 L 17 22 H 4 Z</StreamGeometry>
+    <StreamGeometry x:Key="CyberIcon_unlock">M 8 11 V 6 L 10 4 H 14 L 16 6 V 7.5 M 5 12 H 19 V 18.5 L 16.5 21 H 5 Z</StreamGeometry>
+
+    <StreamGeometry x:Key="CyberIconFill_more-horizontal">M 2.5 10 H 6.5 V 14 H 2.5 Z M 10 10 H 14 V 14 H 10 Z M 17.5 10 H 21.5 V 14 H 17.5 Z</StreamGeometry>
+
+    <StreamGeometry x:Key="CyberIcon_pen-line">M 11 21 H 21</StreamGeometry>
+    <StreamGeometry x:Key="CyberIconFill_pen-line">M 15.5 3 L 20 7.5 L 8.5 19 H 4 V 14.5 Z</StreamGeometry>
+    <StreamGeometry x:Key="CyberIcon_check">M 3.5 12 L 9 17.5 L 20.5 6</StreamGeometry>
+
+    <!-- ============ ELDEN: inked, hand-drawn, tapered ============ -->
+    <!-- New: four-point star -->
+    <StreamGeometry x:Key="EldenIconFill_plus">M 12 2 C 12.7 8 13 10 13.6 10.4 C 14.2 10.9 16 11.3 22 12 C 16 12.7 14.2 13.1 13.6 13.6 C 13 14 12.7 16 12 22 C 11.3 16 11 14 10.4 13.6 C 9.8 13.1 8 12.7 2 12 C 8 11.3 9.8 10.9 10.4 10.4 C 11 10 11.3 8 12 2 Z</StreamGeometry>
+    <!-- Close: two brush strokes -->
+    <StreamGeometry x:Key="EldenIconFill_x">M 4 4 Q 13 9.5 20 20 Q 10.5 13 4 4 Z M 20 4 Q 14.5 13 4 20 Q 11 10.5 20 4 Z</StreamGeometry>
+    <StreamGeometry x:Key="EldenIcon_x">M 6 6 Q 12.5 11 18 18 M 18 6 Q 13 12.5 6 18</StreamGeometry>
+
+    <!-- Pin: a dagger driven through the page (filled = pinned, outline = loose) -->
+    <StreamGeometry x:Key="EldenIconFill_pin">M 9.6 10 H 14.4 L 12 22.5 Z M 12 1.2 A 2.3 2.3 0 1 1 11.99 1.2 Z</StreamGeometry>
+    <StreamGeometry x:Key="EldenIcon_pin">M 6.5 9 Q 12 11 17.5 9 M 12 5.8 V 9.5</StreamGeometry>
+    <StreamGeometry x:Key="EldenIcon_pin-off">M 7 9.5 Q 12 11 17 9.5 M 12 5.5 V 9.5 M 10.6 10.6 L 12 21.5 L 13.4 10.6 M 12 1.8 A 1.8 1.8 0 1 1 11.99 1.8 Z</StreamGeometry>
+
+    <!-- Text: quill -->
+    <StreamGeometry x:Key="EldenIconFill_file-text">M 21 2.5 C 13 3.5 8 7.5 6.2 14.5 L 5.4 18.6 L 8.6 17.4 C 15 15.6 19.5 11 21 2.5 Z</StreamGeometry>
+    <StreamGeometry x:Key="EldenIcon_file-text">M 5.4 18.6 L 3 21.5 M 12 21 H 20</StreamGeometry>
+
+    <!-- Checklist: lozenge bullets and ruled lines -->
+    <StreamGeometry x:Key="EldenIconFill_list-todo">M 5 3.4 L 7.6 6 L 5 8.6 L 2.4 6 Z M 5 9.4 L 7.6 12 L 5 14.6 L 2.4 12 Z M 5 15.4 L 7.6 18 L 5 20.6 L 2.4 18 Z</StreamGeometry>
+    <StreamGeometry x:Key="EldenIcon_list-todo">M 10.5 6 Q 16 5 21.5 6 M 10.5 12 Q 15 11.2 19 12 M 10.5 18 Q 16 17 21.5 18</StreamGeometry>
+
+    <!-- Copy: two leaves with a curled corner -->
+    <StreamGeometry x:Key="EldenIcon_copy">M 9 8 H 20.5 V 17.5 L 17 21.5 H 9 Z M 17 21.5 V 17.5 H 20.5 M 6 16 H 3.5 V 2.5 H 15 V 5</StreamGeometry>
+
+    <!-- Colours / style: a flask of dye -->
+    <StreamGeometry x:Key="EldenIcon_palette">M 9 2.5 H 15 M 10.2 2.5 V 8 L 5.4 17.6 C 4.6 19.8 5.8 21.5 8 21.5 H 16 C 18.2 21.5 19.4 19.8 18.6 17.6 L 13.8 8 V 2.5</StreamGeometry>
+    <StreamGeometry x:Key="EldenIconFill_palette">M 8.2 14 H 15.8 L 17.4 17.8 C 17.9 19.4 17.2 20.3 15.8 20.3 H 8.2 C 6.8 20.3 6.1 19.4 6.6 17.8 Z</StreamGeometry>
+
+    <!-- Lock: old padlock with a keyhole -->
+    <StreamGeometry x:Key="EldenIcon_lock">M 8 11 V 8 C 8 4.6 9.6 2.5 12 2.5 C 14.4 2.5 16 4.6 16 8 V 11</StreamGeometry>
+    <StreamGeometry x:Key="EldenIconFill_lock">F0 M 4.5 11 H 19.5 V 18 C 19.5 20.5 16.2 22 12 22 C 7.8 22 4.5 20.5 4.5 18 Z M 12 13.2 A 1.7 1.7 0 1 0 12.01 13.2 Z M 11.2 16 H 12.8 L 13.5 19.2 H 10.5 Z</StreamGeometry>
+    <StreamGeometry x:Key="EldenIcon_unlock">M 8 11 V 8 C 8 4.6 9.6 2.5 12 2.5 C 14.2 2.5 15.6 4.2 15.9 6.6 M 5 11.5 H 19 V 18 C 19 20.2 16 21.5 12 21.5 C 8 21.5 5 20.2 5 18 Z M 12 14.5 V 17.5</StreamGeometry>
+
+    <!-- More: three lozenges -->
+    <StreamGeometry x:Key="EldenIconFill_more-horizontal">M 4.5 9.6 L 6.9 12 L 4.5 14.4 L 2.1 12 Z M 12 8.8 L 15.2 12 L 12 15.2 L 8.8 12 Z M 19.5 9.6 L 21.9 12 L 19.5 14.4 L 17.1 12 Z</StreamGeometry>
+
+    <StreamGeometry x:Key="EldenIconFill_pen-line">M 21 2.5 C 13 3.5 8 7.5 6.2 14.5 L 5.4 18.6 L 8.6 17.4 C 15 15.6 19.5 11 21 2.5 Z</StreamGeometry>
+    <StreamGeometry x:Key="EldenIcon_pen-line">M 5.4 18.6 L 3 21.5</StreamGeometry>
+    <StreamGeometry x:Key="EldenIconFill_check">M 3 12.5 Q 7 14 9.2 19 Q 13 10 21 4 Q 13.5 8.5 9 14.2 Q 7 12.5 3 12.5 Z</StreamGeometry>
+</ResourceDictionary>

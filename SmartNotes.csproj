@@ -30,6 +30,7 @@
   <ItemGroup>
     <Resource Include="Assets\app.ico" />
     <Resource Include="Assets\app.png" />
+    <Resource Include="Assets\Fonts\*.ttf" />
     <None Update="Assets\app.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

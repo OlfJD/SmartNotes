@@ -15,6 +15,7 @@ using SmartNotes.Core.Models;
 using SmartNotes.Core.Native;
 using SmartNotes.Core.Services;
 using SmartNotes.UI.Controls;
+using SmartNotes.UI.Skins;
 
 namespace SmartNotes.UI.Windows;
 
@@ -49,6 +50,12 @@ public partial class StickyNoteWindow : Window
     private DispatcherTimer? _saveDebounceTimer;
     private DispatcherTimer? _savedStatusResetTimer;
     private SolidColorBrush _currentGlowBrush = AmberBrush;
+    private NoteSkin _currentSkin = NoteSkin.Get(null);
+    private NoteColorTheme _currentTheme = NoteColorTheme.Get(null);
+    private SolidColorBrush _inkAmber = AmberBrush;
+    private SolidColorBrush _inkEmerald = EmeraldBrush;
+    private SolidColorBrush _inkCyan = CyanBrush;
+    private SolidColorBrush _inkMuted = MutedBrush;
     private ObservableCollection<TodoCheckItem> _checklistItems = new();
     private ObservableCollection<CopySnippetItem> _copyItems = new();
 
@@ -155,6 +162,7 @@ public partial class StickyNoteWindow : Window
             _desktopWindowManager.BringToFront();
             TxtContent.Focus();
         }
+        UpdateResizeGrip();
         _isLoaded = true;
         ApplyFocusOpacity(IsActive || _startInForeground);
     }
@@ -168,6 +176,10 @@ public partial class StickyNoteWindow : Window
         if (BtnAddTask != null) BtnAddTask.ToolTip = LocalizationService.T("Tooltip_AddTask");
         if (BtnAddCopyItem != null) BtnAddCopyItem.ToolTip = LocalizationService.T("Tooltip_AddSnippet");
 
+        if (TxtNoteStyleHeader != null) TxtNoteStyleHeader.Text = LocalizationService.T("ColorPopup_NoteStyle");
+        if (TxtSkinClassic != null) TxtSkinClassic.Text = LocalizationService.T("Skin_Classic");
+        if (TxtSkinCyberpunk != null) TxtSkinCyberpunk.Text = LocalizationService.T("Skin_Cyberpunk");
+        if (TxtSkinEldenRing != null) TxtSkinEldenRing.Text = LocalizationService.T("Skin_EldenRing");
         if (TxtQuickNeonThemes != null) TxtQuickNeonThemes.Text = LocalizationService.T("ColorPopup_QuickThemes");
         if (TxtCustomPaletteCanvas != null) TxtCustomPaletteCanvas.Text = LocalizationService.T("ColorPopup_CustomCanvas");
         if (BtnApplyCustomColor != null) BtnApplyCustomColor.Content = LocalizationService.T("ColorPopup_Apply");
@@ -211,7 +223,7 @@ public partial class StickyNoteWindow : Window
         TxtContentPlaceholder.Visibility = string.IsNullOrEmpty(_note.Content) ? Visibility.Visible : Visibility.Collapsed;
 
         TxtContent.FontSize = Math.Max(11, _note.FontSize);
-        TxtTitle.FontSize = Math.Max(12, _note.FontSize + 1);
+        ApplyTitleFontSize();
 
         // Checklist setup
         _checklistItems = new ObservableCollection<TodoCheckItem>(_note.Checklist);
@@ -236,7 +248,8 @@ public partial class StickyNoteWindow : Window
     public void ApplyTheme(string colorKey)
     {
         _note.ColorKey = colorKey;
-        var theme = NoteColorTheme.Get(colorKey);
+        var skin = NoteSkin.Get(_note.SkinKey);
+        var theme = skin.Tint(NoteColorTheme.Get(colorKey));
 
         try
         {
@@ -250,15 +263,207 @@ public partial class StickyNoteWindow : Window
             ModeCompartmentBorder.BorderBrush = theme.BorderBrush;
             ToolsCompartmentBorder.BorderBrush = theme.BorderBrush;
 
-            TxtTitle.Foreground = theme.TextPrimaryBrush;
+            TxtTitle.Foreground = skin.AccentTitle ? theme.GlowBrush : theme.TextPrimaryBrush;
             TxtContent.Foreground = theme.TextPrimaryBrush;
             TxtTitle.CaretBrush = theme.GlowBrush;
             TxtContent.CaretBrush = theme.GlowBrush;
             TxtNewTask.CaretBrush = theme.GlowBrush;
             TxtNewCopyItem.CaretBrush = theme.GlowBrush;
             IconPlus.Foreground = theme.GlowBrush;
+
+            ApplySkinVisuals(skin, theme);
         }
         catch { }
+    }
+
+    public void ApplySkin(string skinKey)
+    {
+        _note.SkinKey = NoteSkin.Get(skinKey).Key;
+        ApplyTheme(_note.ColorKey);
+    }
+
+    private void ApplySkinVisuals(NoteSkin skin, NoteColorTheme theme)
+    {
+        _currentSkin = skin;
+        _currentTheme = theme;
+
+        // --- Body: classic rounded card, or a body painted by the skin's art (UI/Skins) ---
+        if (skin.CustomArt)
+        {
+            NoteCardBorder.Background = Brushes.Transparent;
+            NoteCardBorder.BorderThickness = new Thickness(0);
+            NoteCardBorder.CornerRadius = new CornerRadius(0);
+            ContentGrid.Margin = skin.ContentInset;
+            HeaderBorder.Background = Brushes.Transparent;
+            HeaderBorder.BorderThickness = new Thickness(0);
+            HeaderBorder.CornerRadius = new CornerRadius(0);
+        }
+        else
+        {
+            NoteCardBorder.CornerRadius = new CornerRadius(skin.CardRadius);
+            NoteCardBorder.BorderThickness = new Thickness(skin.CardBorder);
+            ContentGrid.Margin = new Thickness(-1);
+            HeaderBorder.CornerRadius = new CornerRadius(skin.HeaderRadius, skin.HeaderRadius, 0, 0);
+            HeaderBorder.BorderThickness = new Thickness(0, 0, 0, skin.HeaderDivider);
+        }
+        HeaderBorder.Padding = new Thickness(0, skin.HeaderTopPad, 0, 0);
+        HeaderRow.Height = new GridLength(44 + skin.HeaderTopPad);
+
+        // --- Typography & panel shape tokens ---
+        Resources["SkinFont"] = skin.Font;
+        Resources["SkinTitleFont"] = skin.TitleFont;
+        Resources["SkinMetaFont"] = skin.MetaFont;
+        Resources["SkinBodyWeight"] = skin.BodyWeight;
+        Resources["SkinTitleWeight"] = skin.TitleWeight;
+        Resources["SkinCompartmentRadius"] = new CornerRadius(skin.CompartmentRadius);
+        Resources["SkinCompartmentCut"] = skin.CompartmentCut;
+        Resources["SkinItemCut"] = skin.ItemCut;
+        Resources["SkinCompartmentBorder"] = new Thickness(skin.CompartmentBorder);
+        Resources["SkinItemRadius"] = new CornerRadius(skin.ItemRadius);
+        Resources["SkinCheckRadius"] = new CornerRadius(Math.Min(5, skin.ItemRadius));
+        Resources["SkinItemBorder"] = new Thickness(skin.ItemBorder);
+        Resources["SkinInputRadius"] = new CornerRadius(skin.InputRadius);
+        Resources["SkinInputBorder"] = new Thickness(skin.InputBorder);
+        Resources["SkinAccentBrush"] = theme.GlowBrush;
+        Resources["SkinAccentDimBrush"] = theme.BorderBrush;
+
+        // --- Chrome ink (icons / helper text on the note surface) ---
+        bool classic = skin.Key == NoteSkin.ClassicKey;
+        _inkAmber = classic ? AmberBrush : NoteColorTheme.CreateFrozenBrush(skin.AmberHex);
+        _inkEmerald = classic ? EmeraldBrush : NoteColorTheme.CreateFrozenBrush(skin.EmeraldHex);
+        _inkCyan = classic ? CyanBrush : NoteColorTheme.CreateFrozenBrush(skin.CyanHex);
+        _inkMuted = classic ? MutedBrush : NoteColorTheme.CreateFrozenBrush(skin.MutedHex);
+        Resources["SkinMutedBrush"] = _inkMuted;
+        Resources["SkinFaintBrush"] = NoteColorTheme.CreateFrozenBrush(skin.FaintHex);
+        Resources["SkinPlaceholderBrush"] = NoteColorTheme.CreateFrozenBrush(skin.PlaceholderHex);
+        Resources["SkinDangerBrush"] = NoteColorTheme.CreateFrozenBrush(skin.DangerHex);
+        Resources["SkinAmberBrush"] = _inkAmber;
+        Resources["SkinEmeraldBrush"] = classic ? (TryFindResource("NeonEmeraldGlowBrush") as Brush ?? _inkEmerald) : _inkEmerald;
+        Resources["SkinCyanBrush"] = classic ? (TryFindResource("NeonCyanBrush") as Brush ?? _inkCyan) : _inkCyan;
+        Resources["SkinCaretBrush"] = classic ? AmberBrush : theme.GlowBrush;
+
+        // --- Inner panels (header compartments, checklist / copy rows, inputs) ---
+        if (skin.TintPanels)
+        {
+            var panelBg = NoteColorTheme.CreateFrozenBrush(skin.PanelBgHex ?? NoteSkin.Mix(theme.BgHex, theme.PrimaryHex, 0.07));
+            var panelBorder = NoteColorTheme.CreateFrozenBrush(skin.PanelBorderHex ?? NoteSkin.Mix(theme.BgHex, theme.BorderHex, 0.55));
+            Brush compartmentBg = skin.CompartmentBorder > 0 ? panelBg : Brushes.Transparent;
+            LeftCompartmentBorder.Background = compartmentBg;
+            ModeCompartmentBorder.Background = compartmentBg;
+            ToolsCompartmentBorder.Background = compartmentBg;
+            LeftCompartmentBorder.BorderBrush = panelBorder;
+            ModeCompartmentBorder.BorderBrush = panelBorder;
+            ToolsCompartmentBorder.BorderBrush = panelBorder;
+            Resources["SkinItemBgBrush"] = panelBg;
+            Resources["SkinItemBorderBrush"] = panelBorder;
+            Resources["SkinInputBgBrush"] = panelBg;
+            Resources["SkinInputBorderBrush"] = panelBorder;
+            Resources["SkinItemTextBrush"] = theme.TextPrimaryBrush;
+            Resources["SkinCheckBgBrush"] = skin.PanelBgHex != null ? panelBg : theme.BgBrush;
+            Resources["SkinCheckMarkBrush"] = theme.GlowBrush;
+            Resources["SkinCheckOnBgBrush"] = skin.PanelBgHex != null ? panelBg : NoteColorTheme.CreateFrozenBrush(NoteSkin.Mix(theme.BgHex, theme.GlowHex, 0.18));
+            Resources["SkinCheckBorderBrush"] = skin.PanelBorderHex != null
+                ? theme.BorderBrush
+                : NoteColorTheme.CreateFrozenBrush(NoteSkin.Mix(theme.BgHex, theme.BorderHex, 0.85));
+        }
+        else
+        {
+            LeftCompartmentBorder.Background = NoteColorTheme.CreateFrozenBrush("#182030");
+            ModeCompartmentBorder.Background = NoteColorTheme.CreateFrozenBrush("#141A28");
+            ToolsCompartmentBorder.Background = NoteColorTheme.CreateFrozenBrush("#141A28");
+            Resources["SkinItemBgBrush"] = NoteColorTheme.CreateFrozenBrush("#141824");
+            Resources["SkinItemBorderBrush"] = NoteColorTheme.CreateFrozenBrush("#2A3752");
+            Resources["SkinInputBgBrush"] = NoteColorTheme.CreateFrozenBrush("#161D2E");
+            Resources["SkinInputBorderBrush"] = NoteColorTheme.CreateFrozenBrush("#303E5C");
+            Resources["SkinItemTextBrush"] = NoteColorTheme.CreateFrozenBrush("#F8FAFC");
+            Resources["SkinCheckBgBrush"] = NoteColorTheme.CreateFrozenBrush("#1E2638");
+            Resources["SkinCheckBorderBrush"] = NoteColorTheme.CreateFrozenBrush("#3B4C6F");
+            Resources["SkinCheckMarkBrush"] = NoteColorTheme.CreateFrozenBrush("#10B981");
+            Resources["SkinCheckOnBgBrush"] = NoteColorTheme.CreateFrozenBrush("#0F2922");
+        }
+
+        // --- Elden Ring: ornamental rule under the title ---
+        bool elden = skin.Key == NoteSkin.EldenRingKey;
+        EldenTitleDivider.Visibility = elden ? Visibility.Visible : Visibility.Collapsed;
+        EldenDividerLine.Fill = null;
+        if (elden)
+        {
+            var ink = theme.GlowBrush.Color;
+            var divider = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(1, 0) };
+            divider.GradientStops.Add(new GradientStop(NoteSkin.WithAlpha(ink, 0), 0));
+            divider.GradientStops.Add(new GradientStop(NoteSkin.WithAlpha(ink, 0.8), 0.5));
+            divider.GradientStops.Add(new GradientStop(NoteSkin.WithAlpha(ink, 0), 1));
+            divider.Freeze();
+            EldenDividerLine.Fill = divider;
+        }
+
+        LucideIcon.SetPack(ContentGrid, skin.IconPack);
+        LucideIcon.SetPack(ColorPopup, "");
+        ApplyTitleFontSize();
+
+        // Icon states depend on the chrome ink
+        UpdateViewMode(_note.ViewMode);
+        UpdateLockUI(_note.IsLocked);
+        if (IconPin != null)
+        {
+            IconPin.Foreground = _note.PinMode switch
+            {
+                NotePinMode.DesktopStuck => _inkEmerald,
+                NotePinMode.AlwaysOnTop => _inkAmber,
+                _ => _inkMuted
+            };
+        }
+
+        UpdateResizeGrip();
+        UpdateSkinGeometry();
+    }
+
+    private void ApplyTitleFontSize()
+    {
+        if (TxtTitle == null) return;
+        double size = Math.Max(12, _note.FontSize + 1) * _currentSkin.TitleScale;
+        TxtTitle.FontSize = size;
+        if (TxtTitlePlaceholder != null) TxtTitlePlaceholder.FontSize = size;
+    }
+
+    /// <summary>Repaints the body of custom-art skins for the current window size.</summary>
+    private void UpdateSkinGeometry()
+    {
+        if (SkinArtHost == null || RootGrid == null) return;
+
+        double w = RootGrid.ActualWidth;
+        double h = RootGrid.ActualHeight;
+
+        if (!_currentSkin.CustomArt || w < 120 || h < 120)
+        {
+            SkinArtHost.Drawing = null;
+            return;
+        }
+
+        string tag = _note.Id.ToString("N").Substring(0, 4).ToUpperInvariant();
+        SkinArtHost.Drawing = _currentSkin.Key == NoteSkin.CyberpunkKey
+            ? CyberpunkArt.Build(w, h, _currentTheme, _currentSkin, tag, VisualTreeHelper.GetDpi(this).PixelsPerDip)
+            : EldenScrollArt.Build(w, h, _currentTheme, tag);
+    }
+
+    /// <summary>The stock window resize grip would float in the cut-away corner of shaped skins.</summary>
+    private void UpdateResizeGrip()
+    {
+        if (Template?.FindName("WindowResizeGrip", this) is UIElement grip)
+        {
+            grip.Opacity = _currentSkin.CustomArt ? 0 : 1;
+        }
+    }
+
+    private void UpdateSkinButtons()
+    {
+        var idle = NoteColorTheme.CreateFrozenBrush("#334368");
+        foreach (var btn in new[] { BtnSkinClassic, BtnSkinCyberpunk, BtnSkinEldenRing })
+        {
+            if (btn == null) continue;
+            bool selected = string.Equals(btn.Tag as string, _currentSkin.Key, StringComparison.Ordinal);
+            btn.BorderBrush = selected ? _currentGlowBrush : idle;
+        }
     }
 
     public void UpdateViewMode(NoteViewMode mode)
@@ -270,9 +475,9 @@ public partial class StickyNoteWindow : Window
         if (ChecklistModeContainer != null) ChecklistModeContainer.Visibility = (mode == NoteViewMode.Checklist) ? Visibility.Visible : Visibility.Collapsed;
         if (CopyModeContainer != null) CopyModeContainer.Visibility = (mode == NoteViewMode.CopyCompartments) ? Visibility.Visible : Visibility.Collapsed;
 
-        if (IconTextMode != null) IconTextMode.Foreground = (mode == NoteViewMode.Text) ? AmberBrush : MutedBrush;
-        if (IconChecklistMode != null) IconChecklistMode.Foreground = (mode == NoteViewMode.Checklist) ? EmeraldBrush : MutedBrush;
-        if (IconCopyMode != null) IconCopyMode.Foreground = (mode == NoteViewMode.CopyCompartments) ? CyanBrush : MutedBrush;
+        if (IconTextMode != null) IconTextMode.Foreground = (mode == NoteViewMode.Text) ? _inkAmber : _inkMuted;
+        if (IconChecklistMode != null) IconChecklistMode.Foreground = (mode == NoteViewMode.Checklist) ? _inkEmerald : _inkMuted;
+        if (IconCopyMode != null) IconCopyMode.Foreground = (mode == NoteViewMode.CopyCompartments) ? _inkCyan : _inkMuted;
 
         if (BtnTextMode != null) BtnTextMode.ToolTip = (mode == NoteViewMode.Text) ? LocalizationService.T("Tooltip_ActiveTextMode") : LocalizationService.T("Tooltip_TextMode");
         if (BtnChecklistMode != null) BtnChecklistMode.ToolTip = (mode == NoteViewMode.Checklist) ? LocalizationService.T("Tooltip_ActiveChecklistMode") : LocalizationService.T("Tooltip_ChecklistMode");
@@ -291,21 +496,21 @@ public partial class StickyNoteWindow : Window
             case NotePinMode.DesktopStuck:
                 TxtPinIndicator.Text = LocalizationService.T("Pin_StuckToDesktop");
                 IconPin.IconKey = "pin";
-                IconPin.Foreground = EmeraldBrush;
+                IconPin.Foreground = _inkEmerald;
                 BtnPinMode.ToolTip = LocalizationService.T("Tooltip_Pin_StuckToDesktop");
                 break;
 
             case NotePinMode.AlwaysOnTop:
                 TxtPinIndicator.Text = LocalizationService.T("Pin_AlwaysOnTop");
                 IconPin.IconKey = "pin";
-                IconPin.Foreground = AmberBrush;
+                IconPin.Foreground = _inkAmber;
                 BtnPinMode.ToolTip = LocalizationService.T("Tooltip_Pin_AlwaysOnTop");
                 break;
 
             case NotePinMode.Normal:
                 TxtPinIndicator.Text = LocalizationService.T("Pin_Normal");
                 IconPin.IconKey = "pin-off";
-                IconPin.Foreground = MutedBrush;
+                IconPin.Foreground = _inkMuted;
                 BtnPinMode.ToolTip = LocalizationService.T("Tooltip_Pin_Normal");
                 break;
         }
@@ -326,7 +531,7 @@ public partial class StickyNoteWindow : Window
         if (IconLock != null)
         {
             IconLock.IconKey = isLocked ? "lock" : "unlock";
-            IconLock.Foreground = isLocked ? AmberBrush : MutedBrush;
+            IconLock.Foreground = isLocked ? _inkAmber : _inkMuted;
         }
         if (LockBadge != null)
         {
@@ -380,9 +585,9 @@ public partial class StickyNoteWindow : Window
         TxtModifiedTime.Visibility = Visibility.Collapsed;
         TypingIndicatorContainer.Visibility = Visibility.Visible;
         IconTypingStatus.IconKey = "check";
-        IconTypingStatus.Foreground = EmeraldBrush;
+        IconTypingStatus.Foreground = _inkEmerald;
         TxtTypingStatus.Text = LocalizationService.T("Status_Saved");
-        TxtTypingStatus.Foreground = EmeraldBrush;
+        TxtTypingStatus.Foreground = _inkEmerald;
 
         _savedStatusResetTimer = new DispatcherTimer
         {
@@ -487,6 +692,7 @@ public partial class StickyNoteWindow : Window
 
     private void OnWindowSizeChanged(object sender, SizeChangedEventArgs e)
     {
+        UpdateSkinGeometry();
         RequestSave(isTyping: false);
     }
 
@@ -631,6 +837,7 @@ public partial class StickyNoteWindow : Window
             Width = Width,
             Height = Height,
             ColorKey = _note.ColorKey,
+            SkinKey = _note.SkinKey,
             PinMode = _note.PinMode,
             ViewMode = _note.ViewMode,
             FontSize = _note.FontSize,
@@ -657,6 +864,8 @@ public partial class StickyNoteWindow : Window
     private void ColorPopup_Opened(object? sender, EventArgs e)
     {
         // Parse current theme into HSV
+        UpdateSkinButtons();
+
         var theme = NoteColorTheme.Get(_note.ColorKey);
         try
         {
@@ -710,6 +919,16 @@ public partial class StickyNoteWindow : Window
             UpdateHueDisplay();
             UpdateColorFromHsv();
         });
+    }
+
+    private void SkinButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is string skinKey)
+        {
+            ApplySkin(skinKey);
+            UpdateSkinButtons();
+            RequestSave(isTyping: false);
+        }
     }
 
     private void ColorSwatch_Click(object sender, RoutedEventArgs e)
@@ -1107,7 +1326,8 @@ public partial class StickyNoteWindow : Window
     private void SetFontSize(double size)
     {
         TxtContent.FontSize = size;
-        TxtTitle.FontSize = size + 1;
+        TxtTitle.FontSize = (size + 1) * _currentSkin.TitleScale;
+        if (TxtTitlePlaceholder != null) TxtTitlePlaceholder.FontSize = TxtTitle.FontSize;
         RequestSave();
     }
 

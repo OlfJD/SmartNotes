@@ -346,6 +346,7 @@ public partial class App : Application
             X = Math.Max(40, spawnX),
             Y = Math.Max(40, spawnY),
             ColorKey = _settingsService.Settings.DefaultColorKey,
+            SkinKey = _settingsService.Settings.DefaultSkinKey,
             PinMode = _settingsService.Settings.DefaultPinMode,
             FontSize = _settingsService.Settings.DefaultFontSize,
             Opacity = _settingsService.Settings.DefaultOpacity,
