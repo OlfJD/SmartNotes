@@ -67,7 +67,7 @@ Skins change the whole look of a note (silhouette, surface, fonts, icon colours)
 - **Cyberpunk — favourites:** `VT323` or `Orbitron`. These do not fit the fixed title/text pairings offered so far, hence the next point.
 - **Font picker:** support several bundled fonts per skin and let the user choose them in the settings (title font and text font separately, per skin). Suggested shape: a list of font options on `NoteSkin`, the chosen keys stored in `AppSettings` (optionally per note on `NoteItem`), resolved in `StickyNoteWindow.ApplySkinVisuals()` where `SkinFont` / `SkinTitleFont` / `SkinMetaFont` are set.
 - **Variable fonts:** WPF loads only the default (thinnest) instance of a variable font. Orbitron and Grenze Gotisch ship as variable fonts on Google Fonts, so static instances per weight are needed (this is why Orbitron looked thin and was dropped earlier).
-- **Verify in the published build:** the skins were only checked by off-screen rendering of the Debug build. `Launch SmartNotes.bat` runs a Release publish; confirm the bundled fonts (`Assets/Fonts`, embedded as `Resource`) actually load there. If the Elden Ring title is not a blackletter face in the running app, font loading is broken.
+- **Published build checked (2026-11-11):** a Release publish renders both skins with the bundled fonts, shapes and icon packs (off-screen render). So the "normal Windows fonts" feedback is about the font choices, not a loading bug. Still not clicked through by hand.
 - Candidate sheet with all options: `docs/references/pick-board.html`.
 
 ### 2. New app icon - DONE
