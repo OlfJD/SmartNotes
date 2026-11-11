@@ -70,11 +70,8 @@ Skins change the whole look of a note (silhouette, surface, fonts, icon colours)
 - **Verify in the published build:** the skins were only checked by off-screen rendering of the Debug build. `Launch SmartNotes.bat` runs a Release publish; confirm the bundled fonts (`Assets/Fonts`, embedded as `Resource`) actually load there. If the Elden Ring title is not a blackletter face in the running app, font loading is broken.
 - Candidate sheet with all options: `docs/references/pick-board.html`.
 
-### 2. New app icon (owner feedback: current icon is unreadable when small, yellow is ugly, wants a simple flat icon like MacroMaster but not a letter)
-- **Decided concept:** "stacked notes" — one flat colour tile with two dark rounded squares, one behind the other.
-- **Requested changes:** make the two inner rectangles bigger, and use a slightly more muted pastel teal than `#35d0b0` for the tile. Glyph colour is the MacroMaster navy `#12142b`.
-- Starting SVG (64x64): tile `<rect width="64" height="64" rx="15">`, back note `<rect x="23" y="13" width="28" height="28" rx="4" opacity=".45">`, front note `<rect x="13" y="23" width="28" height="28" rx="4">`.
-- Then regenerate `Assets/app.png` and `Assets/app.ico` (see `generate_icon.py`) and check the 16 px tray size.
+### 2. New app icon - DONE
+Flat "stacked notes" icon (muted pastel teal `#74C7B8` tile, navy `#12142B` notes, enlarged inner rectangles). `Assets/app.png` and `Assets/app.ico` are produced by `generate_icon.ps1`; the old `generate_icon.py` still draws the previous yellow icon and can be deleted. Not yet looked at in the real taskbar / tray.
 
 ### 3. App-wide UI overhaul (owner feedback: UI looks cheap; tray menu, three-dot menu and settings are inconsistent)
 Findings: the tray menu is a Windows Forms `ContextMenuStrip` (`Core/Native/TrayManager.cs`) while the three-dot and right-click menus are WPF menus built in code (`StickyNoteWindow.xaml.cs`), so they cannot match; borders are 2-5 px almost everywhere; amber, emerald, cyan and red all appear in one note header regardless of note colour; radii, spacing and font sizes are set per element.
@@ -90,7 +87,7 @@ How to do it: define one small set of shared values (surface colours, one accent
 - Shaped skins sit a few pixels inside the window bounds, so snapped notes show a small gap; the stock resize grip is hidden for them and the cut-away corners cannot be grabbed.
 
 ### 5. "Pick board" skill for Claude (not part of SmartNotes)
-Owner request: turn the pick board into a reusable Claude skill — whenever several visual options are on the table (fonts, icons, colours, layouts), Claude publishes one page showing every option rendered for real, lettered or numbered, with the current choice marked and a recommendation, so the answer can be given as "A, D, icon 2". Not built yet. Reference implementation: `docs/references/pick-board.html`. Build it with the skill creator in a Claude session.
+Owner request: turn the pick board into a reusable Claude skill — whenever several visual options are on the table (fonts, icons, colours, layouts), Claude publishes one page showing every option rendered for real, lettered or numbered, with the current choice marked and a recommendation, so the answer can be given as "A, D, icon 2". Built on the work machine (`~/.claude/skills/pick-board`), not test-run yet; copy that folder or the packaged `pick-board.skill` to other machines. Reference page: `docs/references/pick-board.html`.
 ---
 
 
