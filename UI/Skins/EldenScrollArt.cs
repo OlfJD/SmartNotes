@@ -24,6 +24,9 @@ public static class EldenScrollArt
 
     private static readonly Lazy<ImageBrush> GrainBrush = new(CreateGrainBrush);
 
+    /// <summary>The rough tileable grain, shared with other painters.</summary>
+    internal static ImageBrush Grain => GrainBrush.Value;
+
     public static Drawing Build(double w, double h, NoteColorTheme theme, string tag)
     {
         WpfColor paper = theme.BgBrush.Color;

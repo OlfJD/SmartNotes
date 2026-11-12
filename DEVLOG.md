@@ -55,41 +55,38 @@ Skins change the whole look of a note (silhouette, surface, fonts, icon colours)
 - There is still exactly one `StickyNoteWindow` layout, so every feature works in every skin. A skin is a `NoteSkin` entry (`Core/Models/NoteSkin.cs`): insets, fonts, panel shape, chrome ink colours and a `Tint` function that re-colours the note's own `NoteColorTheme`.
 - `StickyNoteWindow.ApplySkinVisuals()` writes those values into window-level `Skin*` resources that the XAML consumes via `DynamicResource`.
 - Skins with `CustomArt = true` switch the rounded card off and paint their own non-rectangular body into `SkinArtHost` (`UI/Skins/CyberpunkArt.cs`, `UI/Skins/EldenScrollArt.cs`), redrawn on resize. The art constants must match the skin's `ContentInset` / `HeaderTopPad`.
-- Bundled OFL fonts live in `Assets/Fonts` (Russo One, Chakra Petch, Share Tech Mono, Pirata One, IM Fell English) and are embedded as resources.
+- Bundled OFL fonts live in `Assets/Fonts` (each with its licence file) and are embedded as resources.
 - Each skin can name an icon pack (`NoteSkin.IconPack`). `LucideIcon.Pack` is inherited down the note surface and resolves `{Pack}Icon_{key}` / `{Pack}IconFill_{key}` from `UI/Icons/SkinIcons.xaml`, falling back to Lucide for anything the pack does not define. Menus, popups and Settings stay on Lucide.
 - To add a skin: add a `NoteSkin` to `NoteSkin.All`, an art class if it needs its own shape, a button in the popup and a `Skin_*` localization key.
 - Cyberpunk cells (header groups, checklist/copy rows, input row) use `UI/Skins/CutBorder.cs`, a `Border` that chamfers two corners when `Cut > 0` and renders as a normal Border otherwise.
 
-## TODO (open work as of 2026-11-11)
+## App chrome: design tokens and menus
+- **Design tokens** live at the top of `UI/Themes/DarkTheme.xaml` ("DESIGN TOKENS"): one accent (`AccentBrush`, teal like the app icon, plus hover / pressed / on-accent), surface brushes (`MenuBgBrush`, `HoverBgBrush`, `ControlBgBrush`, `ControlBorderBrush`), one border weight (`StrokeThin`), two radii (`RadiusControl`, `RadiusPanel`) and a type scale (`FontSizeCaption` / `Body` / `Label` / `Title`). Use these instead of literal values. Amber, emerald and red remain as status colours only (warning, success, danger).
+- **Menus** are all built with `UI/Controls/AppMenu.cs` (`Item`, `Sub`, `Heading`, `Separator`, tones Normal / Accent / Danger / Muted, `isChecked`) and styled by the ContextMenu / MenuItem styles in `DarkTheme.xaml`. The tray menu (`Core/Native/TrayManager.cs`) is now a WPF menu too: the tray icon is still a WinForms `NotifyIcon`, and a hidden 1px host window gives the menu a foreground window so it closes on an outside click.
+- **Skin fonts** are selectable: each `NoteSkin` lists `TitleFonts` / `TextFonts` (`SkinFontOption`: bundled family, weight, size correction). The choice is stored per skin in `AppSettings.SkinTitleFonts` / `SkinTextFonts`, picked in Settings > Note Appearance > Style Fonts, and resolved in `StickyNoteWindow.ApplySkinVisuals()`. To offer another font: drop a static (non-variable) TTF into `Assets/Fonts` and add one `SkinFontOption` line.
 
-### 1. Skin fonts (owner feedback: "still look like normal Windows fonts, not stylized")
-- **Elden Ring — decided:** title `Grenze Gotisch` (bold), text `Eagle Lake`. Not applied yet; the skin still uses Pirata One + IM Fell English.
-- **Cyberpunk — favourites:** `VT323` or `Orbitron`. These do not fit the fixed title/text pairings offered so far, hence the next point.
-- **Font picker:** support several bundled fonts per skin and let the user choose them in the settings (title font and text font separately, per skin). Suggested shape: a list of font options on `NoteSkin`, the chosen keys stored in `AppSettings` (optionally per note on `NoteItem`), resolved in `StickyNoteWindow.ApplySkinVisuals()` where `SkinFont` / `SkinTitleFont` / `SkinMetaFont` are set.
-- **Variable fonts:** WPF loads only the default (thinnest) instance of a variable font. Orbitron and Grenze Gotisch ship as variable fonts on Google Fonts, so static instances per weight are needed (this is why Orbitron looked thin and was dropped earlier).
-- **Published build checked (2026-11-11):** a Release publish renders both skins with the bundled fonts, shapes and icon packs (off-screen render). So the "normal Windows fonts" feedback is about the font choices, not a loading bug. Still not clicked through by hand.
-- Candidate sheet with all options: `docs/references/pick-board.html`.
+### Skins as of 2026-11-12 (evening)
+- **Classic** – default; header button groups no longer boxed, even corners, no resize grip glyph.
+- **Paper Sticky** (`Paper`, `PaperStickyArt`) – light sticky note in the note colour, dark ink, glue strip, folded corner.
+- **Cyberpunk** (`Cyberpunk`, `CyberpunkArt`).
+- **Elden Ring** (`EldenRing`, `EldenRingArt`) – the game's menu look: murky olive panel, pale-gold double frame with notched corners, glowing ring in the note colour, motes. Drawn from scratch; contains no game assets, logo or the game's commercial fonts (Cinzel / EB Garamond stand in).
+- **Medieval** (`Medieval`, `EldenScrollArt`) – the parchment scroll that used to be called "Elden Ring". `App.MigrateSkinKeys()` renames stored `EldenRing` keys to `Medieval` once (`AppSettings.SkinDataVersion`).
+- Painters are chosen by `NoteSkin.ArtKey`; the popup's style buttons are generated from `NoteSkin.All`; `SideResizeInset` / `SideResizeWidth` put the side resize zones on visible pixels of shaped skins.
+- Franchise themes: build the look (shapes, palette, type, ornaments) from references, but do not ship a franchise's logo, artwork, screenshots or paid fonts — the repository and releases are public.
+## TODO (open work as of 2026-11-12)
 
-### 2. New app icon - DONE
-Flat "stacked notes" icon (muted pastel teal `#74C7B8` tile, navy `#12142B` notes, enlarged inner rectangles). `Assets/app.png` and `Assets/app.ico` are produced by `generate_icon.ps1`; the old `generate_icon.py` still draws the previous yellow icon and can be deleted. Not yet looked at in the real taskbar / tray.
+### Done on 2026-11-12
+- Skin fonts: Elden Ring defaults to Grenze Gotisch + Eagle Lake, Cyberpunk to Orbitron + VT323; 17 extra faces bundled; font picker in Settings.
+- App-wide UI overhaul: design tokens, WPF tray menu on the shared menu component, calmer Classic note (2px card border, 1px inner borders, mode icons and add buttons in the note colour), settings / dialogs / palette popup moved onto the tokens.
+- Footer pin emoji replaced by a skin-aware icon.
+- New app icon and the pick-board skill (earlier).
 
-### 3. App-wide UI overhaul (owner feedback: UI looks cheap; tray menu, three-dot menu and settings are inconsistent)
-Findings: the tray menu is a Windows Forms `ContextMenuStrip` (`Core/Native/TrayManager.cs`) while the three-dot and right-click menus are WPF menus built in code (`StickyNoteWindow.xaml.cs`), so they cannot match; borders are 2-5 px almost everywhere; amber, emerald, cyan and red all appear in one note header regardless of note colour; radii, spacing and font sizes are set per element.
-
-How to do it: define one small set of shared values (surface colours, one accent, one border weight, two radii, and a type scale) and apply them everywhere.
-1. Replace the tray menu with a WPF menu so the tray, three-dot and right-click menus are the same component.
-2. Calm the Classic note: thinner borders, a single accent taken from the note colour, and status colours only where they carry meaning.
-3. Rework the settings window on the same values.
-
-### 4. Smaller leftovers from the skin work
-- Nothing in the skin work has been clicked through in the running app yet: switching skins on an open note, resizing shaped skins, the settings live preview (shows a skin's colours and fonts only, not its shape).
-- The pin emoji in the footer status line is still the stock glyph in every skin.
+### Still open
+- **Nothing has been clicked through by hand.** Everything above was checked by building and by off-screen renders of the notes, the tray menu and all settings pages. To try in the running app: tray menu opens at the cursor and closes on an outside click or Escape; its actions (new note, settings, trash restore, exit); three-dot and right-click menus; changing fonts in Settings and saving; switching skins on an open note; resizing shaped skins.
+- The settings live preview shows a skin's colours and fonts only, not its shape.
 - Shaped skins sit a few pixels inside the window bounds, so snapped notes show a small gap; the stock resize grip is hidden for them and the cut-away corners cannot be grabbed.
-
-### 5. "Pick board" skill for Claude (not part of SmartNotes)
-Owner request: turn the pick board into a reusable Claude skill — whenever several visual options are on the table (fonts, icons, colours, layouts), Claude publishes one page showing every option rendered for real, lettered or numbered, with the current choice marked and a recommendation, so the answer can be given as "A, D, icon 2". Built on the work machine (`~/.claude/skills/pick-board`), not test-run yet; copy that folder or the packaged `pick-board.skill` to other machines. Reference page: `docs/references/pick-board.html`.
----
-
+- `generate_icon.py` still draws the old yellow icon (replaced by `generate_icon.ps1`) and can be deleted.
+- Variable fonts are not usable in WPF: only static TTFs work as skin fonts.
 
 ## Changelog & Evolution
 

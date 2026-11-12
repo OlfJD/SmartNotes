@@ -84,6 +84,7 @@ public partial class SettingsDialog : Window
             CmbDefaultColor.ItemsSource = new List<string> { "Amber", "Emerald", "Violet", "Cyan", "Rose", "Obsidian", "Gold", "Mint" };
             CmbDefaultColor.SelectedItem = s.DefaultColorKey;
             PopulateSkinCombo(s.DefaultSkinKey);
+            BuildSkinFontRows(s);
 
             // Populate Font Sizes
             CmbDefaultFontSize.ItemsSource = new List<string> { "12 pt (Compact)", "14 pt (Default)", "16 pt (Large)", "18 pt (Extra Large)", "20 pt (Headline)" };
@@ -143,6 +144,8 @@ public partial class SettingsDialog : Window
         TxtDefaultColorDesc.Text = LocalizationService.T("Appearance_DefaultColorDesc");
         TxtDefaultSkinTitle.Text = LocalizationService.T("Appearance_DefaultSkinTitle");
         TxtDefaultSkinDesc.Text = LocalizationService.T("Appearance_DefaultSkinDesc");
+        TxtSkinFontsTitle.Text = LocalizationService.T("Appearance_SkinFontsTitle");
+        TxtSkinFontsDesc.Text = LocalizationService.T("Appearance_SkinFontsDesc");
         if (CmbDefaultSkin.Items.Count > 0)
         {
             bool wasSuppressed = _suppressEvents;
@@ -299,6 +302,88 @@ public partial class SettingsDialog : Window
         }
     }
 
+    private readonly Dictionary<string, (ComboBox Title, ComboBox Text)> _skinFontCombos = new();
+
+    /// <summary>One row per skin that offers a choice of fonts: skin name, title font, text font.</summary>
+    private void BuildSkinFontRows(AppSettings s)
+    {
+        SkinFontRowsPanel.Children.Clear();
+        _skinFontCombos.Clear();
+
+        var header = NewFontRowGrid();
+        header.Children.Add(NewFontRowLabel(LocalizationService.T("Appearance_FontTitleColumn"), 1, true));
+        header.Children.Add(NewFontRowLabel(LocalizationService.T("Appearance_FontTextColumn"), 2, true));
+        SkinFontRowsPanel.Children.Add(header);
+
+        foreach (var skin in NoteSkin.All)
+        {
+            if (skin.TitleFonts.Count == 0 && skin.TextFonts.Count == 0) continue;
+
+            var row = NewFontRowGrid();
+            row.Children.Add(NewFontRowLabel(LocalizationService.T(skin.LocalizationKey), 0, false));
+            var title = NewFontCombo(skin.TitleFonts, skin.ResolveTitleFont(s), 1);
+            var text = NewFontCombo(skin.TextFonts, skin.ResolveTextFont(s), 2);
+            row.Children.Add(title);
+            row.Children.Add(text);
+            SkinFontRowsPanel.Children.Add(row);
+            _skinFontCombos[skin.Key] = (title, text);
+        }
+    }
+
+    private static Grid NewFontRowGrid()
+    {
+        var grid = new Grid { Margin = new Thickness(0, 0, 0, 6) };
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(170) });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(170) });
+        return grid;
+    }
+
+    private static TextBlock NewFontRowLabel(string text, int column, bool isHeader)
+    {
+        var label = new TextBlock
+        {
+            Text = text,
+            FontSize = isHeader ? 11.5 : 13.5,
+            FontWeight = FontWeights.SemiBold,
+            Foreground = NoteColorTheme.CreateFrozenBrush(isHeader ? "#7888A4" : "#E2E8F0"),
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(column == 0 ? 0 : 8, 0, 0, 0)
+        };
+        Grid.SetColumn(label, column);
+        return label;
+    }
+
+    private ComboBox NewFontCombo(IReadOnlyList<SkinFontOption> options, SkinFontOption? selected, int column)
+    {
+        var combo = new ComboBox { Height = 36, Margin = new Thickness(8, 0, 0, 0) };
+        foreach (var option in options)
+        {
+            var item = new ComboBoxItem { Content = option.DisplayName, Tag = option.Key, FontFamily = option.Family, FontSize = 15 };
+            combo.Items.Add(item);
+            if (selected != null && option.Key == selected.Key) combo.SelectedItem = item;
+        }
+        combo.SelectionChanged += (sender, e) =>
+        {
+            if (!_suppressEvents) UpdateLivePreview();
+        };
+        Grid.SetColumn(combo, column);
+        return combo;
+    }
+
+    /// <summary>The option currently selected in a font combo (falls back to the skin default).</summary>
+    private static SkinFontOption? SelectedFont(ComboBox combo, IReadOnlyList<SkinFontOption> options)
+    {
+        if (combo.SelectedItem is ComboBoxItem item && item.Tag is string key)
+        {
+            foreach (var option in options)
+            {
+                if (option.Key == key) return option;
+            }
+        }
+        return options.Count > 0 ? options[0] : null;
+    }
+
     private void PopulateSkinCombo(string? selectedKey)
     {
         var items = new List<KeyValuePair<string, string>>();
@@ -343,11 +428,17 @@ public partial class SettingsDialog : Window
         PreviewNoteCard.CornerRadius = new CornerRadius(Math.Min(12, skin.CardRadius));
         PreviewNoteCard.BorderThickness = new Thickness(Math.Min(3.5, skin.CardBorder));
         PreviewNoteHeader.CornerRadius = new CornerRadius(Math.Min(9, skin.HeaderRadius), Math.Min(9, skin.HeaderRadius), 0, 0);
-        PreviewNoteTitle.FontFamily = skin.TitleFont;
-        PreviewNoteTitle.FontWeight = skin.TitleWeight;
-        PreviewNoteTitle.FontSize = 13.5 * skin.TitleScale;
-        PreviewNoteBody.FontWeight = skin.BodyWeight;
-        PreviewNoteBody.FontFamily = skin.Font;
+        SkinFontOption? previewTitleFont = null, previewTextFont = null;
+        if (_skinFontCombos.TryGetValue(skin.Key, out var fontCombos))
+        {
+            previewTitleFont = SelectedFont(fontCombos.Title, skin.TitleFonts);
+            previewTextFont = SelectedFont(fontCombos.Text, skin.TextFonts);
+        }
+        PreviewNoteTitle.FontFamily = previewTitleFont?.Family ?? skin.TitleFont;
+        PreviewNoteTitle.FontWeight = previewTitleFont?.Weight ?? skin.TitleWeight;
+        PreviewNoteTitle.FontSize = 13.5 * (previewTitleFont?.Scale ?? skin.TitleScale);
+        PreviewNoteBody.FontWeight = previewTextFont?.Weight ?? skin.BodyWeight;
+        PreviewNoteBody.FontFamily = previewTextFont?.Family ?? skin.Font;
 
         PreviewNoteCard.Background = theme.BgBrush;
         PreviewNoteCard.BorderBrush = theme.BorderBrush;
@@ -368,7 +459,7 @@ public partial class SettingsDialog : Window
             4 => 20.0,
             _ => 14.0
         };
-        PreviewNoteBody.FontSize = fontSize;
+        PreviewNoteBody.FontSize = fontSize * (previewTextFont?.Scale ?? 1.0);
     }
 
     private void RefreshTrashStatus()
@@ -510,6 +601,12 @@ public partial class SettingsDialog : Window
         if (CmbDefaultSkin.SelectedValue is string skinKey)
         {
             s.DefaultSkinKey = skinKey;
+        }
+
+        foreach (var pair in _skinFontCombos)
+        {
+            if (pair.Value.Title.SelectedItem is ComboBoxItem titleItem && titleItem.Tag is string titleKey) s.SkinTitleFonts[pair.Key] = titleKey;
+            if (pair.Value.Text.SelectedItem is ComboBoxItem textItem && textItem.Tag is string textKey) s.SkinTextFonts[pair.Key] = textKey;
         }
 
         s.DefaultFontSize = CmbDefaultFontSize.SelectedIndex switch

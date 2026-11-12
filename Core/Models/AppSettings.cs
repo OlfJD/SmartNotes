@@ -7,6 +7,13 @@ public class AppSettings
     public bool LaunchOnStartup { get; set; } = true;
     public string DefaultColorKey { get; set; } = "Amber";
     public string DefaultSkinKey { get; set; } = "Classic";
+
+    /// <summary>Version of the stored skin keys; raised by App.MigrateSkinKeys().</summary>
+    public int SkinDataVersion { get; set; } = 0;
+
+    /// <summary>Chosen title / text font per skin: skin key -> SkinFontOption.Key (missing = skin default).</summary>
+    public Dictionary<string, string> SkinTitleFonts { get; set; } = new();
+    public Dictionary<string, string> SkinTextFonts { get; set; } = new();
     public NotePinMode DefaultPinMode { get; set; } = NotePinMode.DesktopStuck;
     public double DefaultFontSize { get; set; } = 16.0;
     public double DefaultOpacity { get; set; } = 1.0;

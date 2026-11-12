@@ -20,7 +20,7 @@
         TextOptions.TextRenderingMode="ClearType">
 
     <!-- Outer Clean 5px Vector Border Frame matching Sticky Note Aesthetic -->
-    <Border CornerRadius="16" Background="{StaticResource BgDarkBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="5" SnapsToDevicePixels="True">
+    <Border CornerRadius="{StaticResource RadiusPanel}" Background="{StaticResource BgDarkBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" SnapsToDevicePixels="True">
         <Grid SnapsToDevicePixels="True" UseLayoutRounding="True">
             <Grid.RowDefinitions>
                 <!-- 1. Header Bar -->
@@ -32,7 +32,7 @@
             </Grid.RowDefinitions>
 
             <!-- 1. TOP HEADER BAR -->
-            <Border Grid.Row="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,2" CornerRadius="11,11,0,0" SnapsToDevicePixels="True" MouseLeftButtonDown="Header_MouseLeftButtonDown">
+            <Border Grid.Row="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" CornerRadius="9,9,0,0" SnapsToDevicePixels="True" MouseLeftButtonDown="Header_MouseLeftButtonDown">
                 <Grid Margin="18,0,14,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -41,17 +41,17 @@
 
                     <!-- Title & Badge -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Border Background="#1C1828" BorderBrush="#3B2A5E" BorderThickness="1.5" CornerRadius="8" Padding="7" Margin="0,0,12,0" SnapsToDevicePixels="True">
-                            <controls:LucideIcon IconKey="settings" Size="18" StrokeThickness="2.2" Foreground="{StaticResource NeonAmberGlowBrush}"/>
+                        <Border Background="{StaticResource ControlBgBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="7" Margin="0,0,12,0" SnapsToDevicePixels="True">
+                            <controls:LucideIcon IconKey="settings" Size="18" StrokeThickness="2.2" Foreground="{StaticResource AccentBrush}"/>
                         </Border>
                         <StackPanel VerticalAlignment="Center">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock x:Name="TxtSettingsHeaderTitle" Text="Settings &amp; Preferences" FontSize="17" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
-                                <Border Background="#1E273C" BorderBrush="#303E5C" BorderThickness="1.5" CornerRadius="5" Padding="7,2" Margin="10,0,0,0" VerticalAlignment="Center" SnapsToDevicePixels="True">
-                                    <TextBlock x:Name="TxtSettingsHeaderBadge" Text="SmartNotes V2.1" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource NeonAmberGlowBrush}"/>
+                                <TextBlock x:Name="TxtSettingsHeaderTitle" Text="Settings &amp; Preferences" FontSize="{StaticResource FontSizeTitle}" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                <Border Background="#1E273C" BorderBrush="#303E5C" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="7,2" Margin="10,0,0,0" VerticalAlignment="Center" SnapsToDevicePixels="True">
+                                    <TextBlock x:Name="TxtSettingsHeaderBadge" Text="SmartNotes V2.1" FontSize="{StaticResource FontSizeCaption}" FontWeight="Bold" Foreground="{StaticResource AccentBrush}"/>
                                 </Border>
                             </StackPanel>
-                            <TextBlock x:Name="TxtSettingsHeaderSubtitle" Text="Customize desktop behavior, themes, typing proofing, and performance" FontSize="11.5" Foreground="#7888A4" Margin="0,2,0,0"/>
+                            <TextBlock x:Name="TxtSettingsHeaderSubtitle" Text="Customize desktop behavior, themes, typing proofing, and performance" FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" Margin="0,2,0,0"/>
                         </StackPanel>
                     </StackPanel>
 
@@ -72,7 +72,7 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- LEFT SIDEBAR NAVIGATION RAIL -->
-                <Border Grid.Column="0" Background="#0F131D" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,2,0" SnapsToDevicePixels="True">
+                <Border Grid.Column="0" Background="#0F131D" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0" SnapsToDevicePixels="True">
                     <Grid Margin="12,16,12,16">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -80,14 +80,14 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock x:Name="TxtSidebarPreferences" Grid.Row="0" Text="PREFERENCES" FontSize="11" FontWeight="Bold" Foreground="#64748B" Margin="12,0,0,10"/>
+                        <TextBlock x:Name="TxtSidebarPreferences" Grid.Row="0" Text="PREFERENCES" FontSize="{StaticResource FontSizeCaption}" FontWeight="Bold" Foreground="#64748B" Margin="12,0,0,10"/>
 
                         <!-- Category Navigation Items -->
                         <StackPanel Grid.Row="1">
                             <!-- Nav 1: Desktop & System -->
                             <RadioButton x:Name="NavGeneral" Style="{StaticResource SettingsNavRadio}" IsChecked="True" Checked="NavRadio_Checked" Tag="General">
                                 <StackPanel Orientation="Horizontal">
-                                    <controls:LucideIcon IconKey="monitor" Size="16" StrokeThickness="2.4" Foreground="{StaticResource NeonAmberGlowBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                    <controls:LucideIcon IconKey="monitor" Size="16" StrokeThickness="2.4" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                                     <TextBlock x:Name="TxtNavGeneral" Text="Desktop &amp; System" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </RadioButton>
@@ -95,7 +95,7 @@
                             <!-- Nav 2: Note Appearance -->
                             <RadioButton x:Name="NavAppearance" Style="{StaticResource SettingsNavRadio}" Checked="NavRadio_Checked" Tag="Appearance">
                                 <StackPanel Orientation="Horizontal">
-                                    <controls:LucideIcon IconKey="palette" Size="16" StrokeThickness="2.4" Foreground="{StaticResource NeonEmeraldGlowBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                    <controls:LucideIcon IconKey="palette" Size="16" StrokeThickness="2.4" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                                     <TextBlock x:Name="TxtNavAppearance" Text="Note Appearance" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </RadioButton>
@@ -103,7 +103,7 @@
                             <!-- Nav 3: Global Hotkeys -->
                             <RadioButton x:Name="NavHotkeys" Style="{StaticResource SettingsNavRadio}" Checked="NavRadio_Checked" Tag="Hotkeys">
                                 <StackPanel Orientation="Horizontal">
-                                    <controls:LucideIcon IconKey="keyboard" Size="16" StrokeThickness="2.4" Foreground="{StaticResource NeonCyanBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                    <controls:LucideIcon IconKey="keyboard" Size="16" StrokeThickness="2.4" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                                     <TextBlock x:Name="TxtNavHotkeys" Text="Global Hotkeys" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </RadioButton>
@@ -111,7 +111,7 @@
                             <!-- Nav 4: Text Proofing & Autocorrect -->
                             <RadioButton x:Name="NavProofing" Style="{StaticResource SettingsNavRadio}" Checked="NavRadio_Checked" Tag="Proofing">
                                 <StackPanel Orientation="Horizontal">
-                                    <controls:LucideIcon IconKey="globe" Size="16" StrokeThickness="2.0" Foreground="{StaticResource NeonVioletGlowBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                    <controls:LucideIcon IconKey="globe" Size="16" StrokeThickness="2.0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                                     <TextBlock x:Name="TxtNavProofing" Text="Text Proofing" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </RadioButton>
@@ -119,7 +119,7 @@
                             <!-- Nav 5: Trash & 48h Recovery -->
                             <RadioButton x:Name="NavTrash" Style="{StaticResource SettingsNavRadio}" Checked="NavRadio_Checked" Tag="Trash">
                                 <StackPanel Orientation="Horizontal">
-                                    <controls:LucideIcon IconKey="trash-2" Size="16" StrokeThickness="2.4" Foreground="#FB7185" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                    <controls:LucideIcon IconKey="trash-2" Size="16" StrokeThickness="2.4" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                                     <TextBlock x:Name="TxtNavTrash" Text="Trash &amp; Recovery" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </RadioButton>
@@ -127,17 +127,17 @@
                             <!-- Nav 6: Memory & Performance -->
                             <RadioButton x:Name="NavPerformance" Style="{StaticResource SettingsNavRadio}" Checked="NavRadio_Checked" Tag="Performance">
                                 <StackPanel Orientation="Horizontal">
-                                    <controls:LucideIcon IconKey="cpu" Size="16" StrokeThickness="2.4" Foreground="{StaticResource NeonAmberGlowBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                    <controls:LucideIcon IconKey="cpu" Size="16" StrokeThickness="2.4" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                                     <TextBlock x:Name="TxtNavPerformance" Text="Memory &amp; Perf" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </RadioButton>
                         </StackPanel>
 
                         <!-- Bottom System Info -->
-                        <Border Grid.Row="2" Background="#141926" BorderBrush="#222D42" BorderThickness="1.5" CornerRadius="8" Padding="10,8">
+                        <Border Grid.Row="2" Background="#141926" BorderBrush="#222D42" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="10,8">
                             <StackPanel>
-                                <TextBlock x:Name="TxtEngineTitle" Text="SmartNotes Engine" FontSize="11" FontWeight="Bold" Foreground="#8898B4"/>
-                                <TextBlock x:Name="TxtEngineInfo" Text=".NET 10.0 • High-DPI Ready" FontSize="10.5" Foreground="#5A6B8A" Margin="0,2,0,0"/>
+                                <TextBlock x:Name="TxtEngineTitle" Text="SmartNotes Engine" FontSize="{StaticResource FontSizeCaption}" FontWeight="Bold" Foreground="#8898B4"/>
+                                <TextBlock x:Name="TxtEngineInfo" Text=".NET 10.0 • High-DPI Ready" FontSize="{StaticResource FontSizeCaption}" Foreground="#5A6B8A" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Border>
                     </Grid>
@@ -154,59 +154,59 @@
                             <!-- Section Title -->
                             <StackPanel Margin="0,0,0,16">
                                 <StackPanel Orientation="Horizontal">
-                                    <controls:LucideIcon IconKey="monitor" Size="18" StrokeThickness="2.6" Foreground="{StaticResource NeonAmberGlowBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="TxtSection1Title" Text="Desktop &amp; System" FontSize="17" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                    <controls:LucideIcon IconKey="monitor" Size="18" StrokeThickness="2.6" Foreground="{StaticResource AccentBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="TxtSection1Title" Text="Desktop &amp; System" FontSize="{StaticResource FontSizeTitle}" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                                 </StackPanel>
-                                <TextBlock x:Name="TxtSection1Subtitle" Text="Control how sticky notes run in the background and interact with your wallpaper." FontSize="12.5" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                <TextBlock x:Name="TxtSection1Subtitle" Text="Control how sticky notes run in the background and interact with your wallpaper." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,4,0,0"/>
                             </StackPanel>
 
                             <!-- Card 0: Application UI Language -->
-                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="2" CornerRadius="12" Padding="16,14" Margin="0,0,0,10">
+                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusPanel}" Padding="16,14" Margin="0,0,0,10">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="200"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                                        <TextBlock x:Name="TxtAppLangTitle" Text="Application UI Language" FontSize="14.5" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                                        <TextBlock x:Name="TxtAppLangDesc" Text="Select your preferred display language for the SmartNotes interface." FontSize="12" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                        <TextBlock x:Name="TxtAppLangTitle" Text="Application UI Language" FontSize="{StaticResource FontSizeLabel}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                        <TextBlock x:Name="TxtAppLangDesc" Text="Select your preferred display language for the SmartNotes interface." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
                                     </StackPanel>
                                     <ComboBox x:Name="CmbAppLanguage" Grid.Column="1" Height="36" VerticalAlignment="Center" SelectionChanged="CmbAppLanguage_SelectionChanged"/>
                                 </Grid>
                             </Border>
 
                             <!-- Card 1: Windows Startup -->
-                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="2" CornerRadius="12" Padding="16,14" Margin="0,0,0,10">
+                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusPanel}" Padding="16,14" Margin="0,0,0,10">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                                        <TextBlock x:Name="TxtStartupTitle" Text="Launch with Windows Startup" FontSize="14.5" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                                        <TextBlock x:Name="TxtStartupDesc" Text="Automatically start SmartNotes and restore your pinned sticky notes on system boot." FontSize="12" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                        <TextBlock x:Name="TxtStartupTitle" Text="Launch with Windows Startup" FontSize="{StaticResource FontSizeLabel}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                        <TextBlock x:Name="TxtStartupDesc" Text="Automatically start SmartNotes and restore your pinned sticky notes on system boot." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
                                     </StackPanel>
                                     <CheckBox x:Name="ChkStartup" Grid.Column="1" Style="{StaticResource ModernSwitch}" VerticalAlignment="Center"/>
                                 </Grid>
                             </Border>
 
                             <!-- Card 2: Desktop Sticking -->
-                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="2" CornerRadius="12" Padding="16,14" Margin="0,0,0,10">
+                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusPanel}" Padding="16,14" Margin="0,0,0,10">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                                        <TextBlock x:Name="TxtDesktopStuckTitle" Text="Desktop Sticking (Fixed to Wallpaper)" FontSize="14.5" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                                        <TextBlock x:Name="TxtDesktopStuckDesc" Text="Pin notes directly onto your desktop wallpaper underneath open applications and full-screen games." FontSize="12" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                        <TextBlock x:Name="TxtDesktopStuckTitle" Text="Desktop Sticking (Fixed to Wallpaper)" FontSize="{StaticResource FontSizeLabel}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                        <TextBlock x:Name="TxtDesktopStuckDesc" Text="Pin notes directly onto your desktop wallpaper underneath open applications and full-screen games." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
                                     </StackPanel>
                                     <CheckBox x:Name="ChkDesktopStuck" Grid.Column="1" Style="{StaticResource ModernSwitch}" IsChecked="True" VerticalAlignment="Center"/>
                                 </Grid>
                             </Border>
 
                             <!-- Card 3: Unfocused Transparency & Inactivity Opacity Slider -->
-                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="2" CornerRadius="12" Padding="16,14">
+                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusPanel}" Padding="16,14">
                                 <StackPanel>
                                     <Grid>
                                         <Grid.ColumnDefinitions>
@@ -214,8 +214,8 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                                            <TextBlock x:Name="TxtTransparencyTitle" Text="Transparent When Unfocused" FontSize="14.5" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                                            <TextBlock x:Name="TxtTransparencyDesc" Text="Automatically reduce note opacity when you are working inside other applications." FontSize="12" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                            <TextBlock x:Name="TxtTransparencyTitle" Text="Transparent When Unfocused" FontSize="{StaticResource FontSizeLabel}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                            <TextBlock x:Name="TxtTransparencyDesc" Text="Automatically reduce note opacity when you are working inside other applications." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
                                         </StackPanel>
                                         <CheckBox x:Name="ChkUnfocusedTransparency" Grid.Column="1" Style="{StaticResource ModernSwitch}" IsChecked="True" VerticalAlignment="Center" Click="ChkUnfocusedTransparency_Click"/>
                                     </Grid>
@@ -229,11 +229,11 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                                <TextBlock x:Name="TxtUnfocusedOpacityTitle" Text="Unfocused Inactivity Opacity" FontSize="13.5" FontWeight="SemiBold" Foreground="#A8B5CD"/>
-                                                <TextBlock x:Name="TxtUnfocusedOpacityDesc" Text="Opacity level applied when cursor is not hovering over note" FontSize="11.5" Foreground="#64748B"/>
+                                                <TextBlock x:Name="TxtUnfocusedOpacityTitle" Text="Unfocused Inactivity Opacity" FontSize="{StaticResource FontSizeBody}" FontWeight="SemiBold" Foreground="#A8B5CD"/>
+                                                <TextBlock x:Name="TxtUnfocusedOpacityDesc" Text="Opacity level applied when cursor is not hovering over note" FontSize="{StaticResource FontSizeCaption}" Foreground="#64748B"/>
                                             </StackPanel>
-                                            <Border Grid.Column="1" Background="#1B2538" BorderBrush="#2C3D5E" BorderThickness="1.5" CornerRadius="6" Padding="10,3" VerticalAlignment="Center">
-                                                <TextBlock x:Name="TxtUnfocusedOpacityPercent" Text="55%" FontSize="13" FontWeight="Bold" Foreground="{StaticResource NeonAmberGlowBrush}"/>
+                                            <Border Grid.Column="1" Background="#1B2538" BorderBrush="#2C3D5E" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="10,3" VerticalAlignment="Center">
+                                                <TextBlock x:Name="TxtUnfocusedOpacityPercent" Text="55%" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold" Foreground="{StaticResource AccentBrush}"/>
                                             </Border>
                                         </Grid>
                                         <Slider x:Name="SliderUnfocusedOpacity" Minimum="15" Maximum="90" Value="55" SmallChange="5" LargeChange="10" ValueChanged="SliderUnfocusedOpacity_ValueChanged"/>
@@ -251,14 +251,14 @@
                             <!-- Section Title -->
                             <StackPanel Margin="0,0,0,16">
                                 <StackPanel Orientation="Horizontal">
-                                    <controls:LucideIcon IconKey="palette" Size="18" StrokeThickness="2.6" Foreground="{StaticResource NeonEmeraldGlowBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="TxtSection2Title" Text="Default Note Appearance" FontSize="17" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                    <controls:LucideIcon IconKey="palette" Size="18" StrokeThickness="2.6" Foreground="{StaticResource AccentBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="TxtSection2Title" Text="Default Note Appearance" FontSize="{StaticResource FontSizeTitle}" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                                 </StackPanel>
-                                <TextBlock x:Name="TxtSection2Subtitle" Text="Choose default theme palettes, font size, and visual styling for newly created notes." FontSize="12.5" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                <TextBlock x:Name="TxtSection2Subtitle" Text="Choose default theme palettes, font size, and visual styling for newly created notes." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,4,0,0"/>
                             </StackPanel>
 
                             <!-- Theme Color Selector Card -->
-                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="2" CornerRadius="12" Padding="16,14" Margin="0,0,0,10">
+                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusPanel}" Padding="16,14" Margin="0,0,0,10">
                                 <StackPanel>
                                     <Grid Margin="0,0,0,12">
                                         <Grid.ColumnDefinitions>
@@ -266,8 +266,8 @@
                                             <ColumnDefinition Width="180"/>
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                                            <TextBlock x:Name="TxtDefaultColorTitle" Text="Default Theme Color" FontSize="14.5" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                                            <TextBlock x:Name="TxtDefaultColorDesc" Text="Primary neon accent and card tint for new sticky notes." FontSize="12" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                            <TextBlock x:Name="TxtDefaultColorTitle" Text="Default Theme Color" FontSize="{StaticResource FontSizeLabel}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                            <TextBlock x:Name="TxtDefaultColorDesc" Text="Primary neon accent and card tint for new sticky notes." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
                                         </StackPanel>
                                         <ComboBox x:Name="CmbDefaultColor" Grid.Column="1" Height="36" SelectionChanged="CmbDefaultColor_SelectionChanged"/>
                                     </Grid>
@@ -279,71 +279,78 @@
                                             <ColumnDefinition Width="180"/>
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                                            <TextBlock x:Name="TxtDefaultSkinTitle" Text="Default Note Style" FontSize="14.5" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                                            <TextBlock x:Name="TxtDefaultSkinDesc" Text="Shape, typeface and ornaments for new sticky notes." FontSize="12" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                            <TextBlock x:Name="TxtDefaultSkinTitle" Text="Default Note Style" FontSize="{StaticResource FontSizeLabel}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                            <TextBlock x:Name="TxtDefaultSkinDesc" Text="Shape, typeface and ornaments for new sticky notes." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
                                         </StackPanel>
                                         <ComboBox x:Name="CmbDefaultSkin" Grid.Column="1" Height="36" DisplayMemberPath="Value" SelectedValuePath="Key" SelectionChanged="CmbDefaultColor_SelectionChanged"/>
                                     </Grid>
 
+                                    <!-- Per-skin title / text fonts (rows are built in code from NoteSkin.All) -->
+                                    <StackPanel Margin="0,0,0,12">
+                                        <TextBlock x:Name="TxtSkinFontsTitle" Text="Skin Fonts" FontSize="{StaticResource FontSizeLabel}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                        <TextBlock x:Name="TxtSkinFontsDesc" Text="Title and text typeface for each note style. Applies to all notes using that style." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                        <StackPanel x:Name="SkinFontRowsPanel" Margin="0,10,0,0"/>
+                                    </StackPanel>
+
                                     <Separator Margin="0,0,0,12"/>
 
                                     <!-- Quick Visual Swatches Grid -->
-                                    <TextBlock x:Name="TxtQuickSwatchesTitle" Text="Quick Preset Swatches (Click to Select)" FontSize="12" FontWeight="SemiBold" Foreground="#A8B5CD" Margin="0,0,0,8"/>
+                                    <TextBlock x:Name="TxtQuickSwatchesTitle" Text="Quick Preset Swatches (Click to Select)" FontSize="{StaticResource FontSizeCaption}" FontWeight="SemiBold" Foreground="#A8B5CD" Margin="0,0,0,8"/>
                                     <UniformGrid Columns="4" Margin="0,0,0,4">
                                         <!-- Amber -->
                                         <Button Style="{StaticResource GlowButton}" Padding="8,6" Margin="3" Tag="Amber" Click="ThemeSwatchBtn_Click" HorizontalContentAlignment="Left">
                                             <StackPanel Orientation="Horizontal">
-                                                <Border Width="16" Height="16" CornerRadius="8" Background="#F59E0B" BorderBrush="#FDE68A" BorderThickness="1.5" Margin="0,0,8,0"/>
-                                                <TextBlock Text="Amber" FontSize="12" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+                                                <Border Width="16" Height="16" CornerRadius="{StaticResource RadiusControl}" Background="#F59E0B" BorderBrush="#FDE68A" BorderThickness="1" Margin="0,0,8,0"/>
+                                                <TextBlock Text="Amber" FontSize="{StaticResource FontSizeCaption}" Foreground="#FFFFFF" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Button>
                                         <!-- Emerald -->
                                         <Button Style="{StaticResource GlowButton}" Padding="8,6" Margin="3" Tag="Emerald" Click="ThemeSwatchBtn_Click" HorizontalContentAlignment="Left">
                                             <StackPanel Orientation="Horizontal">
-                                                <Border Width="16" Height="16" CornerRadius="8" Background="#10B981" BorderBrush="#A7F3D0" BorderThickness="1.5" Margin="0,0,8,0"/>
-                                                <TextBlock Text="Emerald" FontSize="12" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+                                                <Border Width="16" Height="16" CornerRadius="{StaticResource RadiusControl}" Background="#10B981" BorderBrush="#A7F3D0" BorderThickness="1" Margin="0,0,8,0"/>
+                                                <TextBlock Text="Emerald" FontSize="{StaticResource FontSizeCaption}" Foreground="#FFFFFF" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Button>
                                         <!-- Violet -->
                                         <Button Style="{StaticResource GlowButton}" Padding="8,6" Margin="3" Tag="Violet" Click="ThemeSwatchBtn_Click" HorizontalContentAlignment="Left">
                                             <StackPanel Orientation="Horizontal">
-                                                <Border Width="16" Height="16" CornerRadius="8" Background="#8B5CF6" BorderBrush="#DDD6FE" BorderThickness="1.5" Margin="0,0,8,0"/>
-                                                <TextBlock Text="Violet" FontSize="12" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+                                                <Border Width="16" Height="16" CornerRadius="{StaticResource RadiusControl}" Background="#8B5CF6" BorderBrush="#DDD6FE" BorderThickness="1" Margin="0,0,8,0"/>
+                                                <TextBlock Text="Violet" FontSize="{StaticResource FontSizeCaption}" Foreground="#FFFFFF" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Button>
                                         <!-- Cyan -->
                                         <Button Style="{StaticResource GlowButton}" Padding="8,6" Margin="3" Tag="Cyan" Click="ThemeSwatchBtn_Click" HorizontalContentAlignment="Left">
                                             <StackPanel Orientation="Horizontal">
-                                                <Border Width="16" Height="16" CornerRadius="8" Background="#06B6D4" BorderBrush="#A5F3FC" BorderThickness="1.5" Margin="0,0,8,0"/>
-                                                <TextBlock Text="Cyan" FontSize="12" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+                                                <Border Width="16" Height="16" CornerRadius="{StaticResource RadiusControl}" Background="#06B6D4" BorderBrush="#A5F3FC" BorderThickness="1" Margin="0,0,8,0"/>
+                                                <TextBlock Text="Cyan" FontSize="{StaticResource FontSizeCaption}" Foreground="#FFFFFF" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Button>
                                         <!-- Rose -->
                                         <Button Style="{StaticResource GlowButton}" Padding="8,6" Margin="3" Tag="Rose" Click="ThemeSwatchBtn_Click" HorizontalContentAlignment="Left">
                                             <StackPanel Orientation="Horizontal">
-                                                <Border Width="16" Height="16" CornerRadius="8" Background="#F43F5E" BorderBrush="#FECDD3" BorderThickness="1.5" Margin="0,0,8,0"/>
-                                                <TextBlock Text="Rose" FontSize="12" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+                                                <Border Width="16" Height="16" CornerRadius="{StaticResource RadiusControl}" Background="#F43F5E" BorderBrush="#FECDD3" BorderThickness="1" Margin="0,0,8,0"/>
+                                                <TextBlock Text="Rose" FontSize="{StaticResource FontSizeCaption}" Foreground="#FFFFFF" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Button>
                                         <!-- Obsidian -->
                                         <Button Style="{StaticResource GlowButton}" Padding="8,6" Margin="3" Tag="Obsidian" Click="ThemeSwatchBtn_Click" HorizontalContentAlignment="Left">
                                             <StackPanel Orientation="Horizontal">
-                                                <Border Width="16" Height="16" CornerRadius="8" Background="#3B82F6" BorderBrush="#93C5FD" BorderThickness="1.5" Margin="0,0,8,0"/>
-                                                <TextBlock Text="Obsidian" FontSize="12" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+                                                <Border Width="16" Height="16" CornerRadius="{StaticResource RadiusControl}" Background="#3B82F6" BorderBrush="#93C5FD" BorderThickness="1" Margin="0,0,8,0"/>
+                                                <TextBlock Text="Obsidian" FontSize="{StaticResource FontSizeCaption}" Foreground="#FFFFFF" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Button>
                                         <!-- Gold -->
                                         <Button Style="{StaticResource GlowButton}" Padding="8,6" Margin="3" Tag="Gold" Click="ThemeSwatchBtn_Click" HorizontalContentAlignment="Left">
                                             <StackPanel Orientation="Horizontal">
-                                                <Border Width="16" Height="16" CornerRadius="8" Background="#EAB308" BorderBrush="#FEF08A" BorderThickness="1.5" Margin="0,0,8,0"/>
-                                                <TextBlock Text="Gold" FontSize="12" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+                                                <Border Width="16" Height="16" CornerRadius="{StaticResource RadiusControl}" Background="#EAB308" BorderBrush="#FEF08A" BorderThickness="1" Margin="0,0,8,0"/>
+                                                <TextBlock Text="Gold" FontSize="{StaticResource FontSizeCaption}" Foreground="#FFFFFF" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Button>
                                         <!-- Mint -->
                                         <Button Style="{StaticResource GlowButton}" Padding="8,6" Margin="3" Tag="Mint" Click="ThemeSwatchBtn_Click" HorizontalContentAlignment="Left">
                                             <StackPanel Orientation="Horizontal">
-                                                <Border Width="16" Height="16" CornerRadius="8" Background="#14B8A6" BorderBrush="#99F6E4" BorderThickness="1.5" Margin="0,0,8,0"/>
-                                                <TextBlock Text="Mint" FontSize="12" Foreground="#FFFFFF" VerticalAlignment="Center"/>
+                                                <Border Width="16" Height="16" CornerRadius="{StaticResource RadiusControl}" Background="#14B8A6" BorderBrush="#99F6E4" BorderThickness="1" Margin="0,0,8,0"/>
+                                                <TextBlock Text="Mint" FontSize="{StaticResource FontSizeCaption}" Foreground="#FFFFFF" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Button>
                                     </UniformGrid>
@@ -351,24 +358,24 @@
                             </Border>
 
                             <!-- Default Font Size Card -->
-                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="2" CornerRadius="12" Padding="16,14" Margin="0,0,0,10">
+                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusPanel}" Padding="16,14" Margin="0,0,0,10">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="180"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                                        <TextBlock x:Name="TxtDefaultFontSizeTitle" Text="Default Font Size" FontSize="14.5" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                                        <TextBlock x:Name="TxtDefaultFontSizeDesc" Text="Default text scaling for note content, checklists, and copy rows." FontSize="12" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                        <TextBlock x:Name="TxtDefaultFontSizeTitle" Text="Default Font Size" FontSize="{StaticResource FontSizeLabel}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                        <TextBlock x:Name="TxtDefaultFontSizeDesc" Text="Default text scaling for note content, checklists, and copy rows." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
                                     </StackPanel>
                                     <ComboBox x:Name="CmbDefaultFontSize" Grid.Column="1" Height="36" SelectionChanged="CmbDefaultFontSize_SelectionChanged"/>
                                 </Grid>
                             </Border>
 
                             <!-- Live Note Preview Card -->
-                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="2" CornerRadius="12" Padding="16,14">
+                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusPanel}" Padding="16,14">
                                 <StackPanel>
-                                    <TextBlock x:Name="TxtLivePreviewTitle" Text="LIVE PREVIEW" FontSize="11" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,8"/>
+                                    <TextBlock x:Name="TxtLivePreviewTitle" Text="LIVE PREVIEW" FontSize="{StaticResource FontSizeCaption}" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,8"/>
                                     
                                     <!-- Mini Note Card Demo -->
                                     <Border x:Name="PreviewNoteCard" CornerRadius="12" Background="#1C1710" BorderBrush="#614418" BorderThickness="3.5" Padding="0">
@@ -402,79 +409,79 @@
                             <!-- Section Title -->
                             <StackPanel Margin="0,0,0,16">
                                 <StackPanel Orientation="Horizontal">
-                                    <controls:LucideIcon IconKey="keyboard" Size="18" StrokeThickness="2.6" Foreground="{StaticResource NeonCyanBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="TxtSection3Title" Text="Global System Hotkeys" FontSize="17" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                    <controls:LucideIcon IconKey="keyboard" Size="18" StrokeThickness="2.6" Foreground="{StaticResource AccentBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="TxtSection3Title" Text="Global System Hotkeys" FontSize="{StaticResource FontSizeTitle}" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                                 </StackPanel>
-                                <TextBlock x:Name="TxtSection3Subtitle" Text="Quickly create notes, search notes, or toggle desktop visibility anywhere in Windows." FontSize="12.5" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                <TextBlock x:Name="TxtSection3Subtitle" Text="Quickly create notes, search notes, or toggle desktop visibility anywhere in Windows." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,4,0,0"/>
                             </StackPanel>
 
                             <!-- Enable Hotkeys Toggle -->
-                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="2" CornerRadius="12" Padding="16,14" Margin="0,0,0,12">
+                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusPanel}" Padding="16,14" Margin="0,0,0,12">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                                        <TextBlock x:Name="TxtHotkeysToggleTitle" Text="Enable Global System Hotkeys" FontSize="14.5" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                                        <TextBlock x:Name="TxtHotkeysToggleDesc" Text="Listen for keyboard shortcuts across any active Windows application." FontSize="12" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                        <TextBlock x:Name="TxtHotkeysToggleTitle" Text="Enable Global System Hotkeys" FontSize="{StaticResource FontSizeLabel}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                        <TextBlock x:Name="TxtHotkeysToggleDesc" Text="Listen for keyboard shortcuts across any active Windows application." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
                                     </StackPanel>
                                     <CheckBox x:Name="ChkHotkeys" Grid.Column="1" Style="{StaticResource ModernSwitch}" IsChecked="True" VerticalAlignment="Center"/>
                                 </Grid>
                             </Border>
 
                             <!-- Hotkey Reference Table Card -->
-                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="2" CornerRadius="12" Padding="16,14">
+                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusPanel}" Padding="16,14">
                                 <StackPanel>
-                                    <TextBlock x:Name="TxtActiveShortcutsTitle" Text="ACTIVE KEYBOARD SHORTCUTS" FontSize="11" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,12"/>
+                                    <TextBlock x:Name="TxtActiveShortcutsTitle" Text="ACTIVE KEYBOARD SHORTCUTS" FontSize="{StaticResource FontSizeCaption}" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,12"/>
 
                                     <!-- Shortcut 1 -->
-                                    <Border Background="#101522" BorderBrush="#202A3D" BorderThickness="1.5" CornerRadius="9" Padding="12,10" Margin="0,0,0,8">
+                                    <Border Background="#101522" BorderBrush="#202A3D" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="12,10" Margin="0,0,0,8">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                                <TextBlock x:Name="TxtShortcut1Title" Text="Create New Sticky Note" FontSize="14" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                                                <TextBlock x:Name="TxtShortcut1Desc" Text="Instantly spawns a new note at your cursor location" FontSize="12" Foreground="#7888A4" Margin="0,2,0,0"/>
+                                                <TextBlock x:Name="TxtShortcut1Title" Text="Create New Sticky Note" FontSize="{StaticResource FontSizeBody}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                                <TextBlock x:Name="TxtShortcut1Desc" Text="Instantly spawns a new note at your cursor location" FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" Margin="0,2,0,0"/>
                                             </StackPanel>
-                                            <Border Grid.Column="1" Background="#1E273C" BorderBrush="#3B4C6F" BorderThickness="1.5" CornerRadius="6" Padding="10,5" VerticalAlignment="Center">
-                                                <TextBlock Text="Win + Alt + N" FontSize="13" FontWeight="Bold" Foreground="#93C5FD"/>
+                                            <Border Grid.Column="1" Background="#1E273C" BorderBrush="#3B4C6F" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="10,5" VerticalAlignment="Center">
+                                                <TextBlock Text="Win + Alt + N" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold" Foreground="#93C5FD"/>
                                             </Border>
                                         </Grid>
                                     </Border>
 
                                     <!-- Shortcut 2 -->
-                                    <Border Background="#101522" BorderBrush="#202A3D" BorderThickness="1.5" CornerRadius="9" Padding="12,10" Margin="0,0,0,8">
+                                    <Border Background="#101522" BorderBrush="#202A3D" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="12,10" Margin="0,0,0,8">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                                <TextBlock x:Name="TxtShortcut2Title" Text="Open Notes Hub / Manager" FontSize="14" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                                                <TextBlock x:Name="TxtShortcut2Desc" Text="Search, sort, filter, and organize all your desktop notes in one place" FontSize="12" Foreground="#7888A4" Margin="0,2,0,0"/>
+                                                <TextBlock x:Name="TxtShortcut2Title" Text="Open Notes Hub / Manager" FontSize="{StaticResource FontSizeBody}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                                <TextBlock x:Name="TxtShortcut2Desc" Text="Search, sort, filter, and organize all your desktop notes in one place" FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" Margin="0,2,0,0"/>
                                             </StackPanel>
-                                            <Border Grid.Column="1" Background="#1E273C" BorderBrush="#3B4C6F" BorderThickness="1.5" CornerRadius="6" Padding="10,5" VerticalAlignment="Center">
-                                                <TextBlock Text="Win + Alt + H" FontSize="13" FontWeight="Bold" Foreground="#93C5FD"/>
+                                            <Border Grid.Column="1" Background="#1E273C" BorderBrush="#3B4C6F" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="10,5" VerticalAlignment="Center">
+                                                <TextBlock Text="Win + Alt + H" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold" Foreground="#93C5FD"/>
                                             </Border>
                                         </Grid>
                                     </Border>
 
                                     <!-- Shortcut 3 -->
-                                    <Border Background="#101522" BorderBrush="#202A3D" BorderThickness="1.5" CornerRadius="9" Padding="12,10">
+                                    <Border Background="#101522" BorderBrush="#202A3D" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="12,10">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                                <TextBlock x:Name="TxtShortcut3Title" Text="Show / Hide All Desktop Notes" FontSize="14" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                                                <TextBlock x:Name="TxtShortcut3Desc" Text="Quickly toggle visibility for clean desktop presentations" FontSize="12" Foreground="#7888A4" Margin="0,2,0,0"/>
+                                                <TextBlock x:Name="TxtShortcut3Title" Text="Show / Hide All Desktop Notes" FontSize="{StaticResource FontSizeBody}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                                <TextBlock x:Name="TxtShortcut3Desc" Text="Quickly toggle visibility for clean desktop presentations" FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" Margin="0,2,0,0"/>
                                             </StackPanel>
-                                            <Border Grid.Column="1" Background="#1E273C" BorderBrush="#3B4C6F" BorderThickness="1.5" CornerRadius="6" Padding="10,5" VerticalAlignment="Center">
-                                                <TextBlock Text="Win + Alt + D" FontSize="13" FontWeight="Bold" Foreground="#93C5FD"/>
+                                            <Border Grid.Column="1" Background="#1E273C" BorderBrush="#3B4C6F" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="10,5" VerticalAlignment="Center">
+                                                <TextBlock Text="Win + Alt + D" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold" Foreground="#93C5FD"/>
                                             </Border>
                                         </Grid>
                                     </Border>
@@ -491,14 +498,14 @@
                             <!-- Section Title -->
                             <StackPanel Margin="0,0,0,16">
                                 <StackPanel Orientation="Horizontal">
-                                    <controls:LucideIcon IconKey="globe" Size="18" StrokeThickness="2.0" Foreground="{StaticResource NeonVioletGlowBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="TxtSection4Title" Text="Text Proofing &amp; Autocorrect (V2.0)" FontSize="17" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                    <controls:LucideIcon IconKey="globe" Size="18" StrokeThickness="2.0" Foreground="{StaticResource AccentBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="TxtSection4Title" Text="Text Proofing &amp; Autocorrect (V2.0)" FontSize="{StaticResource FontSizeTitle}" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                                 </StackPanel>
-                                <TextBlock x:Name="TxtSection4Subtitle" Text="Smart typing intelligence, real-time spellcheck, autocorrect rules, and symbol shortcuts." FontSize="12.5" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                <TextBlock x:Name="TxtSection4Subtitle" Text="Smart typing intelligence, real-time spellcheck, autocorrect rules, and symbol shortcuts." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,4,0,0"/>
                             </StackPanel>
 
                             <!-- Spell Check & Language Card -->
-                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="2" CornerRadius="12" Padding="16,14" Margin="0,0,0,10">
+                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusPanel}" Padding="16,14" Margin="0,0,0,10">
                                 <StackPanel>
                                     <!-- Spell Check -->
                                     <Grid Margin="0,0,0,10">
@@ -507,8 +514,8 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                                            <TextBlock x:Name="TxtSpellCheckTitle" Text="Real-Time Spell Checking" FontSize="14.5" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                                            <TextBlock x:Name="TxtSpellCheckDesc" Text="Underline misspelled words with suggestions on right-click." FontSize="12" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                            <TextBlock x:Name="TxtSpellCheckTitle" Text="Real-Time Spell Checking" FontSize="{StaticResource FontSizeLabel}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                            <TextBlock x:Name="TxtSpellCheckDesc" Text="Underline misspelled words with suggestions on right-click." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
                                         </StackPanel>
                                         <CheckBox x:Name="ChkSpellCheck" Grid.Column="1" Style="{StaticResource ModernSwitch}" IsChecked="True" VerticalAlignment="Center"/>
                                     </Grid>
@@ -522,27 +529,27 @@
                                             <ColumnDefinition Width="200"/>
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                                            <TextBlock x:Name="TxtProofingDictTitle" Text="Proofing Language Dictionary" FontSize="14.5" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                                            <TextBlock x:Name="TxtProofingDictDesc" Text="Active dictionary used for spell checking verification." FontSize="12" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                            <TextBlock x:Name="TxtProofingDictTitle" Text="Proofing Language Dictionary" FontSize="{StaticResource FontSizeLabel}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                            <TextBlock x:Name="TxtProofingDictDesc" Text="Active dictionary used for spell checking verification." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
                                         </StackPanel>
                                         <ComboBox x:Name="CmbProofingLanguage" Grid.Column="1" Height="36" VerticalAlignment="Center" SelectionChanged="CmbProofingLanguage_SelectionChanged"/>
                                     </Grid>
 
                                     <!-- Dynamic Language Status Text -->
-                                    <TextBlock x:Name="TxtLanguageStatus" FontSize="11.5" Foreground="#38BDF8" Margin="0,8,0,0" TextWrapping="Wrap"/>
+                                    <TextBlock x:Name="TxtLanguageStatus" FontSize="{StaticResource FontSizeCaption}" Foreground="#38BDF8" Margin="0,8,0,0" TextWrapping="Wrap"/>
 
                                     <!-- OS Language Info Note -->
-                                    <Border Background="#141926" BorderBrush="#222D42" BorderThickness="1" CornerRadius="8" Padding="10,8" Margin="0,10,0,0">
+                                    <Border Background="#141926" BorderBrush="#222D42" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="10,8" Margin="0,10,0,0">
                                         <StackPanel Orientation="Horizontal">
                                             <controls:LucideIcon IconKey="globe" Size="13" StrokeThickness="1.8" Foreground="#64748B" Margin="0,2,8,0" VerticalAlignment="Top"/>
-                                            <TextBlock x:Name="TxtWindowsDictNotice" Text="Windows Spell Checking relies on Windows language dictionaries. Any language installed on your PC (e.g. English, German) works automatically. To add more languages to Windows, open Windows Settings → Time &amp; Language → Language." FontSize="11" Foreground="#8898B4" TextWrapping="Wrap" MaxWidth="430"/>
+                                            <TextBlock x:Name="TxtWindowsDictNotice" Text="Windows Spell Checking relies on Windows language dictionaries. Any language installed on your PC (e.g. English, German) works automatically. To add more languages to Windows, open Windows Settings → Time &amp; Language → Language." FontSize="{StaticResource FontSizeCaption}" Foreground="#8898B4" TextWrapping="Wrap" MaxWidth="430"/>
                                         </StackPanel>
                                     </Border>
                                 </StackPanel>
                             </Border>
 
                             <!-- Smart Typing Automation Card -->
-                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="2" CornerRadius="12" Padding="16,14" Margin="0,0,0,10">
+                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusPanel}" Padding="16,14" Margin="0,0,0,10">
                                 <StackPanel>
                                     <!-- Autocorrect -->
                                     <Grid Margin="0,0,0,10">
@@ -551,8 +558,8 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                                            <TextBlock x:Name="TxtAutocorrectTitle" Text="Autocorrect Typos As You Type" FontSize="14.5" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                                            <TextBlock x:Name="TxtAutocorrectDesc" Text="Automatically fix common typos (e.g., 'teh' → 'the', 'dont' → 'don't'). Press Backspace to revert." FontSize="12" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                            <TextBlock x:Name="TxtAutocorrectTitle" Text="Autocorrect Typos As You Type" FontSize="{StaticResource FontSizeLabel}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                            <TextBlock x:Name="TxtAutocorrectDesc" Text="Automatically fix common typos (e.g., 'teh' → 'the', 'dont' → 'don't'). Press Backspace to revert." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
                                         </StackPanel>
                                         <CheckBox x:Name="ChkAutocorrect" Grid.Column="1" Style="{StaticResource ModernSwitch}" IsChecked="True" VerticalAlignment="Center"/>
                                     </Grid>
@@ -566,8 +573,8 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                                            <TextBlock x:Name="TxtAutoCapTitle" Text="Auto-Capitalize Sentences" FontSize="14.5" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                                            <TextBlock x:Name="TxtAutoCapDesc" Text="Capitalize the first letter of sentences and standalone 'i'." FontSize="12" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                            <TextBlock x:Name="TxtAutoCapTitle" Text="Auto-Capitalize Sentences" FontSize="{StaticResource FontSizeLabel}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                            <TextBlock x:Name="TxtAutoCapDesc" Text="Capitalize the first letter of sentences and standalone 'i'." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
                                         </StackPanel>
                                         <CheckBox x:Name="ChkAutoCapitalize" Grid.Column="1" Style="{StaticResource ModernSwitch}" IsChecked="True" VerticalAlignment="Center"/>
                                     </Grid>
@@ -581,8 +588,8 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                                            <TextBlock x:Name="TxtSmartSymbolsTitle" Text="Smart Symbol Replacements" FontSize="14.5" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                                            <TextBlock x:Name="TxtSmartSymbolsDesc" Text="Convert typing shortcuts like '->' to '→', '--' to '—', '!=' to '≠', '(c)' to '©'." FontSize="12" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                            <TextBlock x:Name="TxtSmartSymbolsTitle" Text="Smart Symbol Replacements" FontSize="{StaticResource FontSizeLabel}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                            <TextBlock x:Name="TxtSmartSymbolsDesc" Text="Convert typing shortcuts like '->' to '→', '--' to '—', '!=' to '≠', '(c)' to '©'." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
                                         </StackPanel>
                                         <CheckBox x:Name="ChkSmartSymbols" Grid.Column="1" Style="{StaticResource ModernSwitch}" IsChecked="True" VerticalAlignment="Center"/>
                                     </Grid>
@@ -603,10 +610,10 @@
                                             <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <controls:LucideIcon IconKey="book-open" Size="18" StrokeThickness="2.4" Foreground="{StaticResource NeonVioletGlowBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                        <controls:LucideIcon IconKey="book-open" Size="18" StrokeThickness="2.4" Foreground="{StaticResource AccentBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                            <TextBlock x:Name="TxtCustomDictBtnTitle" Text="Custom Dictionary (.lex)" FontSize="13.5" FontWeight="Bold" Foreground="#FFFFFF"/>
-                                            <TextBlock x:Name="TxtCustomDictBtnDesc" Text="Add custom learned words" FontSize="11.5" Foreground="#7888A4"/>
+                                            <TextBlock x:Name="TxtCustomDictBtnTitle" Text="Custom Dictionary (.lex)" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold" Foreground="#FFFFFF"/>
+                                            <TextBlock x:Name="TxtCustomDictBtnDesc" Text="Add custom learned words" FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4"/>
                                         </StackPanel>
                                     </Grid>
                                 </Button>
@@ -618,10 +625,10 @@
                                             <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <controls:LucideIcon IconKey="wand-2" Size="18" StrokeThickness="2.4" Foreground="{StaticResource NeonCyanBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                        <controls:LucideIcon IconKey="wand-2" Size="18" StrokeThickness="2.4" Foreground="{StaticResource AccentBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                            <TextBlock x:Name="TxtCustomRulesBtnTitle" Text="Autocorrect Rules (.json)" FontSize="13.5" FontWeight="Bold" Foreground="#FFFFFF"/>
-                                            <TextBlock x:Name="TxtCustomRulesBtnDesc" Text="Define custom text expansions" FontSize="11.5" Foreground="#7888A4"/>
+                                            <TextBlock x:Name="TxtCustomRulesBtnTitle" Text="Autocorrect Rules (.json)" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold" Foreground="#FFFFFF"/>
+                                            <TextBlock x:Name="TxtCustomRulesBtnDesc" Text="Define custom text expansions" FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4"/>
                                         </StackPanel>
                                     </Grid>
                                 </Button>
@@ -638,13 +645,13 @@
                             <StackPanel Margin="0,0,0,16">
                                 <StackPanel Orientation="Horizontal">
                                     <controls:LucideIcon IconKey="trash-2" Size="18" StrokeThickness="2.6" Foreground="#FB7185" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="TxtSection5Title" Text="Trash &amp; 48-Hour Recovery" FontSize="17" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="TxtSection5Title" Text="Trash &amp; 48-Hour Recovery" FontSize="{StaticResource FontSizeTitle}" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                                 </StackPanel>
-                                <TextBlock x:Name="TxtSection5Subtitle" Text="Safeguard against accidental deletions with automatic local retention." FontSize="12.5" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                <TextBlock x:Name="TxtSection5Subtitle" Text="Safeguard against accidental deletions with automatic local retention." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,4,0,0"/>
                             </StackPanel>
 
                             <!-- Retention Status Card -->
-                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="2" CornerRadius="12" Padding="16,16" Margin="0,0,0,14">
+                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusPanel}" Padding="16,16" Margin="0,0,0,14">
                                 <StackPanel>
                                     <Grid Margin="0,0,0,12">
                                         <Grid.ColumnDefinitions>
@@ -652,17 +659,17 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                                            <TextBlock x:Name="TxtRetentionTitle" Text="48-Hour Safety Recovery Period" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                                            <TextBlock x:Name="TxtRetentionDesc" Text="Deleted notes are automatically preserved locally for 48 hours before permanent purging." FontSize="12.5" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                            <TextBlock x:Name="TxtRetentionTitle" Text="48-Hour Safety Recovery Period" FontSize="{StaticResource FontSizeLabel}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                            <TextBlock x:Name="TxtRetentionDesc" Text="Deleted notes are automatically preserved locally for 48 hours before permanent purging." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
                                         </StackPanel>
-                                        <Border Grid.Column="1" Background="#1D1428" BorderBrush="#4A2F6B" BorderThickness="1.5" CornerRadius="8" Padding="12,6" VerticalAlignment="Center">
-                                            <TextBlock x:Name="TxtTrashCount" Text="0 Notes in Trash" FontSize="13" FontWeight="Bold" Foreground="{StaticResource NeonVioletGlowBrush}"/>
+                                        <Border Grid.Column="1" Background="#1D1428" BorderBrush="#4A2F6B" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="12,6" VerticalAlignment="Center">
+                                            <TextBlock x:Name="TxtTrashCount" Text="0 Notes in Trash" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold" Foreground="{StaticResource AccentBrush}"/>
                                         </Border>
                                     </Grid>
 
                                     <Separator Margin="0,0,0,14"/>
 
-                                    <TextBlock x:Name="TxtTrashActionsTitle" Text="Actions &amp; File Management" FontSize="12" FontWeight="SemiBold" Foreground="#A8B5CD" Margin="0,0,0,10"/>
+                                    <TextBlock x:Name="TxtTrashActionsTitle" Text="Actions &amp; File Management" FontSize="{StaticResource FontSizeCaption}" FontWeight="SemiBold" Foreground="#A8B5CD" Margin="0,0,0,10"/>
 
                                     <!-- Action Buttons -->
                                     <Grid>
@@ -674,8 +681,8 @@
                                         <!-- Open Trash in Explorer -->
                                         <Button x:Name="BtnOpenTrash" Grid.Column="0" Style="{StaticResource GlowButton}" Padding="14,10" Margin="0,0,6,0" Click="BtnOpenTrash_Click">
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                <controls:LucideIcon IconKey="folder" Size="16" StrokeThickness="2.4" Foreground="{StaticResource NeonCyanBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                                <TextBlock x:Name="TxtOpenTrashBtn" Text="Open Trash Folder in Explorer" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                <controls:LucideIcon IconKey="folder" Size="16" StrokeThickness="2.4" Foreground="{StaticResource AccentBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                                <TextBlock x:Name="TxtOpenTrashBtn" Text="Open Trash Folder in Explorer" FontSize="{StaticResource FontSizeBody}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Button>
 
@@ -683,7 +690,7 @@
                                         <Button x:Name="BtnEmptyTrash" Grid.Column="1" Style="{StaticResource GlowButton}" Padding="14,10" Margin="6,0,0,0" Click="BtnEmptyTrash_Click">
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                                 <controls:LucideIcon IconKey="trash-2" Size="16" StrokeThickness="2.4" Foreground="#FB7185" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                                <TextBlock x:Name="TxtEmptyTrashBtn" Text="Empty Trash Folder Now" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                <TextBlock x:Name="TxtEmptyTrashBtn" Text="Empty Trash Folder Now" FontSize="{StaticResource FontSizeBody}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Button>
                                     </Grid>
@@ -700,29 +707,29 @@
                             <!-- Section Title -->
                             <StackPanel Margin="0,0,0,16">
                                 <StackPanel Orientation="Horizontal">
-                                    <controls:LucideIcon IconKey="cpu" Size="18" StrokeThickness="2.6" Foreground="{StaticResource NeonAmberGlowBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="TxtSection6Title" Text="Memory &amp; System Performance" FontSize="17" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                    <controls:LucideIcon IconKey="cpu" Size="18" StrokeThickness="2.6" Foreground="{StaticResource AccentBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="TxtSection6Title" Text="Memory &amp; System Performance" FontSize="{StaticResource FontSizeTitle}" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
                                 </StackPanel>
-                                <TextBlock x:Name="TxtSection6Subtitle" Text="Manage background RAM optimization, automatic working set trimming, and performance." FontSize="12.5" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                <TextBlock x:Name="TxtSection6Subtitle" Text="Manage background RAM optimization, automatic working set trimming, and performance." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,4,0,0"/>
                             </StackPanel>
 
                             <!-- 1. Automatic RAM Optimization Toggle Card -->
-                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="2" CornerRadius="12" Padding="16,14" Margin="0,0,0,12">
+                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusPanel}" Padding="16,14" Margin="0,0,0,12">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                                        <TextBlock x:Name="TxtAutoTrimTitle" Text="Automatic Background RAM Trimming" FontSize="14.5" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                                        <TextBlock x:Name="TxtAutoTrimDesc" Text="Continuously compacts memory heap and flushes inactive working set pages back to Windows every 3 minutes when SmartNotes is idle." FontSize="12" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                        <TextBlock x:Name="TxtAutoTrimTitle" Text="Automatic Background RAM Trimming" FontSize="{StaticResource FontSizeLabel}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                        <TextBlock x:Name="TxtAutoTrimDesc" Text="Continuously compacts memory heap and flushes inactive working set pages back to Windows every 3 minutes when SmartNotes is idle." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
                                     </StackPanel>
                                     <CheckBox x:Name="ChkAutoTrimMemory" Grid.Column="1" Style="{StaticResource ModernSwitch}" IsChecked="True" VerticalAlignment="Center"/>
                                 </Grid>
                             </Border>
 
                             <!-- 2. RAM Footprint & Manual Trim Card -->
-                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="2" CornerRadius="12" Padding="16,16" Margin="0,0,0,12">
+                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusPanel}" Padding="16,16" Margin="0,0,0,12">
                                 <StackPanel>
                                     <Grid Margin="0,0,0,14">
                                         <Grid.ColumnDefinitions>
@@ -730,14 +737,14 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
-                                            <TextBlock x:Name="TxtWorkingSetTitle" Text="Physical Working Set RAM Footprint" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                                            <TextBlock x:Name="TxtRamStatus" Text="Working Set: Calculating..." FontSize="13" Foreground="{StaticResource NeonEmeraldGlowBrush}" FontWeight="SemiBold" Margin="0,4,0,0"/>
-                                            <TextBlock x:Name="TxtWorkingSetDesc" Text="SmartNotes aggressively releases unreferenced memory pages directly back to the Windows OS kernel." FontSize="12" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                            <TextBlock x:Name="TxtWorkingSetTitle" Text="Physical Working Set RAM Footprint" FontSize="{StaticResource FontSizeLabel}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                            <TextBlock x:Name="TxtRamStatus" Text="Working Set: Calculating..." FontSize="{StaticResource FontSizeBody}" Foreground="{StaticResource AccentBrush}" FontWeight="SemiBold" Margin="0,4,0,0"/>
+                                            <TextBlock x:Name="TxtWorkingSetDesc" Text="SmartNotes aggressively releases unreferenced memory pages directly back to the Windows OS kernel." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
                                         </StackPanel>
                                         <Button x:Name="BtnOptimizeRam" Grid.Column="1" Style="{StaticResource PrimaryAmberButton}" Padding="18,10" VerticalAlignment="Center" Click="BtnOptimizeRam_Click">
                                             <StackPanel Orientation="Horizontal">
                                                 <controls:LucideIcon IconKey="zap" Size="16" StrokeThickness="2.6" Foreground="#FFFFFF" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                                <TextBlock x:Name="TxtTrimRamBtn" Text="Trim RAM Now" FontSize="13.5" FontWeight="Bold" VerticalAlignment="Center"/>
+                                                <TextBlock x:Name="TxtTrimRamBtn" Text="Trim RAM Now" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Button>
                                     </Grid>
@@ -749,16 +756,16 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <Border Grid.Column="0" Background="#101522" BorderBrush="#202A3D" BorderThickness="1.5" CornerRadius="8" Padding="12,8" Margin="0,0,6,0">
+                                        <Border Grid.Column="0" Background="#101522" BorderBrush="#202A3D" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="12,8" Margin="0,0,6,0">
                                             <StackPanel>
-                                                <TextBlock x:Name="TxtHardwareAccelTitle" Text="Hardware Acceleration" FontSize="11" FontWeight="Bold" Foreground="#8898B4"/>
-                                                <TextBlock x:Name="TxtHardwareAccelDesc" Text="DWM DirectX / WPF Pipeline Enabled" FontSize="12" Foreground="#FFFFFF" Margin="0,2,0,0"/>
+                                                <TextBlock x:Name="TxtHardwareAccelTitle" Text="Hardware Acceleration" FontSize="{StaticResource FontSizeCaption}" FontWeight="Bold" Foreground="#8898B4"/>
+                                                <TextBlock x:Name="TxtHardwareAccelDesc" Text="DWM DirectX / WPF Pipeline Enabled" FontSize="{StaticResource FontSizeCaption}" Foreground="#FFFFFF" Margin="0,2,0,0"/>
                                             </StackPanel>
                                         </Border>
-                                        <Border Grid.Column="1" Background="#101522" BorderBrush="#202A3D" BorderThickness="1.5" CornerRadius="8" Padding="12,8" Margin="6,0,0,0">
+                                        <Border Grid.Column="1" Background="#101522" BorderBrush="#202A3D" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="12,8" Margin="6,0,0,0">
                                             <StackPanel>
-                                                <TextBlock x:Name="TxtGcTitle" Text="Garbage Collection" FontSize="11" FontWeight="Bold" Foreground="#8898B4"/>
-                                                <TextBlock x:Name="TxtGcDesc" Text=".NET 10 Non-Intrusive LOH Compaction" FontSize="12" Foreground="#FFFFFF" Margin="0,2,0,0"/>
+                                                <TextBlock x:Name="TxtGcTitle" Text="Garbage Collection" FontSize="{StaticResource FontSizeCaption}" FontWeight="Bold" Foreground="#8898B4"/>
+                                                <TextBlock x:Name="TxtGcDesc" Text=".NET 10 Non-Intrusive LOH Compaction" FontSize="{StaticResource FontSizeCaption}" Foreground="#FFFFFF" Margin="0,2,0,0"/>
                                             </StackPanel>
                                         </Border>
                                     </Grid>
@@ -766,12 +773,12 @@
                             </Border>
 
                             <!-- 3. Language & Resource Memory Architecture Note -->
-                            <Border Background="#141926" BorderBrush="#222D42" BorderThickness="1.5" CornerRadius="10" Padding="14,12">
+                            <Border Background="#141926" BorderBrush="#222D42" BorderThickness="1" CornerRadius="{StaticResource RadiusPanel}" Padding="14,12">
                                 <StackPanel Orientation="Horizontal">
                                     <controls:LucideIcon IconKey="info" Size="16" StrokeThickness="2.2" Foreground="#38BDF8" Margin="0,2,10,0" VerticalAlignment="Top"/>
                                     <StackPanel MaxWidth="440">
-                                        <TextBlock x:Name="TxtZeroRamTitle" Text="Zero-RAM Idle Architecture" FontSize="13" FontWeight="Bold" Foreground="#FFFFFF"/>
-                                        <TextBlock x:Name="TxtZeroRamDesc" Text="Installed Windows language packs, dictionaries, and unopened notes remain stored on disk and consume 0 MB of RAM while inactive. Only active note dictionaries are loaded into memory on demand." FontSize="11.5" Foreground="#8898B4" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                        <TextBlock x:Name="TxtZeroRamTitle" Text="Zero-RAM Idle Architecture" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold" Foreground="#FFFFFF"/>
+                                        <TextBlock x:Name="TxtZeroRamDesc" Text="Installed Windows language packs, dictionaries, and unopened notes remain stored on disk and consume 0 MB of RAM while inactive. Only active note dictionaries are loaded into memory on demand." FontSize="{StaticResource FontSizeCaption}" Foreground="#8898B4" TextWrapping="Wrap" Margin="0,3,0,0"/>
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
@@ -782,7 +789,7 @@
             </Grid>
 
             <!-- 3. FOOTER BAR -->
-            <Border Grid.Row="2" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,2,0,0" CornerRadius="0,0,11,11" SnapsToDevicePixels="True">
+            <Border Grid.Row="2" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" CornerRadius="0,0,9,9" SnapsToDevicePixels="True">
                 <Grid Margin="18,0,18,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -791,8 +798,8 @@
 
                     <!-- Status Text -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <controls:LucideIcon IconKey="check-check" Size="14" StrokeThickness="2.4" Foreground="{StaticResource NeonEmeraldGlowBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                        <TextBlock x:Name="TxtFooterStatus" Text="Changes take effect immediately upon saving" FontSize="12" Foreground="#7888A4" VerticalAlignment="Center"/>
+                        <controls:LucideIcon IconKey="check-check" Size="14" StrokeThickness="2.4" Foreground="{StaticResource AccentBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtFooterStatus" Text="Changes take effect immediately upon saving" FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <!-- Save / Cancel Buttons -->
