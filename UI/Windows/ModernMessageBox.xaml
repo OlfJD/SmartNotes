@@ -19,7 +19,7 @@
 
     <Grid Margin="12">
         <!-- Outer Drop Shadow -->
-        <Border Background="#141926" CornerRadius="14">
+        <Border Background="#141926" CornerRadius="{StaticResource RadiusPanel}">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.75" Color="#000000"/>
             </Border.Effect>
@@ -28,8 +28,8 @@
         <!-- Main Window Container -->
         <Border Background="#141926"
                 BorderBrush="#334368"
-                BorderThickness="2"
-                CornerRadius="14"
+                BorderThickness="1"
+                CornerRadius="{StaticResource RadiusPanel}"
                 RenderOptions.ClearTypeHint="Enabled">
             <Grid>
                 <Grid.RowDefinitions>
@@ -41,7 +41,7 @@
                 <!-- Header Bar (Draggable) -->
                 <Border Grid.Row="0"
                         Background="#10141F"
-                        CornerRadius="12,12,0,0"
+                        CornerRadius="9,9,0,0"
                         BorderBrush="#1E273C"
                         BorderThickness="0,0,0,1"
                         MouseLeftButtonDown="Header_MouseLeftButtonDown">
@@ -53,16 +53,16 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Header Icon -->
-                        <controls:LucideIcon x:Name="HeaderIcon" Grid.Column="0" IconKey="zap" Size="14" StrokeThickness="2.2" Foreground="{StaticResource NeonAmberGlowBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <controls:LucideIcon x:Name="HeaderIcon" Grid.Column="0" IconKey="zap" Size="14" StrokeThickness="2.2" Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
 
                         <!-- Header Title -->
-                        <TextBlock x:Name="TxtTitle" Grid.Column="1" Text="SmartNotes" FontSize="12.5" FontWeight="Bold" Foreground="#8898B4" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtTitle" Grid.Column="1" Text="SmartNotes" FontSize="{StaticResource FontSizeCaption}" FontWeight="Bold" Foreground="#8898B4" VerticalAlignment="Center"/>
 
                         <!-- Close Button -->
                         <Button Grid.Column="2" Click="BtnClose_Click" Width="26" Height="26" Background="Transparent" BorderThickness="0" Cursor="Hand" FocusVisualStyle="{x:Null}">
                             <Button.Template>
                                 <ControlTemplate TargetType="{x:Type Button}">
-                                    <Border x:Name="Bd" Background="Transparent" CornerRadius="6">
+                                    <Border x:Name="Bd" Background="Transparent" CornerRadius="{StaticResource RadiusControl}">
                                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <ControlTemplate.Triggers>
@@ -92,26 +92,26 @@
                             x:Name="IconBadge"
                             Width="44"
                             Height="44"
-                            CornerRadius="12"
+                            CornerRadius="{StaticResource RadiusPanel}"
                             Background="#1E273C"
                             BorderBrush="#334368"
-                            BorderThickness="1.5"
+                            BorderThickness="1"
                             VerticalAlignment="Top"
                             Margin="0,2,16,0">
-                        <controls:LucideIcon x:Name="MainIcon" IconKey="sparkles" Size="22" StrokeThickness="2.0" Foreground="{StaticResource NeonAmberGlowBrush}"/>
+                        <controls:LucideIcon x:Name="MainIcon" IconKey="sparkles" Size="22" StrokeThickness="2.0" Foreground="{StaticResource AccentBrush}"/>
                     </Border>
 
                     <!-- Message Body -->
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock x:Name="TxtHeading" Text="Heading Text" FontSize="15" FontWeight="Bold" Foreground="#FFFFFF" TextWrapping="Wrap"/>
-                        <TextBlock x:Name="TxtMessage" Text="Message description text goes here." FontSize="13" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,6,0,0" LineHeight="18"/>
+                        <TextBlock x:Name="TxtHeading" Text="Heading Text" FontSize="{StaticResource FontSizeLabel}" FontWeight="Bold" Foreground="#FFFFFF" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="TxtMessage" Text="Message description text goes here." FontSize="{StaticResource FontSizeBody}" Foreground="#94A3B8" TextWrapping="Wrap" Margin="0,6,0,0" LineHeight="18"/>
                     </StackPanel>
                 </Grid>
 
                 <!-- Button Bar -->
                 <Border Grid.Row="2"
                         Background="#0F131D"
-                        CornerRadius="0,0,12,12"
+                        CornerRadius="0,0,9,9"
                         BorderBrush="#1E273C"
                         BorderThickness="0,1,0,0"
                         Padding="16,12">
@@ -124,14 +124,14 @@
                                 Height="34"
                                 Margin="0,0,10,0"
                                 Foreground="#CBD5E1"
-                                FontSize="13"
+                                FontSize="{StaticResource FontSizeBody}"
                                 FontWeight="SemiBold"
                                 Cursor="Hand"
                                 FocusVisualStyle="{x:Null}"
                                 Visibility="Collapsed">
                             <Button.Template>
                                 <ControlTemplate TargetType="{x:Type Button}">
-                                    <Border x:Name="Bd" Background="#1A2234" BorderBrush="#2D3B59" BorderThickness="1.5" CornerRadius="8" Padding="12,6">
+                                    <Border x:Name="Bd" Background="#1A2234" BorderBrush="#2D3B59" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="12,6">
                                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <ControlTemplate.Triggers>
@@ -154,7 +154,7 @@
                                 MinWidth="92"
                                 Height="34"
                                 Style="{StaticResource PrimaryButton}"
-                                FontSize="13"
+                                FontSize="{StaticResource FontSizeBody}"
                                 FontWeight="Bold"
                                 Cursor="Hand"/>
                     </StackPanel>

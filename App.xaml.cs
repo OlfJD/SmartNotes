@@ -161,6 +161,7 @@ public partial class App : Application
             LogStartup("SettingsService loaded.");
             _storageService = new NoteStorageService();
             LogStartup($"NoteStorageService loaded. Active notes: {_storageService.Notes.Count}");
+            MigrateSkinKeys();
 
             LocalizationService.Instance.SetLanguage(_settingsService.Settings.AppLanguage);
             LogStartup("LocalizationService initialized.");
@@ -187,6 +188,33 @@ public partial class App : Application
         {
             LogStartup($"Error during service initialization: {ex}\n{ex.StackTrace}");
         }
+    }
+
+    /// <summary>
+    /// v1: the parchment-scroll skin was renamed from "EldenRing" to "Medieval" when the game-style
+    /// Elden Ring skin took over that key. Runs once.
+    /// </summary>
+    private void MigrateSkinKeys()
+    {
+        var s = _settingsService.Settings;
+        if (s.SkinDataVersion >= 1) return;
+
+        bool notesChanged = false;
+        foreach (var note in _storageService.Notes.Concat(_storageService.GetDeletedNotes()))
+        {
+            if (note.SkinKey == "EldenRing")
+            {
+                note.SkinKey = NoteSkin.MedievalKey;
+                notesChanged = true;
+            }
+        }
+        if (s.DefaultSkinKey == "EldenRing") s.DefaultSkinKey = NoteSkin.MedievalKey;
+        if (s.SkinTitleFonts.Remove("EldenRing", out var titleFont)) s.SkinTitleFonts[NoteSkin.MedievalKey] = titleFont;
+        if (s.SkinTextFonts.Remove("EldenRing", out var textFont)) s.SkinTextFonts[NoteSkin.MedievalKey] = textFont;
+
+        s.SkinDataVersion = 1;
+        if (notesChanged) _storageService.Save();
+        _settingsService.Save();
     }
 
     private void InitDummyHwndHost()
@@ -469,6 +497,15 @@ public partial class App : Application
         }
     }
 
+    /// <summary>Re-applies skin, colour and fonts on every open note (e.g. after a font was changed in Settings).</summary>
+    public void NotifyAppearanceSettingsChanged()
+    {
+        foreach (var win in _activeNoteWindows.Values)
+        {
+            win.ApplyTheme(win.Note.ColorKey);
+        }
+    }
+
     public void NotifyProofingSettingsChanged()
     {
         foreach (var win in _activeNoteWindows.Values)
@@ -487,6 +524,7 @@ public partial class App : Application
             InitGlobalHotkeys();
             NotifyTransparencySettingsChanged();
             NotifyProofingSettingsChanged();
+            NotifyAppearanceSettingsChanged();
             MemoryOptimizer.TrimMemory();
         });
 

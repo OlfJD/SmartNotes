@@ -41,6 +41,8 @@
         <CornerRadius x:Key="SkinCheckRadius">5</CornerRadius>
         <sys:Double x:Key="SkinCompartmentCut">0</sys:Double>
         <sys:Double x:Key="SkinItemCut">0</sys:Double>
+        <sys:Double x:Key="SkinItemFontSize">15</sys:Double>
+        <sys:Double x:Key="SkinHintFontSize">14.5</sys:Double>
         <CornerRadius x:Key="SkinCompartmentRadius">8</CornerRadius>
         <Thickness x:Key="SkinCompartmentBorder">2</Thickness>
         <CornerRadius x:Key="SkinItemRadius">8</CornerRadius>
@@ -275,7 +277,7 @@
                                             </CheckBox>
 
                                             <!-- Task Text -->
-                                            <TextBox Grid.Column="1" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="TaskText_Changed" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SkinItemTextBrush}" FontFamily="{DynamicResource SkinFont}" FontWeight="{DynamicResource SkinBodyWeight}" FontSize="15" CaretBrush="{DynamicResource SkinCaretBrush}" VerticalAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" PreviewKeyDown="TextBox_PreviewKeyDown" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
+                                            <TextBox Grid.Column="1" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="TaskText_Changed" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SkinItemTextBrush}" FontFamily="{DynamicResource SkinFont}" FontWeight="{DynamicResource SkinBodyWeight}" FontSize="{DynamicResource SkinItemFontSize}" CaretBrush="{DynamicResource SkinCaretBrush}" VerticalAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" PreviewKeyDown="TextBox_PreviewKeyDown" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
 
                                             <!-- Delete Task Item Button -->
                                             <Button Grid.Column="2" Style="{StaticResource IconButton}" Width="24" Height="24" Click="BtnDeleteTask_Click" ToolTip="Delete task" Padding="3">
@@ -295,8 +297,8 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="TxtNewTask" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SkinItemTextBrush}" FontFamily="{DynamicResource SkinFont}" FontWeight="{DynamicResource SkinBodyWeight}" FontSize="15" CaretBrush="{DynamicResource SkinCaretBrush}" Cursor="IBeam" VerticalAlignment="Stretch" VerticalContentAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" KeyDown="TxtNewTask_KeyDown" TextChanged="TxtNewTask_TextChanged" GotFocus="TxtNewTask_GotFocus" LostFocus="TxtNewTask_LostFocus"/>
-                            <TextBlock x:Name="TxtNewTaskPlaceholder" Text="Add new task (Press Enter)..." Foreground="{DynamicResource SkinFaintBrush}" FontFamily="{DynamicResource SkinFont}" FontSize="14.5" IsHitTestVisible="False" VerticalAlignment="Center" Margin="2,0,0,0"/>
+                            <TextBox x:Name="TxtNewTask" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SkinItemTextBrush}" FontFamily="{DynamicResource SkinFont}" FontWeight="{DynamicResource SkinBodyWeight}" FontSize="{DynamicResource SkinItemFontSize}" CaretBrush="{DynamicResource SkinCaretBrush}" Cursor="IBeam" VerticalAlignment="Stretch" VerticalContentAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" KeyDown="TxtNewTask_KeyDown" TextChanged="TxtNewTask_TextChanged" GotFocus="TxtNewTask_GotFocus" LostFocus="TxtNewTask_LostFocus"/>
+                            <TextBlock x:Name="TxtNewTaskPlaceholder" Text="Add new task (Press Enter)..." Foreground="{DynamicResource SkinFaintBrush}" FontFamily="{DynamicResource SkinFont}" FontSize="{DynamicResource SkinHintFontSize}" IsHitTestVisible="False" VerticalAlignment="Center" Margin="2,0,0,0"/>
                             <Button x:Name="BtnAddTask" Grid.Column="1" Style="{StaticResource IconButton}" Width="26" Height="26" Click="BtnAddTask_Click" ToolTip="Add task" Cursor="Hand">
                                 <controls:LucideIcon IconKey="plus" Size="15" StrokeThickness="2.8" Foreground="{DynamicResource SkinEmeraldBrush}"/>
                             </Button>
@@ -330,7 +332,7 @@
                                             </Grid.ColumnDefinitions>
 
                                             <!-- Snippet Text Box -->
-                                            <TextBox Grid.Column="0" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="CopyItemText_Changed" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SkinItemTextBrush}" FontFamily="{DynamicResource SkinFont}" FontWeight="{DynamicResource SkinBodyWeight}" FontSize="15" CaretBrush="{DynamicResource SkinCaretBrush}" Cursor="IBeam" VerticalAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" PreviewKeyDown="TextBox_PreviewKeyDown" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
+                                            <TextBox Grid.Column="0" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="CopyItemText_Changed" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SkinItemTextBrush}" FontFamily="{DynamicResource SkinFont}" FontWeight="{DynamicResource SkinBodyWeight}" FontSize="{DynamicResource SkinItemFontSize}" CaretBrush="{DynamicResource SkinCaretBrush}" Cursor="IBeam" VerticalAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" PreviewKeyDown="TextBox_PreviewKeyDown" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
 
                                             <!-- Dedicated Copy Button on the right in the same line -->
                                             <Button Grid.Column="1" Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnCopyRow_Click" ToolTip="Copy this line to clipboard" Margin="4,0,2,0" Padding="4">
@@ -355,8 +357,8 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="TxtNewCopyItem" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SkinItemTextBrush}" FontFamily="{DynamicResource SkinFont}" FontWeight="{DynamicResource SkinBodyWeight}" FontSize="15" CaretBrush="{DynamicResource SkinCaretBrush}" Cursor="IBeam" VerticalAlignment="Stretch" VerticalContentAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" KeyDown="TxtNewCopyItem_KeyDown" TextChanged="TxtNewCopyItem_TextChanged" GotFocus="TxtNewCopyItem_GotFocus" LostFocus="TxtNewCopyItem_LostFocus"/>
-                            <TextBlock x:Name="TxtNewCopyItemPlaceholder" Text="Add new copy item (Press Enter)..." Foreground="{DynamicResource SkinFaintBrush}" FontFamily="{DynamicResource SkinFont}" FontSize="14.5" IsHitTestVisible="False" VerticalAlignment="Center" Margin="2,0,0,0"/>
+                            <TextBox x:Name="TxtNewCopyItem" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SkinItemTextBrush}" FontFamily="{DynamicResource SkinFont}" FontWeight="{DynamicResource SkinBodyWeight}" FontSize="{DynamicResource SkinItemFontSize}" CaretBrush="{DynamicResource SkinCaretBrush}" Cursor="IBeam" VerticalAlignment="Stretch" VerticalContentAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" KeyDown="TxtNewCopyItem_KeyDown" TextChanged="TxtNewCopyItem_TextChanged" GotFocus="TxtNewCopyItem_GotFocus" LostFocus="TxtNewCopyItem_LostFocus"/>
+                            <TextBlock x:Name="TxtNewCopyItemPlaceholder" Text="Add new copy item (Press Enter)..." Foreground="{DynamicResource SkinFaintBrush}" FontFamily="{DynamicResource SkinFont}" FontSize="{DynamicResource SkinHintFontSize}" IsHitTestVisible="False" VerticalAlignment="Center" Margin="2,0,0,0"/>
                             <Button x:Name="BtnAddCopyItem" Grid.Column="1" Style="{StaticResource IconButton}" Width="26" Height="26" Click="BtnAddCopyItem_Click" ToolTip="Add copy item" Cursor="Hand">
                                 <controls:LucideIcon IconKey="plus" Size="15" StrokeThickness="2.8" Foreground="{DynamicResource SkinCyanBrush}"/>
                             </Button>
@@ -370,7 +372,8 @@
             <Border Grid.Row="3" Background="Transparent" Padding="14,0,10,6" VerticalAlignment="Bottom">
                 <Grid>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock x:Name="TxtPinIndicator" Text="📌 Stuck to Desktop" FontFamily="{DynamicResource SkinMetaFont}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource SkinMutedBrush}" Margin="0,0,12,0"/>
+                        <controls:LucideIcon x:Name="IconPinFooter" IconKey="pin" Size="12" StrokeThickness="2.4" Foreground="{DynamicResource SkinMutedBrush}" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtPinIndicator" Text="Stuck to Desktop" FontFamily="{DynamicResource SkinMetaFont}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource SkinMutedBrush}" Margin="0,0,12,0"/>
                         
                         <!-- Default Modified Timestamp -->
                         <TextBlock x:Name="TxtModifiedTime" Text="Just now" FontFamily="{DynamicResource SkinMetaFont}" FontSize="12" Foreground="{DynamicResource SkinFaintBrush}" VerticalAlignment="Center"/>
@@ -400,24 +403,15 @@
 
             <!-- COLOR PALETTE POPUP (Obsidian Theme with Classic 2D Drawing-App Color Picker) -->
             <Popup x:Name="ColorPopup" StaysOpen="False" AllowsTransparency="True" PlacementTarget="{Binding ElementName=BtnColorPicker}" Placement="Bottom" PopupAnimation="Fade" Opened="ColorPopup_Opened">
-                <Border Background="#101522" BorderBrush="#2F3E5E" BorderThickness="2.5" CornerRadius="14" Padding="12" Margin="0,4,0,0">
+                <Border Background="{StaticResource MenuBgBrush}" BorderBrush="{StaticResource ControlBorderBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusPanel}" Padding="12" Margin="0,4,0,0">
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="20" ShadowDepth="6" Opacity="0.7" Color="#000000"/>
                     </Border.Effect>
                     <StackPanel Width="220">
                         <!-- Note Style (skin) selector -->
                         <TextBlock x:Name="TxtNoteStyleHeader" Text="Note Style" FontSize="11" FontWeight="Bold" Foreground="#8898B4" Margin="2,0,0,6"/>
-                        <UniformGrid Columns="3" Margin="0,0,0,10">
-                            <Button x:Name="BtnSkinClassic" Style="{StaticResource GlowButton}" BorderThickness="2" Padding="2,5" Margin="2" Tag="Classic" Click="SkinButton_Click">
-                                <TextBlock x:Name="TxtSkinClassic" Text="Classic" FontSize="11" FontWeight="SemiBold"/>
-                            </Button>
-                            <Button x:Name="BtnSkinCyberpunk" Style="{StaticResource GlowButton}" BorderThickness="2" Padding="2,5" Margin="2" Tag="Cyberpunk" Click="SkinButton_Click">
-                                <TextBlock x:Name="TxtSkinCyberpunk" Text="Cyberpunk" FontSize="11" FontWeight="SemiBold" FontFamily="Cascadia Mono, Consolas, monospace"/>
-                            </Button>
-                            <Button x:Name="BtnSkinEldenRing" Style="{StaticResource GlowButton}" BorderThickness="2" Padding="2,5" Margin="2" Tag="EldenRing" Click="SkinButton_Click">
-                                <TextBlock x:Name="TxtSkinEldenRing" Text="Elden Ring" FontSize="11.5" FontWeight="SemiBold" FontFamily="Palatino Linotype, Georgia, serif"/>
-                            </Button>
-                        </UniformGrid>
+                        <!-- One button per NoteSkin.All entry, built in BuildSkinButtons() -->
+                        <UniformGrid x:Name="SkinButtonsGrid" Columns="2" Margin="0,0,0,10"/>
 
                         <Separator Background="#222D42" Margin="0,0,0,10"/>
 
@@ -457,7 +451,7 @@
                         <!-- Classic 2D Saturation / Value Gradient Canvas -->
                         <TextBlock x:Name="TxtCustomPaletteCanvas" Text="Custom Palette Canvas" FontSize="11" FontWeight="Bold" Foreground="#8898B4" Margin="2,0,0,6"/>
 
-                        <Border Width="220" Height="120" CornerRadius="8" ClipToBounds="True" BorderBrush="#2C3B58" BorderThickness="1.5" Margin="0,0,0,8" Cursor="Cross">
+                        <Border Width="220" Height="120" CornerRadius="8" ClipToBounds="True" BorderBrush="#2C3B58" BorderThickness="1" Margin="0,0,0,8" Cursor="Cross">
                             <Grid x:Name="SatValPickerGrid" Background="Transparent" MouseLeftButtonDown="SatValPicker_MouseDown" MouseMove="SatValPicker_MouseMove" MouseLeftButtonUp="SatValPicker_MouseUp">
                                 <!-- Base pure hue rectangle -->
                                 <Rectangle x:Name="HueBaseRect" Fill="#FF0000"/>
@@ -495,7 +489,7 @@
                         </Border>
 
                         <!-- Classic Hue Rainbow Spectrum Bar -->
-                        <Border Width="220" Height="14" CornerRadius="7" ClipToBounds="True" BorderBrush="#2C3B58" BorderThickness="1.5" Margin="0,0,0,10" Cursor="Hand">
+                        <Border Width="220" Height="14" CornerRadius="7" ClipToBounds="True" BorderBrush="#2C3B58" BorderThickness="1" Margin="0,0,0,10" Cursor="Hand">
                             <Grid x:Name="HueBarGrid" Background="Transparent" MouseLeftButtonDown="HueBar_MouseDown" MouseMove="HueBar_MouseMove" MouseLeftButtonUp="HueBar_MouseUp">
                                 <Rectangle>
                                     <Rectangle.Fill>
@@ -514,7 +508,7 @@
                                 <!-- Draggable Hue Thumb -->
                                 <Canvas x:Name="HueCanvas" IsHitTestVisible="False">
                                     <Border x:Name="HueThumb" Width="8" Height="18" Margin="-4,-2,0,0"
-                                            CornerRadius="4" Background="#FFFFFF" BorderBrush="#000000" BorderThickness="1.5">
+                                            CornerRadius="4" Background="#FFFFFF" BorderBrush="#000000" BorderThickness="1">
                                         <Border.Effect>
                                             <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.7" Color="#000000"/>
                                         </Border.Effect>
@@ -535,7 +529,7 @@
                             <Border Grid.Column="0" x:Name="CustomColorPreview" Width="30" Height="30" CornerRadius="6" Background="#FF5500" BorderBrush="#FFFFFF" BorderThickness="2" Margin="0,0,8,0"/>
 
                             <!-- Hex Input Box -->
-                            <TextBox Grid.Column="1" x:Name="TxtCustomHex" Text="#FF5500" Background="#141B2B" BorderBrush="#2F3E5D" BorderThickness="1.5" Foreground="#F8FAFC" FontSize="13" FontWeight="Bold" Padding="6,4" VerticalContentAlignment="Center" CaretBrush="#F59E0B" Cursor="IBeam" Margin="0,0,8,0" TextChanged="TxtCustomHex_TextChanged"/>
+                            <TextBox Grid.Column="1" x:Name="TxtCustomHex" Text="#FF5500" Background="#141B2B" BorderBrush="#2F3E5D" BorderThickness="1" Foreground="#F8FAFC" FontSize="13" FontWeight="Bold" Padding="6,4" VerticalContentAlignment="Center" CaretBrush="{StaticResource AccentBrush}" Cursor="IBeam" Margin="0,0,8,0" TextChanged="TxtCustomHex_TextChanged"/>
 
                             <!-- Apply Button -->
                             <Button x:Name="BtnApplyCustomColor" Grid.Column="2" Style="{StaticResource PrimaryButton}" Height="30" Content="Apply" Click="BtnApplyCustomColor_Click" FontSize="12" FontWeight="Bold" Padding="12,0"/>
@@ -553,7 +547,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock x:Name="TxtNoteOpacityHeader" Text="Note Opacity" FontSize="12" FontWeight="SemiBold" Foreground="#CBD5E1" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="TxtActiveOpacityPercent" Grid.Column="1" Text="100%" FontSize="12" FontWeight="Bold" Foreground="#F59E0B" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtActiveOpacityPercent" Grid.Column="1" Text="100%" FontSize="12" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center"/>
                         </Grid>
                         <Slider x:Name="SliderActiveOpacity" Minimum="30" Maximum="100" Value="100" SmallChange="5" LargeChange="10" Margin="2,0,2,10" ValueChanged="SliderActiveOpacity_ValueChanged"/>
 
@@ -575,7 +569,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock x:Name="TxtUnfocusedOpacityHeader" Text="Unfocused Opacity" FontSize="12" FontWeight="SemiBold" Foreground="#94A3B8" VerticalAlignment="Center"/>
-                                <TextBlock x:Name="TxtUnfocusedOpacityPercent" Grid.Column="1" Text="55%" FontSize="12" FontWeight="Bold" Foreground="#06B6D4" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TxtUnfocusedOpacityPercent" Grid.Column="1" Text="55%" FontSize="12" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center"/>
                             </Grid>
                             <Slider x:Name="SliderUnfocusedOpacity" Minimum="15" Maximum="90" Value="55" SmallChange="5" LargeChange="10" ValueChanged="SliderUnfocusedOpacity_ValueChanged"/>
                         </StackPanel>

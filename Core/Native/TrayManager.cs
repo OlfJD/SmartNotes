@@ -1,18 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.IO;
 using System.Windows.Forms;
+using System.Windows.Interop;
+using System.Windows.Threading;
 using SmartNotes.Core.Models;
 using SmartNotes.Core.Services;
-using DrawColor = System.Drawing.Color;
-using DrawRectangle = System.Drawing.Rectangle;
-using DrawPointF = System.Drawing.PointF;
-using DrawGraphicsPath = System.Drawing.Drawing2D.GraphicsPath;
+using SmartNotes.UI.Controls;
+using WpfContextMenu = System.Windows.Controls.ContextMenu;
+using WpfMenuItem = System.Windows.Controls.MenuItem;
+using WpfWindow = System.Windows.Window;
 
 namespace SmartNotes.Core.Native;
 
+/// <summary>
+/// Tray icon. The icon itself is a WinForms NotifyIcon, but its menu is the same WPF menu component
+/// (AppMenu + DarkTheme styles) used by the note "more" menu and the text right-click menu.
+/// </summary>
 public class TrayManager : IDisposable
 {
     private readonly NotifyIcon _notifyIcon;
@@ -31,11 +36,10 @@ public class TrayManager : IDisposable
     private readonly Action _onOpenTrashFolder;
     private readonly Action _onTrimMemory;
 
-    // One menu whose items are rebuilt each time it opens (previously a brand-new menu + fonts was
-    // created on every right-click/state change and the old one never disposed)
-    private readonly ContextMenuStrip _menu;
-    private readonly Font _menuFont = new("Segoe UI", 9.5f);
-    private readonly Font _menuBoldFont = new("Segoe UI", 9.5f, FontStyle.Bold);
+    // Invisible 1px window that owns the menu: a tray menu needs a foreground window of ours,
+    // otherwise it would not close when the user clicks somewhere else.
+    private WpfWindow? _menuHost;
+    private WpfContextMenu? _openMenu;
 
     public TrayManager(
         SettingsService settingsService,
@@ -100,18 +104,6 @@ public class TrayManager : IDisposable
             Icon = appIcon ?? SystemIcons.Application
         };
 
-        _menu = new ContextMenuStrip
-        {
-            ShowImageMargin = true,
-            Font = _menuFont,
-            ForeColor = DrawColor.FromArgb(241, 245, 249),
-            BackColor = DrawColor.FromArgb(13, 16, 23),
-            Renderer = new ModernMenuRenderer()
-        };
-        // Rebuilt right before it shows, so trash list, language and checkmarks are always current
-        _menu.Opening += (s, e) => PopulateContextMenu();
-        _notifyIcon.ContextMenuStrip = _menu;
-
         _notifyIcon.DoubleClick += (s, e) => _onBringAllToFront();
         _notifyIcon.MouseClick += (s, e) =>
         {
@@ -120,65 +112,96 @@ public class TrayManager : IDisposable
                 _onBringAllToFront();
             }
         };
+        _notifyIcon.MouseUp += (s, e) =>
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                ShowMenu();
+            }
+        };
     }
 
     /// <summary>
-    /// Kept for callers that change state shown in the menu. The menu repopulates itself every time
-    /// it opens, so there is nothing to do here (rebuilding from inside an item's Click handler would
-    /// dispose the item that is still raising the event).
+    /// Kept for callers that change state shown in the menu. The menu is built fresh every time it
+    /// opens, so there is nothing to do here.
     /// </summary>
     public void RebuildContextMenu()
     {
     }
 
-    private void PopulateContextMenu()
+    private void ShowMenu()
     {
-        var menu = _menu;
-        var oldItems = new List<ToolStripItem>();
-        foreach (ToolStripItem item in menu.Items) oldItems.Add(item);
-        menu.Items.Clear();
-        foreach (var item in oldItems) item.Dispose();
-
-        var newNoteItem = new ToolStripMenuItem(LocalizationService.T("Tray_NewNote"), null, (s, e) => _onNewNote())
+        try
         {
-            Font = _menuBoldFont,
-            ForeColor = DrawColor.FromArgb(255, 255, 255)
-        };
-        menu.Items.Add(newNoteItem);
+            if (_openMenu != null) _openMenu.IsOpen = false;
 
-        var bringAllItem = new ToolStripMenuItem(LocalizationService.T("Tray_BringAllToFront"), null, (s, e) => _onBringAllToFront())
+            if (_menuHost == null)
+            {
+                _menuHost = new WpfWindow
+                {
+                    Width = 1,
+                    Height = 1,
+                    Left = -10000,
+                    Top = -10000,
+                    WindowStyle = System.Windows.WindowStyle.None,
+                    ResizeMode = System.Windows.ResizeMode.NoResize,
+                    AllowsTransparency = true,
+                    Background = System.Windows.Media.Brushes.Transparent,
+                    ShowInTaskbar = false,
+                    Topmost = true
+                };
+                _menuHost.Deactivated += (s, e) =>
+                {
+                    if (_openMenu != null) _openMenu.IsOpen = false;
+                };
+            }
+
+            _menuHost.Show();
+            Win32Api.SetForegroundWindow(new WindowInteropHelper(_menuHost).Handle);
+
+            var menu = BuildMenu();
+            menu.PlacementTarget = _menuHost;
+            menu.Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint;
+            menu.Closed += (s, e) =>
+            {
+                if (ReferenceEquals(_openMenu, menu)) _openMenu = null;
+                _menuHost?.Hide();
+            };
+            _openMenu = menu;
+            menu.IsOpen = true;
+        }
+        catch (Exception ex)
         {
-            ForeColor = DrawColor.FromArgb(226, 232, 240)
-        };
-        menu.Items.Add(bringAllItem);
+            System.Diagnostics.Debug.WriteLine($"Tray menu error: {ex.Message}");
+        }
+    }
 
-        menu.Items.Add(new ToolStripSeparator());
+    /// <summary>Runs a menu action after the menu has closed (some actions open dialogs).</summary>
+    private static Action Later(Action action) =>
+        () => Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background, action);
 
-        string hideText = _settingsService.Settings.HideAllNotes ? LocalizationService.T("Tray_ShowAll") : LocalizationService.T("Tray_HideAll");
-        var toggleHideItem = new ToolStripMenuItem(hideText, null, (s, e) => _onToggleHideAll())
+    /// <summary>Builds the tray menu from the shared menu component.</summary>
+    public WpfContextMenu BuildMenu()
+    {
+        var menu = AppMenu.Create();
+        var settings = _settingsService.Settings;
+
+        menu.Items.Add(AppMenu.Item(LocalizationService.T("Tray_NewNote"), "plus", Later(_onNewNote), MenuTone.Accent));
+        menu.Items.Add(AppMenu.Item(LocalizationService.T("Tray_BringAllToFront"), "layers", Later(_onBringAllToFront)));
+        menu.Items.Add(AppMenu.Separator());
+
+        menu.Items.Add(AppMenu.Item(
+            settings.HideAllNotes ? LocalizationService.T("Tray_ShowAll") : LocalizationService.T("Tray_HideAll"),
+            settings.HideAllNotes ? "eye" : "eye-off",
+            Later(_onToggleHideAll)));
+        menu.Items.Add(AppMenu.Item(LocalizationService.T("Tray_Arrange"), "monitor", Later(_onArrangeNotes)));
+
+        // 48-hour trash & note recovery
+        var deleted = _getDeletedNotes();
+        var trash = AppMenu.Sub($"{LocalizationService.T("Tray_Trash")} ({deleted.Count})", "trash-2");
+        if (deleted.Count > 0)
         {
-            ForeColor = DrawColor.FromArgb(226, 232, 240)
-        };
-        menu.Items.Add(toggleHideItem);
-
-        var arrangeItem = new ToolStripMenuItem(LocalizationService.T("Tray_Arrange"), null, (s, e) => _onArrangeNotes())
-        {
-            ForeColor = DrawColor.FromArgb(226, 232, 240)
-        };
-        menu.Items.Add(arrangeItem);
-
-        // 48-Hour Temporary Trash & Note Recovery Submenu
-        var deletedList = _getDeletedNotes();
-        var trashMenu = new ToolStripMenuItem($"{LocalizationService.T("Tray_Trash")} ({deletedList.Count})")
-        {
-            ForeColor = deletedList.Count > 0 ? DrawColor.FromArgb(245, 158, 11) : DrawColor.FromArgb(168, 181, 205)
-        };
-        trashMenu.DropDown.Renderer = new ModernMenuRenderer();
-        trashMenu.DropDown.BackColor = DrawColor.FromArgb(13, 16, 23);
-
-        if (deletedList.Count > 0)
-        {
-            foreach (var note in deletedList)
+            foreach (var note in deleted)
             {
                 TimeSpan remaining = NoteStorageService.TrashRetentionPeriod - (DateTime.Now - (note.DeletedAt ?? DateTime.Now));
                 string timeLeft = remaining.TotalHours >= 1
@@ -187,104 +210,44 @@ public class TrayManager : IDisposable
                 string title = string.IsNullOrWhiteSpace(note.Title) ? note.SnippetPreview : note.Title;
                 if (title.Length > 24) title = title.Substring(0, 22) + "...";
 
-                var noteItem = new ToolStripMenuItem(LocalizationService.T("Tray_RestoreNote", title, timeLeft), null, (s, e) =>
-                {
-                    _onRestoreNote(note.Id);
-                    RebuildContextMenu();
-                })
-                {
-                    ForeColor = DrawColor.FromArgb(241, 245, 249)
-                };
-                trashMenu.DropDownItems.Add(noteItem);
+                Guid id = note.Id;
+                trash.Items.Add(AppMenu.Item(LocalizationService.T("Tray_RestoreNote", title, timeLeft), "undo-2", Later(() => _onRestoreNote(id))));
             }
 
-            trashMenu.DropDownItems.Add(new ToolStripSeparator());
-
-            var restoreAllItem = new ToolStripMenuItem(LocalizationService.T("Tray_RestoreAll"), null, (s, e) =>
-            {
-                _onRestoreAllNotes();
-                RebuildContextMenu();
-            })
-            {
-                ForeColor = DrawColor.FromArgb(52, 211, 153)
-            };
-            trashMenu.DropDownItems.Add(restoreAllItem);
-
-            var emptyTrashItem = new ToolStripMenuItem(LocalizationService.T("Tray_EmptyTrash"), null, (s, e) =>
-            {
-                _onEmptyTrash();
-                RebuildContextMenu();
-            })
-            {
-                ForeColor = DrawColor.FromArgb(248, 113, 113)
-            };
-            trashMenu.DropDownItems.Add(emptyTrashItem);
+            trash.Items.Add(AppMenu.Separator());
+            trash.Items.Add(AppMenu.Item(LocalizationService.T("Tray_RestoreAll"), "undo-2", Later(_onRestoreAllNotes), MenuTone.Accent));
+            trash.Items.Add(AppMenu.Item(LocalizationService.T("Tray_EmptyTrash"), "trash", Later(_onEmptyTrash), MenuTone.Danger));
         }
         else
         {
-            var emptyItem = new ToolStripMenuItem(LocalizationService.T("Tray_NoTrashNotes"))
-            {
-                Enabled = false,
-                ForeColor = DrawColor.FromArgb(120, 136, 164)
-            };
-            trashMenu.DropDownItems.Add(emptyItem);
+            trash.Items.Add(AppMenu.Item(LocalizationService.T("Tray_NoTrashNotes"), null, null, MenuTone.Muted, isEnabled: false));
         }
+        trash.Items.Add(AppMenu.Separator());
+        trash.Items.Add(AppMenu.Item(LocalizationService.T("Tray_OpenTrashFolder"), "folder", Later(_onOpenTrashFolder)));
+        menu.Items.Add(trash);
 
-        trashMenu.DropDownItems.Add(new ToolStripSeparator());
-        var openFolderItem = new ToolStripMenuItem(LocalizationService.T("Tray_OpenTrashFolder"), null, (s, e) => _onOpenTrashFolder())
+        menu.Items.Add(AppMenu.Separator());
+
+        menu.Items.Add(AppMenu.Item(LocalizationService.T("Tray_Startup"), "zap", () =>
         {
-            ForeColor = DrawColor.FromArgb(147, 197, 253)
-        };
-        trashMenu.DropDownItems.Add(openFolderItem);
-
-        menu.Items.Add(trashMenu);
-        menu.Items.Add(new ToolStripSeparator());
-
-        var startupItem = new ToolStripMenuItem(LocalizationService.T("Tray_Startup"), null, (s, e) =>
-        {
-            bool newVal = !_settingsService.Settings.LaunchOnStartup;
-            _settingsService.Settings.LaunchOnStartup = newVal;
+            settings.LaunchOnStartup = !settings.LaunchOnStartup;
             _settingsService.Save();
-            RebuildContextMenu();
-        })
-        {
-            Checked = _settingsService.Settings.LaunchOnStartup,
-            ForeColor = DrawColor.FromArgb(226, 232, 240)
-        };
-        menu.Items.Add(startupItem);
-
-        var settingsItem = new ToolStripMenuItem(LocalizationService.T("Tray_Settings"), null, (s, e) => _onOpenSettings())
-        {
-            ForeColor = DrawColor.FromArgb(226, 232, 240)
-        };
-        menu.Items.Add(settingsItem);
-
-        var optimizeItem = new ToolStripMenuItem(LocalizationService.T("Tray_OptimizeRam"), null, (s, e) =>
+        }, isChecked: settings.LaunchOnStartup));
+        menu.Items.Add(AppMenu.Item(LocalizationService.T("Tray_Settings"), "settings", Later(_onOpenSettings)));
+        menu.Items.Add(AppMenu.Item(LocalizationService.T("Tray_OptimizeRam"), "cpu", Later(() =>
         {
             var (before, after, freed) = MemoryOptimizer.TrimMemory();
             ShowBalloon("SmartNotes", LocalizationService.T("Tray_RamOptimizedBalloon", after, freed), ToolTipIcon.Info);
-        })
-        {
-            ForeColor = DrawColor.FromArgb(245, 158, 11)
-        };
-        menu.Items.Add(optimizeItem);
-
-        var updateItem = new ToolStripMenuItem(LocalizationService.T("Tray_CheckUpdates", UpdateService.CurrentVersion), null, (s, e) =>
+        })));
+        menu.Items.Add(AppMenu.Item(LocalizationService.T("Tray_CheckUpdates", UpdateService.CurrentVersion), "refresh-cw", Later(() =>
         {
             _ = UpdateService.CheckForUpdatesAsync(isManualCheck: true);
-        })
-        {
-            ForeColor = DrawColor.FromArgb(226, 232, 240)
-        };
-        menu.Items.Add(updateItem);
+        })));
 
-        menu.Items.Add(new ToolStripSeparator());
+        menu.Items.Add(AppMenu.Separator());
+        menu.Items.Add(AppMenu.Item(LocalizationService.T("Tray_Exit"), "x", Later(_onExit), MenuTone.Danger));
 
-        var exitItem = new ToolStripMenuItem(LocalizationService.T("Tray_Exit"), null, (s, e) => _onExit())
-        {
-            ForeColor = DrawColor.FromArgb(248, 113, 113) // Alert Red
-        };
-        menu.Items.Add(exitItem);
+        return menu;
     }
 
     public void UpdateTooltip(string text)
@@ -310,126 +273,7 @@ public class TrayManager : IDisposable
     {
         _notifyIcon.Visible = false;
         _notifyIcon.Dispose();
-        _menu.Dispose();
-        _menuFont.Dispose();
-        _menuBoldFont.Dispose();
+        try { _menuHost?.Close(); } catch { }
         GC.SuppressFinalize(this);
     }
-}
-
-internal class ModernMenuRenderer : ToolStripProfessionalRenderer
-{
-    public ModernMenuRenderer() : base(new ModernColorTable()) { }
-
-    protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e)
-    {
-        if (e.Item.Selected && e.Item.Enabled)
-        {
-            var rc = new DrawRectangle(3, 1, e.Item.Width - 6, e.Item.Height - 2);
-            using var b = new SolidBrush(DrawColor.FromArgb(30, 39, 60)); // Obsidian Dark hover
-            using var borderPen = new Pen(DrawColor.FromArgb(160, 245, 158, 11), 1); // Subtle amber glow border
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            using var path = CreateRoundedRectangle(rc, 4);
-            e.Graphics.FillPath(b, path);
-            e.Graphics.DrawPath(borderPen, path);
-        }
-        else
-        {
-            base.OnRenderMenuItemBackground(e);
-        }
-    }
-
-    protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
-    {
-        if (!e.Item.Enabled)
-        {
-            e.TextColor = DrawColor.FromArgb(100, 116, 139);
-        }
-        else if (e.Item.Selected)
-        {
-            e.TextColor = DrawColor.White;
-        }
-        else if (e.Item.ForeColor != DrawColor.Empty && e.Item.ForeColor != SystemColors.ControlText)
-        {
-            e.TextColor = e.Item.ForeColor;
-        }
-        else
-        {
-            e.TextColor = DrawColor.FromArgb(241, 245, 249);
-        }
-
-        e.TextFont = e.Item.Font;
-        base.OnRenderItemText(e);
-    }
-
-    protected override void OnRenderItemCheck(ToolStripItemImageRenderEventArgs e)
-    {
-        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        var rc = new DrawRectangle(e.ImageRectangle.X + 2, e.ImageRectangle.Y + 2, e.ImageRectangle.Width - 4, e.ImageRectangle.Height - 4);
-
-        // Modern circular checkmark matching SoundSwitcher / MacroMaster
-        using var brush = new SolidBrush(DrawColor.FromArgb(16, 185, 129)); // Neon Emerald
-        e.Graphics.FillEllipse(brush, rc);
-
-        using var pen = new Pen(DrawColor.FromArgb(13, 16, 23), 2);
-        pen.StartCap = LineCap.Round;
-        pen.EndCap = LineCap.Round;
-
-        float cx = rc.X + rc.Width / 2f;
-        float cy = rc.Y + rc.Height / 2f;
-
-        e.Graphics.DrawLines(pen, new DrawPointF[]
-        {
-            new DrawPointF(cx - 3.5f, cy),
-            new DrawPointF(cx - 1f, cy + 2.5f),
-            new DrawPointF(cx + 3.5f, cy - 2.5f)
-        });
-    }
-
-    protected override void OnRenderSeparator(ToolStripSeparatorRenderEventArgs e)
-    {
-        int y = e.Item.Height / 2;
-        using var pen = new Pen(DrawColor.FromArgb(42, 55, 82), 1);
-        e.Graphics.DrawLine(pen, 8, y, e.Item.Width - 8, y);
-    }
-
-    protected override void OnRenderImageMargin(ToolStripRenderEventArgs e)
-    {
-        using var brush = new SolidBrush(DrawColor.FromArgb(13, 16, 23));
-        e.Graphics.FillRectangle(brush, e.AffectedBounds);
-    }
-
-    private static DrawGraphicsPath CreateRoundedRectangle(DrawRectangle rect, int radius)
-    {
-        var path = new DrawGraphicsPath();
-        int diameter = radius * 2;
-        path.AddArc(rect.X, rect.Y, diameter, diameter, 180, 90);
-        path.AddArc(rect.Right - diameter, rect.Y, diameter, diameter, 270, 90);
-        path.AddArc(rect.Right - diameter, rect.Bottom - diameter, diameter, diameter, 0, 90);
-        path.AddArc(rect.X, rect.Bottom - diameter, diameter, diameter, 90, 90);
-        path.CloseFigure();
-        return path;
-    }
-}
-
-internal class ModernColorTable : ProfessionalColorTable
-{
-    public override DrawColor ToolStripDropDownBackground => DrawColor.FromArgb(13, 16, 23);
-    public override DrawColor MenuBorder => DrawColor.FromArgb(42, 55, 82);
-    public override DrawColor MenuItemBorder => DrawColor.Transparent;
-    public override DrawColor MenuItemSelected => DrawColor.FromArgb(30, 39, 60);
-    public override DrawColor MenuStripGradientBegin => DrawColor.FromArgb(13, 16, 23);
-    public override DrawColor MenuStripGradientEnd => DrawColor.FromArgb(13, 16, 23);
-    public override DrawColor MenuItemSelectedGradientBegin => DrawColor.FromArgb(30, 39, 60);
-    public override DrawColor MenuItemSelectedGradientEnd => DrawColor.FromArgb(30, 39, 60);
-    public override DrawColor MenuItemPressedGradientBegin => DrawColor.FromArgb(24, 30, 48);
-    public override DrawColor MenuItemPressedGradientEnd => DrawColor.FromArgb(24, 30, 48);
-    public override DrawColor ImageMarginGradientBegin => DrawColor.FromArgb(13, 16, 23);
-    public override DrawColor ImageMarginGradientMiddle => DrawColor.FromArgb(13, 16, 23);
-    public override DrawColor ImageMarginGradientEnd => DrawColor.FromArgb(13, 16, 23);
-    public override DrawColor CheckBackground => DrawColor.FromArgb(22, 29, 46);
-    public override DrawColor CheckSelectedBackground => DrawColor.FromArgb(30, 39, 60);
-    public override DrawColor CheckPressedBackground => DrawColor.FromArgb(24, 30, 48);
-    public override DrawColor SeparatorDark => DrawColor.FromArgb(42, 55, 82);
-    public override DrawColor SeparatorLight => DrawColor.Transparent;
 }
