@@ -31,6 +31,8 @@ public class NoteItem
     // Appearance & Pinning
     public string ColorKey { get; set; } = "Amber";
     public string SkinKey { get; set; } = "Classic";
+    /// <summary>Great Rune shown by the Elden Ring skin (replaces the colour there). See GreatRune.</summary>
+    public string RuneKey { get; set; } = GreatRune.DefaultKey;
     public NotePinMode PinMode { get; set; } = NotePinMode.DesktopStuck;
     public bool IsLocked { get; set; } = false;
     public bool IsCollapsed { get; set; } = false;
@@ -77,6 +79,7 @@ public class NoteItem
             Height = Height,
             ColorKey = ColorKey,
             SkinKey = SkinKey,
+            RuneKey = RuneKey,
             PinMode = PinMode,
             IsLocked = false,
             IsCollapsed = IsCollapsed,

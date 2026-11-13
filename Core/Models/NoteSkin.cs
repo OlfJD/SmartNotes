@@ -45,6 +45,7 @@ public class NoteSkin
     public const string CyberpunkKey = "Cyberpunk";
     public const string EldenRingKey = "EldenRing";
     public const string MedievalKey = "Medieval";
+    public const string AstralKey = "Astral";
     public const string PaperKey = "Paper";
 
     public const string DefaultFontStack = "Segoe UI, Segoe UI Variable, sans-serif";
@@ -58,6 +59,9 @@ public class NoteSkin
 
     /// <summary>Which painter draws the body of a custom-art skin (see StickyNoteWindow.UpdateSkinGeometry).</summary>
     public string ArtKey { get; init; } = "";
+
+    /// <summary>The colour picker offers the Great Runes instead of colours; the rune sets the note's accents (see GreatRune).</summary>
+    public bool UsesRunes { get; init; } = false;
 
     /// <summary>Shows the ornamental rule under the note title.</summary>
     public bool TitleRule { get; init; } = false;
@@ -335,14 +339,80 @@ public class NoteSkin
             }
         },
 
-        // The game's menu look: murky olive panel, thin pale-gold double frame with notched
-        // corners, a faint glowing ring in the note's colour, drifting motes. Painted by EldenRingArt.
+        // The game's menu look, worn down: murky olive panel with grain, mist, grime and scratches,
+        // a chipped pale-gold double frame with notched corners, the note's Great Rune glowing in
+        // the corner and drifting motes. Painted by EldenRingArt + RuneArt. The colour picker offers
+        // the Great Runes; Recolor below only applies where no rune is known (e.g. Settings preview).
         new NoteSkin
         {
             Key = EldenRingKey,
             LocalizationKey = "Skin_EldenRing",
             CustomArt = true,
+            UsesRunes = true,
             ArtKey = "Elden",
+            TitleRule = true,
+            ContentInset = new Thickness(13, 11, 13, 13),
+            SideResizeInset = 4,
+            SideResizeWidth = 7,
+            CompartmentRadius = 0,
+            CompartmentBorder = 0,
+            ItemRadius = 1,
+            ItemBorder = 1,
+            InputRadius = 1,
+            InputBorder = 1,
+            TitleFonts = new[]
+            {
+                new SkinFontOption("Cinzel", "Cinzel", FontWeights.Bold, 1.05),
+                new SkinFontOption("GrenzeGotisch", "Grenze Gotisch", FontWeights.Bold, 1.4),
+                new SkinFontOption("Metamorphous", "Metamorphous", FontWeights.Normal, 1.05)
+            },
+            TextFonts = new[]
+            {
+                new SkinFontOption("EBGaramond", "EB Garamond", FontWeights.Medium, 1.1),
+                new SkinFontOption("IMFellEnglish", "IM FELL English", FontWeights.Normal, 1.05, "IM Fell English"),
+                new SkinFontOption("Almendra", "Almendra", FontWeights.Normal, 1.08)
+            },
+            MetaFontStack = "./Assets/Fonts/#EB Garamond, Palatino Linotype, Georgia, serif",
+            IconPack = "Elden",
+            AccentTitle = true,
+            TintPanels = true,
+            MutedHex = "#A39A7C",
+            FaintHex = "#7F7861",
+            PlaceholderHex = "#716B56",
+            DangerHex = "#C8503F",
+            AmberHex = "#D9B45A",
+            EmeraldHex = "#9CC283",
+            CyanHex = "#86B9CB",
+            PanelBgHex = "#40000000",
+            PanelBorderHex = "#806F6A52",
+            Recolor = t =>
+            {
+                string glow = Mix(t.PrimaryHex, "#F3D98C", 0.38);
+                return new NoteColorTheme
+                {
+                    Key = t.Key,
+                    Name = t.Name,
+                    PrimaryHex = glow,
+                    GlowHex = glow,
+                    AccentHex = glow,
+                    BgHex = "#1B1C15",
+                    HeaderBgHex = "#2A2B21",
+                    BorderHex = Mix("#8E8665", glow, 0.18),   // frame
+                    TextPrimaryHex = "#DDD6C0",
+                    TextMutedHex = "#9A927A"
+                };
+            }
+        },
+
+        // Dark panel with a pale-gold double frame, notched corners, a glowing ring in the note's
+        // colour and drifting motes (the first Elden Ring look). Kept as the base for an
+        // astrology / starry-sky skin. Painted by AstralArt.
+        new NoteSkin
+        {
+            Key = AstralKey,
+            LocalizationKey = "Skin_Astral",
+            CustomArt = true,
+            ArtKey = "Astral",
             TitleRule = true,
             ContentInset = new Thickness(13, 11, 13, 13),
             SideResizeInset = 4,
