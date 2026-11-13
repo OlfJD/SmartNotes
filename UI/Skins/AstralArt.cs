@@ -10,13 +10,13 @@ using WpfSize = System.Windows.Size;
 namespace SmartNotes.UI.Skins;
 
 /// <summary>
-/// Paints the Elden Ring skin in the visual language of the game's menus: a murky olive panel with
-/// a vignette, a thin pale-gold double frame with notched (concave) corners, a header strip with a
-/// ruled line, a faint glowing ring in the note's colour and a few drifting motes of light.
-/// All shapes are drawn here; no game assets are used.
-/// Coordinates must stay in sync with NoteSkin.ContentInset for the Elden Ring skin.
+/// Paints the Astral skin: a murky dark panel with a vignette, a thin pale-gold double frame with
+/// notched (concave) corners, a header strip with a ruled line, a faint glowing ring in the note's
+/// colour and a few drifting motes of light. This was the first "Elden Ring" look; it is kept as the
+/// starting point for an astrology / starry-sky skin (ideas: constellations, star chart rings).
+/// Coordinates must stay in sync with NoteSkin.ContentInset for the Astral skin.
 /// </summary>
-public static class EldenRingArt
+public static class AstralArt
 {
     private const double M = 5;            // outer margin (room for the glow)
     private const double Notch = 9;        // radius of the concave corners

@@ -184,6 +184,8 @@ public partial class StickyNoteWindow : Window
         if (TxtNoteStyleHeader != null) TxtNoteStyleHeader.Text = LocalizationService.T("ColorPopup_NoteStyle");
         BuildSkinButtons();
         if (TxtQuickNeonThemes != null) TxtQuickNeonThemes.Text = LocalizationService.T("ColorPopup_QuickThemes");
+        if (TxtGreatRunesHeader != null) TxtGreatRunesHeader.Text = LocalizationService.T("ColorPopup_GreatRunes");
+        if (RuneButtonsGrid != null) RuneButtonsGrid.Children.Clear(); // rebuilt with localized tooltips on next open
         if (TxtCustomPaletteCanvas != null) TxtCustomPaletteCanvas.Text = LocalizationService.T("ColorPopup_CustomCanvas");
         if (BtnApplyCustomColor != null) BtnApplyCustomColor.Content = LocalizationService.T("ColorPopup_Apply");
         if (TxtTransparencyDimming != null) TxtTransparencyDimming.Text = LocalizationService.T("ColorPopup_TransparencyDimming");
@@ -252,7 +254,8 @@ public partial class StickyNoteWindow : Window
     {
         _note.ColorKey = colorKey;
         var skin = NoteSkin.Get(_note.SkinKey);
-        var theme = skin.Tint(NoteColorTheme.Get(colorKey));
+        // Rune skins take their accents from the note's Great Rune; the colour is kept for other skins.
+        var theme = skin.UsesRunes ? GreatRune.Get(_note.RuneKey).Theme : skin.Tint(NoteColorTheme.Get(colorKey));
 
         try
         {
@@ -282,6 +285,13 @@ public partial class StickyNoteWindow : Window
     public void ApplySkin(string skinKey)
     {
         _note.SkinKey = NoteSkin.Get(skinKey).Key;
+        ApplyTheme(_note.ColorKey);
+    }
+
+    /// <summary>Sets the note's Great Rune (Elden Ring skin) and repaints.</summary>
+    public void ApplyRune(string runeKey)
+    {
+        _note.RuneKey = GreatRune.Get(runeKey).Key;
         ApplyTheme(_note.ColorKey);
     }
 
@@ -465,7 +475,8 @@ public partial class StickyNoteWindow : Window
             "Cyberpunk" => CyberpunkArt.Build(w, h, _currentTheme, _currentSkin, tag, VisualTreeHelper.GetDpi(this).PixelsPerDip),
             "Scroll" => EldenScrollArt.Build(w, h, _currentTheme, tag),
             "Paper" => PaperStickyArt.Build(w, h, _currentTheme),
-            "Elden" => EldenRingArt.Build(w, h, _currentTheme, tag),
+            "Elden" => EldenRingArt.Build(w, h, _currentTheme, tag, _note.RuneKey, VisualTreeHelper.GetDpi(this).PixelsPerDip),
+            "Astral" => AstralArt.Build(w, h, _currentTheme, tag),
             _ => null
         };
     }
@@ -498,6 +509,86 @@ public partial class StickyNoteWindow : Window
             SkinButtonsGrid.Children.Add(button);
         }
         UpdateSkinButtons();
+    }
+
+    /// <summary>Fills the "Great Runes" picker (rune skins only) with one rendered rune per button.</summary>
+    private void BuildRuneButtons()
+    {
+        if (RuneButtonsGrid == null) return;
+        RuneButtonsGrid.Children.Clear();
+        double dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+        string lang = LocalizationService.Instance.CurrentLanguage;
+        foreach (var rune in GreatRune.All)
+        {
+            var image = new System.Windows.Controls.Image
+            {
+                Source = RuneArt.Render(rune.Key, (int)Math.Round(34 * Math.Max(1, dpi))),
+                Width = 34,
+                Height = 34,
+                Stretch = Stretch.Uniform
+            };
+            RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.HighQuality);
+            var tile = new Border
+            {
+                Width = 36,
+                Height = 36,
+                CornerRadius = new CornerRadius(7),
+                Background = NoteColorTheme.CreateFrozenBrush("#0A0A07"),
+                BorderThickness = new Thickness(1.5),
+                Child = image
+            };
+            var button = new Button
+            {
+                Style = TryFindResource("IconButton") as Style,
+                Margin = new Thickness(2),
+                Tag = rune.Key,
+                ToolTip = rune.DisplayName(lang),
+                Content = tile
+            };
+            button.Click += RuneButton_Click;
+            RuneButtonsGrid.Children.Add(button);
+        }
+        UpdateRuneButtons();
+    }
+
+    private void UpdateRuneButtons()
+    {
+        if (RuneButtonsGrid == null) return;
+        var idle = NoteColorTheme.CreateFrozenBrush("#2A2B21");
+        var selectedBrush = GreatRune.Get(_note.RuneKey).Theme.GlowBrush;
+        foreach (var child in RuneButtonsGrid.Children)
+        {
+            if (child is Button { Content: Border tile } btn)
+            {
+                bool selected = string.Equals(btn.Tag as string, _note.RuneKey, StringComparison.OrdinalIgnoreCase);
+                tile.BorderBrush = selected ? selectedBrush : idle;
+            }
+        }
+    }
+
+    /// <summary>Rune skins pick a Great Rune instead of a colour, so the colour section is swapped out.</summary>
+    private void UpdateColorPopupSections()
+    {
+        if (RuneSection == null || ColorSection == null) return;
+        bool runes = _currentSkin.UsesRunes;
+        RuneSection.Visibility = runes ? Visibility.Visible : Visibility.Collapsed;
+        ColorSection.Visibility = runes ? Visibility.Collapsed : Visibility.Visible;
+        if (runes)
+        {
+            if (RuneButtonsGrid.Children.Count == 0) BuildRuneButtons();
+            else UpdateRuneButtons();
+        }
+    }
+
+    private void RuneButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is string runeKey)
+        {
+            ApplyRune(runeKey);
+            UpdateRuneButtons();
+            ColorPopup.IsOpen = false;
+            RequestSave(isTyping: false);
+        }
     }
 
     private void UpdateSkinButtons()
@@ -885,6 +976,7 @@ public partial class StickyNoteWindow : Window
             Height = Height,
             ColorKey = _note.ColorKey,
             SkinKey = _note.SkinKey,
+            RuneKey = _note.RuneKey,
             PinMode = _note.PinMode,
             ViewMode = _note.ViewMode,
             FontSize = _note.FontSize,
@@ -912,6 +1004,7 @@ public partial class StickyNoteWindow : Window
     {
         // Parse current theme into HSV
         UpdateSkinButtons();
+        UpdateColorPopupSections();
 
         var theme = NoteColorTheme.Get(_note.ColorKey);
         try
@@ -974,6 +1067,7 @@ public partial class StickyNoteWindow : Window
         {
             ApplySkin(skinKey);
             UpdateSkinButtons();
+            UpdateColorPopupSections();
             RequestSave(isTyping: false);
         }
     }
