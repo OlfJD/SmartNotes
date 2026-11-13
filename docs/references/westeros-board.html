@@ -1,0 +1,191 @@
+<title>Westeros Skin Board</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cinzel+Decorative:wght@700&family=Uncial+Antiqua&family=IM+Fell+English+SC&family=IM+Fell+English&family=EB+Garamond:wght@500&family=Inter:wght@400;500;600&display=swap">
+<style>
+  /* Layout: stacked decisions; each a wrapping grid of labelled note mock-ups or house cards. Single dark look: the options are judged against a desktop. */
+  :root {
+    --bg: #101214; --surface: #181b1e; --fg: #e4e1d8; --muted: #9a9890; --line: #2b2f33; --accent: #c9a55a; --warn: #e0a050;
+    --ui: "Inter", "Segoe UI", system-ui, sans-serif; --head: "Cinzel", "Trajan Pro", Georgia, serif;
+    color-scheme: dark;
+  }
+  body { background: var(--bg); color: var(--fg); font-family: var(--ui); font-size: 15px; line-height: 1.5;
+         padding-block: 28px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .wrap { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 44px; }
+  h1 { font-family: var(--head); font-size: 30px; font-weight: 700; margin: 0 0 8px; letter-spacing: .06em; text-wrap: balance; }
+  h2 { font-family: var(--head); font-size: 20px; font-weight: 700; margin: 0 0 4px; letter-spacing: .05em; text-wrap: balance; }
+  p { margin: 0; color: var(--muted); max-width: 70ch; }
+  p + p { margin-top: 8px; }
+  section { display: flex; flex-direction: column; gap: 16px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+  .grid.houses { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+  .opt { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .tag { display: flex; align-items: baseline; gap: 8px; font-weight: 600; flex-wrap: wrap; }
+  .tag b { font-family: var(--head); color: var(--accent); font-size: 17px; }
+  .tag span { color: var(--muted); font-weight: 400; font-size: 13px; }
+  .facts { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: grid; gap: 6px; }
+  .facts p { color: var(--fg); }
+  .facts p.warn { color: var(--warn); }
+  .small { font-size: 13px; }
+
+  /* ---- note mock-ups: fixed colours, they imitate the product ---- */
+  .note { position: relative; height: 330px; overflow: hidden; }
+  .note .txt { position: absolute; left: 24px; right: 24px; top: 20px; font-size: 15px; line-height: 1.38; }
+  .note .hd { height: 30px; margin-bottom: 12px; }
+  .note .ti { font-size: 17px; margin-bottom: 6px; letter-spacing: .06em; }
+  .note svg.deco { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+  /* A: map of Westeros */
+  .n-map { background: radial-gradient(120% 90% at 50% 40%, #e7d6ad 0%, #d6bf8c 60%, #b3955e 100%); color: #2b1d0c;
+           box-shadow: inset 0 0 40px #6b4a1a66, inset 0 0 0 1px #6b4a1a; font-family: "EB Garamond", Georgia, serif; }
+  .n-map .ti { font-family: "Cinzel", serif; font-weight: 700; color: #6e1d14; }
+  .n-map .hd { border-bottom: 1px solid #6b4a1a88; }
+  /* B: iron and brass (opening titles) */
+  .n-iron { background: radial-gradient(110% 80% at 50% 0%, #3a3a38 0%, #23231f 55%, #151513 100%); color: #ddd6c4;
+            box-shadow: inset 0 0 0 2px #8a6a2c, inset 0 0 0 5px #1b1b18, inset 0 0 0 6px #8a6a2c88, inset 0 0 50px #000c; font-family: "EB Garamond", Georgia, serif; }
+  .n-iron .ti { font-family: "Cinzel", serif; font-weight: 700; color: #d9b25e; }
+  .n-iron .hd { border-bottom: 1px solid #8a6a2c99; }
+  /* C: house banner */
+  .n-banner { background: linear-gradient(90deg, #00000030, transparent 12%, transparent 88%, #00000030), var(--house1, #6e1d14);
+              color: #f3ead6; font-family: "EB Garamond", Georgia, serif;
+              clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 90%, 0 100%); }
+  .n-banner .ti { font-family: "Cinzel", serif; font-weight: 700; color: var(--house2, #e2b24a); }
+  .n-banner .hd { border-bottom: 2px solid var(--house2, #e2b24a); }
+  .n-banner::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, #ffffff06 0 2px, transparent 2px 4px), repeating-linear-gradient(90deg, #00000010 0 1px, transparent 1px 3px); }
+  /* D: the Wall / Night's Watch */
+  .n-wall { background: linear-gradient(180deg, #0b0d10 0%, #11151a 70%, #1c2833 100%); color: #d6dde4;
+            box-shadow: inset 0 0 0 1px #3b4a57, inset 0 -30px 40px #9fc3dd22; font-family: "EB Garamond", Georgia, serif; }
+  .n-wall .ti { font-family: "Cinzel", serif; font-weight: 700; color: #a9d0ec; }
+  .n-wall .hd { border-bottom: 1px solid #3b4a57; }
+
+  /* house cards */
+  .shield { width: 100%; max-width: 100%; aspect-ratio: 1.15; display: block; }
+  .words { font-family: "Cinzel", serif; font-size: 13px; letter-spacing: .05em; color: var(--fg); }
+  .sw { display: inline-block; width: 11px; height: 11px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; border: 1px solid #0007; }
+
+  /* font specimens */
+  .spec { background: #1d1e1b; border-radius: 6px; padding: 14px; }
+  .spec .t { font-size: 24px; color: #e2c785; line-height: 1.2; overflow-wrap: anywhere; }
+  .spec .b { font-size: 16px; color: #ddd6c4; margin-top: 6px; line-height: 1.4; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Westeros Note Skin</h1>
+    <p>Reference for a Game of Thrones note skin, built the same way as the Elden Ring one: a surface, house colours in the colour picker instead of plain colours, and a title font. Answer with a letter, the houses you want and a font number, for example <b style="color:var(--fg)">"B, all houses, F1"</b>. Nothing is coded yet.</p>
+  </header>
+
+  <section>
+    <h2>What defines the look</h2>
+    <div class="facts">
+      <p>The show's visual language comes from a few recurring things: the opening titles (a brass and iron clockwork map whose cities rise out of the ground under an astrolabe), the painted parchment map of Westeros, house banners in two strong colours with a sigil and house words, and the Night's Watch black against the ice of the Wall. The title lettering is a wide, chiselled Roman capital in the Trajan family.</p>
+      <p>Colour per house is the natural replacement for the colour picker, the way each Great Rune replaced a colour in the Elden Ring skin.</p>
+      <p class="warn">Same rule as for Elden Ring: the show's logo, title font, artwork and the official sigil drawings belong to HBO and George R. R. Martin. I would draw our own sigils and use Cinzel (free, Trajan-like) instead of the show's lettering. This board shows each house's colours and words; the sigils themselves would be drawn in the next round, once you have picked a direction.</p>
+    </div>
+  </section>
+
+  <section>
+    <div><h2>Surface</h2><p>The same note in four directions. House colours are Lannister in C.</p></div>
+    <div class="grid" id="surfaces">
+      <div class="opt"><div class="tag"><b>A</b>Map of Westeros <span>aged parchment, faint coastlines, compass rose, ink</span></div>
+        <div class="note n-map">
+          <svg class="deco" viewBox="0 0 300 330" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M210 330 C200 300 230 285 222 262 C214 240 238 226 232 205 C226 186 250 178 246 160 C242 140 262 128 258 110" fill="none" stroke="#6b4a1a" stroke-opacity=".28" stroke-width="1.2"/>
+            <path d="M216 330 C206 300 236 285 228 262 C220 240 244 226 238 205 C232 186 256 178 252 160 C248 140 268 128 264 110" fill="none" stroke="#6b4a1a" stroke-opacity=".14" stroke-width="1"/>
+            <g transform="translate(246 284)" stroke="#6b4a1a" stroke-opacity=".55" fill="none">
+              <circle r="22" stroke-width="1"/><circle r="17" stroke-width=".6"/>
+              <path d="M0 -30 L4 -4 L0 0 L-4 -4 Z M0 30 L4 4 L0 0 L-4 4 Z M-30 0 L-4 -4 L0 0 L-4 4 Z M30 0 L4 -4 L0 0 L4 4 Z" fill="#6b4a1a" fill-opacity=".35" stroke-width=".8"/>
+              <text y="-33" text-anchor="middle" font-family="Cinzel" font-size="8" fill="#6b4a1a" fill-opacity=".7" stroke="none">N</text>
+            </g>
+          </svg>
+          <div class="txt"><div class="hd"></div><div class="ti">THE KINGSROAD</div>Ride north from King's Landing. Change horses at the Inn at the Crossroads.<br><br>Ravens to Winterfell and the Eyrie.<br><br>Do not trust the master of coin.</div>
+        </div></div>
+
+      <div class="opt"><div class="tag"><b>B</b>Iron and brass <span>the opening titles: dark iron, riveted brass, astrolabe ring</span></div>
+        <div class="note n-iron">
+          <svg class="deco" viewBox="0 0 300 330" preserveAspectRatio="none" aria-hidden="true">
+            <g fill="#8a6a2c">
+              <circle cx="12" cy="12" r="2.4"/><circle cx="288" cy="12" r="2.4"/><circle cx="12" cy="318" r="2.4"/><circle cx="288" cy="318" r="2.4"/>
+              <circle cx="150" cy="12" r="2"/><circle cx="150" cy="318" r="2"/>
+            </g>
+            <g transform="translate(236 262)" fill="none" stroke="#c9a55a">
+              <circle r="44" stroke-opacity=".35" stroke-width="1.4"/>
+              <circle r="38" stroke-opacity=".22" stroke-width="5" stroke-dasharray="2 4"/>
+              <ellipse rx="44" ry="15" stroke-opacity=".3" transform="rotate(-24)"/>
+              <ellipse rx="44" ry="15" stroke-opacity=".3" transform="rotate(36)"/>
+              <circle r="7" fill="#c9a55a" fill-opacity=".35" stroke-opacity=".5"/>
+            </g>
+          </svg>
+          <div class="txt"><div class="hd"></div><div class="ti">THE KINGSROAD</div>Ride north from King's Landing. Change horses at the Inn at the Crossroads.<br><br>Ravens to Winterfell and the Eyrie.<br><br>Do not trust the master of coin.</div>
+        </div></div>
+
+      <div class="opt"><div class="tag"><b>C</b>House banner <span>cloth in the house colours, swallowtail cut, sigil space</span></div>
+        <div class="note n-banner" style="--house1:#7a1a14;--house2:#e2b24a">
+          <svg class="deco" viewBox="0 0 300 330" preserveAspectRatio="none" aria-hidden="true">
+            <circle cx="236" cy="246" r="36" fill="none" stroke="#e2b24a" stroke-opacity=".5" stroke-width="2"/>
+            <text x="236" y="252" text-anchor="middle" font-family="Cinzel" font-size="11" fill="#e2b24a" fill-opacity=".7">SIGIL</text>
+          </svg>
+          <div class="txt"><div class="hd"></div><div class="ti">THE KINGSROAD</div>Ride north from King's Landing. Change horses at the Inn at the Crossroads.<br><br>Ravens to Winterfell and the Eyrie.<br><br>Do not trust the master of coin.</div>
+        </div></div>
+
+      <div class="opt"><div class="tag"><b>D</b>The Wall <span>Night's Watch black, frost along the bottom edge</span></div>
+        <div class="note n-wall">
+          <svg class="deco" viewBox="0 0 300 330" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0 330 L0 300 L14 306 L22 296 L36 304 L48 292 L60 302 L76 294 L90 306 L104 296 L120 303 L134 291 L150 302 L166 295 L180 305 L196 293 L210 303 L226 296 L240 306 L256 294 L270 303 L286 297 L300 304 L300 330 Z" fill="#cfe6f5" fill-opacity=".14"/>
+            <path d="M0 300 L14 306 L22 296 L36 304 L48 292 L60 302 L76 294 L90 306 L104 296 L120 303 L134 291 L150 302 L166 295 L180 305 L196 293 L210 303 L226 296 L240 306 L256 294 L270 303 L286 297 L300 304" fill="none" stroke="#cfe6f5" stroke-opacity=".45" stroke-width="1"/>
+          </svg>
+          <div class="txt"><div class="hd"></div><div class="ti">THE KINGSROAD</div>Ride north from King's Landing. Change horses at the Inn at the Crossroads.<br><br>Ravens to Winterfell and the Eyrie.<br><br>Do not trust the master of coin.</div>
+        </div></div>
+    </div>
+  </section>
+
+  <section>
+    <div><h2>Houses for the colour picker</h2><p>Each would set the note's accent colours (and in direction C the whole banner). Pick any set; I'd suggest the nine great houses.</p></div>
+    <div class="grid houses" id="houses"></div>
+  </section>
+
+  <section>
+    <div><h2>Title font</h2><p>All free and could be bundled with the app. Same sample, only the face differs.</p></div>
+    <div class="grid">
+      <div class="opt"><div class="tag"><b>F1</b>Cinzel <span>closest to the show's Trajan-style capitals</span></div>
+        <div class="spec"><div class="t" style="font-family:'Cinzel',serif;font-weight:700">WINTER IS COMING</div><div class="b" style="font-family:'EB Garamond',serif">Ravens to Winterfell and the Eyrie.</div></div></div>
+      <div class="opt"><div class="tag"><b>F2</b>Cinzel Decorative <span>same, with flourished capitals</span></div>
+        <div class="spec"><div class="t" style="font-family:'Cinzel Decorative',serif;font-weight:700">WINTER IS COMING</div><div class="b" style="font-family:'EB Garamond',serif">Ravens to Winterfell and the Eyrie.</div></div></div>
+      <div class="opt"><div class="tag"><b>F3</b>IM Fell English SC <span>old printed book, softer</span></div>
+        <div class="spec"><div class="t" style="font-family:'IM Fell English SC',serif">Winter Is Coming</div><div class="b" style="font-family:'IM Fell English',serif">Ravens to Winterfell and the Eyrie.</div></div></div>
+      <div class="opt"><div class="tag"><b>F4</b>Uncial Antiqua <span>older, more northern and rough</span></div>
+        <div class="spec"><div class="t" style="font-family:'Uncial Antiqua',serif">Winter Is Coming</div><div class="b" style="font-family:'EB Garamond',serif">Ravens to Winterfell and the Eyrie.</div></div></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  // [label, house, field colour, charge colour, sigil (described), words]
+  var HOUSES = [
+    ["H1", "Stark", "#d9d9d4", "#5b5f63", "grey direwolf on white", "Winter Is Coming"],
+    ["H2", "Lannister", "#8f1d16", "#e2b24a", "golden lion on crimson", "Hear Me Roar!"],
+    ["H3", "Targaryen", "#141414", "#b3221a", "red three-headed dragon on black", "Fire and Blood"],
+    ["H4", "Baratheon", "#e0b13a", "#1b1b1b", "black crowned stag on gold", "Ours Is the Fury"],
+    ["H5", "Greyjoy", "#141414", "#d6a93c", "golden kraken on black", "We Do Not Sow"],
+    ["H6", "Tyrell", "#3f7a3a", "#e3c04a", "golden rose on green", "Growing Strong"],
+    ["H7", "Martell", "#e0782a", "#a8231c", "red sun pierced by a golden spear on orange", "Unbowed, Unbent, Unbroken"],
+    ["H8", "Arryn", "#6ea7d8", "#f2f2ee", "white moon and falcon on sky blue", "As High as Honor"],
+    ["H9", "Tully", "#2f5f9e", "#b8231c", "silver trout on blue and red", "Family, Duty, Honor"]
+  ];
+  var host = document.getElementById("houses");
+  HOUSES.forEach(function (h) {
+    var card = document.createElement("div"); card.className = "opt";
+    card.innerHTML =
+      '<div class="tag"><b>' + h[0] + "</b>" + h[1] + "</div>" +
+      '<svg class="shield" viewBox="0 0 115 100" aria-hidden="true">' +
+        '<path d="M30 6 H85 V46 C85 72 70 86 57.5 94 C45 86 30 72 30 46 Z" fill="' + h[2] + '" stroke="#00000080" stroke-width="1.5"/>' +
+        '<path d="M30 6 H85 V20 H30 Z" fill="#ffffff10"/>' +
+        '<circle cx="57.5" cy="46" r="17" fill="none" stroke="' + h[3] + '" stroke-width="3" stroke-dasharray="3 3"/>' +
+        '<text x="57.5" y="50" text-anchor="middle" font-family="Cinzel" font-size="9" fill="' + h[3] + '">SIGIL</text>' +
+      "</svg>" +
+      '<div class="words">' + h[5] + "</div>" +
+      '<p class="small"><span class="sw" style="background:' + h[2] + '"></span><span class="sw" style="background:' + h[3] + '"></span>' + h[4] + "</p>";
+    host.appendChild(card);
+  });
+})();
+</script>

@@ -1,0 +1,512 @@
+<title>Great Runes Board</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=EB+Garamond:wght@500&family=Inter:wght@400;500;600&display=swap">
+<style>
+  /* Layout: stacked sections; rune reference grid, then two lettered/numbered decisions on note mock-ups. Deliberately dark-only: the runes are glows. */
+  :root {
+    --bg: #0f0f0b; --surface: #17170f; --fg: #e6e0cc; --muted: #9c957d; --line: #2e2c20; --accent: #d9b45a; --warn: #e0a050;
+    --ui: "Inter", "Segoe UI", system-ui, sans-serif; --head: "Cinzel", "Palatino Linotype", Georgia, serif;
+    color-scheme: dark;
+  }
+  body { background: var(--bg); color: var(--fg); font-family: var(--ui); font-size: 15px; line-height: 1.5;
+         padding-block: 28px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .wrap { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 44px; }
+  h1 { font-family: var(--head); font-size: 30px; margin: 0 0 8px; letter-spacing: .03em; text-wrap: balance; }
+  h2 { font-family: var(--head); font-size: 20px; margin: 0 0 4px; letter-spacing: .03em; text-wrap: balance; }
+  p { margin: 0; color: var(--muted); max-width: 70ch; }
+  p + p { margin-top: 8px; }
+  a { color: var(--accent); }
+  section { display: flex; flex-direction: column; gap: 16px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+  .grid.notes { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .opt { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .tag { display: flex; align-items: baseline; gap: 8px; font-weight: 600; flex-wrap: wrap; }
+  .tag b { font-family: var(--head); color: var(--accent); font-size: 17px; }
+  .tag span { color: var(--muted); font-weight: 400; font-size: 13px; }
+  .now, .new { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 0 5px; }
+  .new { color: var(--warn); border-color: var(--warn); }
+  .tile { background: #0a0a07; border-radius: 6px; aspect-ratio: 1; width: 100%; max-width: 100%; display: block; }
+  dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 13px; }
+  dt { color: var(--muted); }
+  dd { margin: 0; }
+  .chip { display: inline-block; width: 11px; height: 11px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; border: 1px solid #0006; }
+  .facts { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: grid; gap: 6px; }
+  .facts p { color: var(--fg); }
+  .facts p.warn { color: var(--warn); }
+
+  /* Note mock-up: copies the app's Elden Ring note, so its colours are fixed. */
+  .note { position: relative; height: 360px; border-radius: 2px; overflow: hidden;
+          background: radial-gradient(120% 70% at 50% 0%, #2c2d22 0%, #1b1c15 45%, #0f100b 100%);
+          box-shadow: inset 0 0 0 1px #8e8665, inset 0 0 0 4px #1b1c15, inset 0 0 0 5px #8e866566, inset 0 0 60px #000a; }
+  .note canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .note .txt { position: absolute; left: 22px; right: 22px; top: 16px; font-family: "EB Garamond", Georgia, serif; color: #ddd6c0; font-size: 15px; line-height: 1.38; }
+  .note .hd { height: 34px; border-bottom: 1px solid #8e866599; margin-bottom: 12px; }
+  .note .ti { font-family: var(--head); font-weight: 700; font-size: 16px; margin-bottom: 6px; color: var(--rc, #f0b45a); }
+
+  .picker { display: flex; gap: 8px; flex-wrap: wrap; background: #1b1d24; border-radius: 10px; padding: 10px; width: fit-content; max-width: 100%; }
+  .picker canvas { width: 30px; height: 30px; border-radius: 7px; background: #0a0a07; box-shadow: 0 0 0 1px #ffffff1f; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>The Great Runes</h1>
+    <p>Reference for the Elden Ring note skin, round 2. Answer with a style letter, a placement number and which runes go in the colour picker, for example <b style="color:var(--fg)">"A, 1, all nine"</b>. Nothing is coded in the app yet.</p>
+  </header>
+
+  <section>
+    <h2>What changed and what I found</h2>
+    <div class="facts">
+      <p>Round 5: Mohg is thick and clotted near its four tips and thin through the middle of each side. Rennala is heavy at the upper left (with more dust spilling inward) and at the lower right, thin everywhere else.</p>
+      <p>Round 4: Morgott is thick with star flares where the line crosses the ring and thin on the sides. Mohg's line swells and thins, and its spindle is a solid blade. Rennala's dust spills inward at the upper left, with a small star and a gap on the line. Godrick has small glints where its circles cross the ring, and Rykard's orange half has a few flames.</p>
+      <p>Round 3: Malenia's petal clusters are toned down, and Radahn has soft flames licking up its right side with ash drifting inside. Decided: the app uses these drawn runes, not the game images.</p>
+      <p>Round 2: Malenia got clusters of rot petals in the four places you marked and thin wisps between them. Radahn is a round, burning ring (the old one had a seven-lobed wobble that read as a polygon). Godrick is rebuilt as a triquetra: three circles that cross each other on the ring and again inside it, with the arcs poking out past the ring. The title-screen rune is added as R9.</p>
+      <p class="warn">About using the images you found: a transparent background only means someone cut them out. They are still FromSoftware's game art, and the title-screen rune is the official Elden Ring logo. Putting them in this public repository or its releases would be redistributing that art, so I recommend against it.</p>
+      <p>A middle way, if you want the real art on your own machine: the app could look for rune PNGs in a local folder (for example in AppData) and use them instead of the drawn runes when they exist. The repository would ship only the drawn versions, and you would drop your images in yourself.</p>
+      <p>The same caution applies more mildly to R9 drawn in code: it is still a recognisable copy of the game's logo. Your call whether it ships.</p>
+      <p>Shapes are taken from <a href="https://eldenring.wiki.gg/wiki/Great_Runes" target="_blank" rel="noopener">eldenring.wiki.gg, Great Runes</a> and the images you sent.</p>
+    </div>
+  </section>
+
+  <section>
+    <div><h2>The nine runes, redrawn</h2><p>My code versions, in the ember style (A below). In the skin, picking a rune would set the rune drawn on the note and the colour of its title, frame and glow.</p></div>
+    <div class="grid" id="runes"></div>
+  </section>
+
+  <section>
+    <div><h2>Colour picker at real size</h2><p>In the Elden Ring skin, the note's colour popup would show these 30 px rune buttons instead of colour dots. The custom colour field would be hidden in this skin.</p></div>
+    <div class="picker" id="picker"></div>
+  </section>
+
+  <section>
+    <div><h2>Rune style</h2><p>Same rune (Morgott) on the same note, only the drawing style differs.</p></div>
+    <div class="grid notes" id="styles"></div>
+  </section>
+
+  <section>
+    <div><h2>Rune placement</h2><p>Ember style, Malenia's rune, only the size and position differ.</p></div>
+    <div class="grid notes" id="places"></div>
+  </section>
+</div>
+
+<script>
+(function () {
+  // ---- geometry: unit = the rune's main ring radius, y points down; every point is [x, y, weight] ----
+  function arc(cx, cy, r, a0, a1, mod, wfn) {
+    var pts = [], n = Math.max(8, Math.ceil(Math.abs(a1 - a0) / 1.5));
+    for (var i = 0; i <= n; i++) {
+      var d = a0 + (a1 - a0) * i / n, a = d * Math.PI / 180;
+      var rr = r * (mod ? mod(a) : 1);
+      pts.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr, wfn ? wfn(d) : 1]);
+    }
+    return pts;
+  }
+  function line(x0, y0, x1, y1, wfn) {
+    var pts = [], n = 60;
+    for (var i = 0; i <= n; i++) { var t = i / n; pts.push([x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, wfn ? wfn(t, y0 + (y1 - y0) * t) : 1]); }
+    return pts;
+  }
+  function curve(p0, p1, p2, w) {
+    var pts = [];
+    for (var i = 0; i <= 18; i++) { var u = i / 18, v = 1 - u; pts.push([v * v * p0[0] + 2 * v * u * p1[0] + u * u * p2[0], v * v * p0[1] + 2 * v * u * p1[1] + u * u * p2[1], w == null ? 1 : w]); }
+    return pts;
+  }
+  // 1 inside the angular band [a, b] (degrees), fading to 0 over `soft` degrees outside it
+  function band(d, a, b, soft) {
+    d = ((d % 360) + 360) % 360;
+    var mid = (a + b) / 2, half = (b - a) / 2;
+    var diff = Math.abs(((d - mid + 540) % 360) - 180);
+    return diff <= half ? 1 : Math.max(0, 1 - (diff - half) / soft);
+  }
+  // split a path wherever its weight drops to ~0
+  function runs(pts) {
+    var out = [], cur = [];
+    pts.forEach(function (q) { if (q[2] > 0.03) cur.push(q); else { if (cur.length > 1) out.push(cur); cur = []; } });
+    if (cur.length > 1) out.push(cur);
+    return out;
+  }
+  // a full circle whose weight fades once it leaves radius `fadeFrom` (relative to the rune centre)
+  function clippedCircle(cx, cy, r, fadeFrom, fadeLen) {
+    var pts = arc(cx, cy, r, 0, 360);
+    pts.forEach(function (q) { var dd = Math.hypot(q[0], q[1]); q[2] = dd <= fadeFrom ? 1 : Math.max(0, 1 - (dd - fadeFrom) / fadeLen); });
+    // start the list at a point of weight 0 so a run does not wrap around the seam
+    var k = 0; for (var i = 0; i < pts.length; i++) if (pts[i][2] < 0.03) { k = i; break; }
+    return pts.slice(k).concat(pts.slice(1, k + 1));
+  }
+  // smooth, uneven 0..1 variation along an angle (degrees), for line depth that swells and thins
+  function vary(d, s) { return 0.5 + 0.27 * Math.sin(d * 0.085 + s) + 0.23 * Math.sin(d * 0.21 + s * 2.3); }
+  var wobble = function (a) { return 1 + 0.018 * Math.sin(a * 2 + 1.3) + 0.012 * Math.sin(a * 3 + 0.4); };
+
+  var RUNES = [
+    { id: "R1", name: "Godrick", col: "#e9d356", hot: "#fffbe0", glow: "#b9b23a", accent: "#a9e06a",
+      stars: [[0, 1, 0.35], [-0.866, -0.5, 0.35], [0.866, -0.5, 0.35]],
+      shape: "Triquetra: three circles that cross each other on the ring and again inside it, so the arcs poke out past the ring in three places. Yellow-gold with a green tinge, fine filaments.",
+      paths: function () {
+        var p = [{ pts: arc(0, 0, 1, 0, 360, wobble), w: 0.6, spread: 0.7, streak: true, filament: true }];
+        [30, 150, 270].forEach(function (deg) {
+          var a = deg * Math.PI / 180;
+          runs(clippedCircle(Math.cos(a) * 0.4, Math.sin(a) * 0.4, 0.872, 1.0, 0.24)).forEach(function (r) { p.push({ pts: r, w: 0.5, spread: 0.6, streak: true, filament: true, accent: true }); });
+        });
+        return p;
+      } },
+    { id: "R2", name: "Radahn", col: "#f2683a", hot: "#ffd35a", glow: "#c63c1c", dust: true,
+      shape: "Round ring with a vertical line through its left side, reaching well past the ring at both ends. Small flames lick outward and upward on the right, yellow streaks run through the ring, ash drifts inside.",
+      paths: function () {
+        return [
+          { pts: arc(0, 0, 1, 0, 360, wobble, function (d) { return 0.85 + 0.9 * band(d, -70, 95, 35); }), streak: true,
+            flames: function (d) { return Math.max(band(d, -75, 15, 25), 0.55 * band(d, 25, 70, 15), 0.35 * band(d, 165, 200, 15)); } },
+          { pts: line(-0.5, -1.42, -0.5, 1.42), w: 0.7, spread: 0.6, streak: true }
+        ];
+      } },
+    { id: "R3", name: "Rykard", col: "#f0923a", hot: "#ffd9a0", glow: "#7f78c4", smoke: "#aaa6dc",
+      shape: "Ring with a line through its left side. The left half billows like smoke (lavender-grey), the right half burns orange with a few small flames.",
+      paths: function () {
+        return [
+          { pts: arc(0, 0, 1, -90, 90), flames: function (d) { return 0.6 * band(d, -60, 40, 20); } },
+          { pts: arc(0, 0, 1, 90, 270, function (a) { return 1 + 0.09 * Math.sin(a * 10); }), smoke: true, w: 1.3 },
+          { pts: line(-0.6, -1.25, -0.6, 1.3), w: 0.9 }
+        ];
+      } },
+    { id: "R4", name: "Morgott", col: "#f4a23a", hot: "#ffe8b0", glow: "#d07a1c",
+      stars: [[0, -1, 1], [0, 1, 1]],
+      shape: "A ring split by a vertical line through the centre, reaching past the ring top and bottom. Thick and blazing where the line crosses the ring, with a four-pointed star flare at both crossings; thin and wispy on the sides. Amber gold.",
+      paths: function () {
+        var ringW = function (d) { return 0.35 + 1.25 * Math.max(band(d, 252, 288, 38), band(d, 72, 108, 38)); };
+        var lineW = function (t, y) { return 0.45 + 0.9 * Math.max(0, 1 - Math.abs(y + 1) / 0.35, 1 - Math.abs(y - 1) / 0.35); };
+        return [
+          { pts: arc(0, 0.04, 1, 0, 360, wobble, ringW), thick: true, streak: true, flames: function (d) { return 0.35 * band(d, 150, 220, 20) + 0.3 * band(d, -40, 30, 20); } },
+          { pts: line(0, -1.55, 0, 1.3, lineW), w: 0.8, thick: true, streak: true }
+        ];
+      } },
+    { id: "R5", name: "Mohg", col: "#e01a30", hot: "#ffb0bc", glow: "#9a0a1a", petal: "#ff3c50", petal2: "#ffc4cc", wisp: "#c8142a",
+      shape: "Two crescents facing each other, open at top and bottom, their tips hooking outward like horns. A blade-shaped spindle in the middle, swollen in its centre. The line swells and thins unevenly, with pale veins. Blood red.",
+      paths: function () {
+        var p = [];
+        [1, -1].forEach(function (s) {
+          // thick, clotted stretches near the four tips; thin in the middle of each side
+          var side = arc(0, 0, 1, s > 0 ? 105 : -75, s > 0 ? 255 : 75, wobble, function (d) {
+            // grows smoothly from the middle of the side (180° left, 0° right) towards the gaps at top and bottom
+            var mid = s > 0 ? 180 : 0;
+            var off = Math.abs(((d - mid + 540) % 360) - 180);          // 0 at the middle, ~75 at the tips
+            var t = Math.min(1, off / 62), clot = t * t * (3 - 2 * t);   // smoothstep
+            return 0.5 + 1.3 * clot * (0.75 + 0.5 * vary(d, s > 0 ? 1.7 : 4.1));
+          });
+          p.push({ pts: side, petals: true, streak: true });
+          var top = side[s > 0 ? side.length - 1 : 0], bot = side[s > 0 ? 0 : side.length - 1];
+          p.push({ pts: curve(top, [top[0] * 0.75, top[1] - 0.2], [top[0] * 1.45, top[1] - 0.24], 0.8), w: 0.9, thick: true });
+          p.push({ pts: curve(bot, [bot[0] * 0.75, bot[1] + 0.2], [bot[0] * 1.45, bot[1] + 0.24], 0.8), w: 0.9, thick: true });
+        });
+        // blade-shaped spindle: one line, fat in the middle and tapering to points
+        p.push({ pts: line(0, -0.68, 0, 0.68, function (t, y) { return 0.25 + 1.9 * Math.pow(Math.cos(y / 0.68 * Math.PI / 2), 1.5); }), w: 1, thick: true, streak: true });
+        return p;
+      } },
+    { id: "R6", name: "Malenia", col: "#f39c86", hot: "#ffe2a8", glow: "#e0604c", petal: "#e8452e", petal2: "#f7a898", wisp: "#f0cf8e",
+      shape: "Ring with a line through its right side. Dense clusters of scarlet rot petals at the upper left, right, bottom and on the lower half of the line; thin pale-gold wisps between them. The line rises far above the ring as a thin bright streak.",
+      paths: function () {
+        var ringW = function (d) { return 0.3 + 1.5 * Math.max(band(d, 200, 278, 16), band(d, -24, 14, 14), band(d, 42, 108, 16)); };
+        var lineW = function (t, y) { return y > -0.32 ? 1.6 * (y < 0.48 ? 1 : Math.max(0, 1 - (y - 0.48) / 0.14)) : 0.12; };
+        return [
+          { pts: arc(0, 0, 1, 0, 360, wobble, ringW), petals: true },
+          { pts: line(0.4, -1.32, 0.4, 0.64, lineW), petals: true, w: 0.8 },
+          { pts: line(0.4, -1.32, 0.4, -0.25), core: true, w: 0 }
+        ];
+      } },
+    { id: "R7", name: "Unborn (Rennala)", col: "#efb53e", hot: "#fff3c4", glow: "#c08a14",
+      stars: [[0.3, -0.282, 0.55]], scale: 1.25,
+      shape: "A smaller ring with a line right of centre, rising high above the ring and ending inside it. Fine golden dust that spills inward at the upper left and gathers at the bottom; thin on the right. A small star where the line meets the ring, a gap low on the line.",
+      paths: function () {
+        var cyR = 0.35, rR = 0.7;
+        var ringW = function (d) { return 0.2 + 1.5 * Math.max(band(d, 205, 268, 16), 0.9 * band(d, 58, 90, 10)); };
+        var lineW = function (t, y) {
+          if (y > 0.36 && y < 0.46) return 0;          // gap
+          return 0.5 + 0.8 * Math.max(0, 1 - Math.abs(y + 1.0) / 0.25) + 0.4 * Math.max(0, 1 - Math.abs(y + 0.28) / 0.2);
+        };
+        return [
+          { pts: arc(0, cyR, rR, 0, 360, wobble, ringW), thick: true, spill: function (d) { return Math.max(1.6 * band(d, 205, 268, 16), 0.9 * band(d, 58, 90, 10)); } },
+          { pts: line(0.3, -1.15, 0.3, 0.86, lineW), w: 0.8, streak: true }
+        ];
+      } },
+    { id: "R8", name: "Miquella", col: "#ecc8c0", hot: "#ffffff", glow: "#8a2a34", broken: true,
+      shape: "Broken: only a fragment of the ring's left side still stands; the rest lies shattered in a pile at the bottom. Pale pink-gold over dark red.",
+      paths: function () { return [{ pts: arc(0, 0.15, 0.95, 120, 205) }, { pts: arc(0, 0.15, 0.95, 70, 112), w: 0.7 }]; } },
+    { id: "R9", name: "Elden Ring (title screen)", col: "#e8902c", hot: "#ffd88a", glow: "#b8561a", isNew: true, tall: true,
+      shape: "The full emblem: a spear-like line with a drooping crossbar on top, a ring with three overlapping circles inside, a wide bow below with a crosshatch between, and a spike at the bottom. Burnt orange.",
+      paths: function () {
+        var p = [];
+        p.push({ pts: line(0, -1.9, 0, 2.32, function (t, y) { return y > 2.05 ? Math.max(0.15, 1 - (y - 2.05) / 0.3) : 1; }), w: 0.9, streak: true });
+        // drooping crossbar
+        var bar = []; for (var i = 0; i <= 40; i++) { var x = -0.78 + 1.56 * i / 40; bar.push([x, -1.8 + 0.2 * Math.pow(x / 0.78, 2), 1]); }
+        p.push({ pts: bar, w: 0.9, streak: true });
+        p.push({ pts: arc(0, 0, 1, 0, 360, wobble), streak: true });
+        [-90, 30, 150].forEach(function (deg) { var a = deg * Math.PI / 180; p.push({ pts: arc(Math.cos(a) * 0.34, Math.sin(a) * 0.34 + 0.02, 0.6, 0, 360), w: 0.8 }); });
+        // wide bow underneath, lowest in the middle
+        var r = 4.1, cy = 1.86 - r, bow = [];
+        for (var j = 0; j <= 80; j++) { var bx = -1.95 + 3.9 * j / 80; bow.push([bx, cy + Math.sqrt(r * r - bx * bx), 1 - 0.5 * Math.pow(Math.abs(bx) / 1.95, 3)]); }
+        p.push({ pts: bow, w: 0.9, streak: true });
+        p.push({ hatch: true, pts: [] });
+        return p;
+      } }
+  ];
+
+  // ---- seeded random so every redraw looks the same ----
+  function rng(seed) { var s = seed >>> 0; return function () { s = (s + 0x6D2B79F5) >>> 0; var t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  function rgba(hex, a) { var n = parseInt(hex.slice(1), 16); return "rgba(" + (n >> 16) + "," + ((n >> 8) & 255) + "," + (n & 255) + "," + Math.max(0, Math.min(1, a)) + ")"; }
+
+  function strokePath(ctx, pts, cx, cy, R) {
+    ctx.beginPath();
+    pts.forEach(function (q, i) { var x = cx + q[0] * R, y = cy + q[1] * R; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+    ctx.stroke();
+  }
+
+  // style: "A" embers, "B" worn line, "C" worn line + embers
+  function drawRune(ctx, rune, cx, cy, R, style, alpha, seed) {
+    var rand = rng(seed || 7);
+    alpha = alpha == null ? 1 : alpha;
+    var paths = rune.paths();
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.lineCap = "round"; ctx.lineJoin = "round";
+    var k = R / 60;
+
+    // soft glow under everything
+    paths.forEach(function (p) {
+      if (!p.pts.length || p.core) return;
+      [[26, 0.025], [17, 0.03], [10, 0.04], [5, 0.07]].forEach(function (g) {
+        ctx.strokeStyle = rgba(rune.glow, g[1] * alpha); ctx.lineWidth = g[0] * k; strokePath(ctx, p.pts, cx, cy, R);
+      });
+    });
+
+    // crosshatch (title-screen emblem): diagonal lattice between the ring and the bow
+    paths.forEach(function (p) {
+      if (!p.hatch) return;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(cx - 1.25 * R, cy + 0.15 * R); ctx.lineTo(cx + 1.25 * R, cy + 0.15 * R); ctx.lineTo(cx + 0.35 * R, cy + 1.75 * R); ctx.lineTo(cx - 0.35 * R, cy + 1.75 * R); ctx.closePath();
+      ctx.clip();
+      ctx.lineWidth = 0.7 * Math.max(0.8, k);
+      for (var o = -3; o <= 3; o += 0.19) {
+        ctx.strokeStyle = rgba(rune.col, (0.2 + rand() * 0.22) * alpha);
+        ctx.beginPath(); ctx.moveTo(cx + (o - 2) * R, cy - 1 * R); ctx.lineTo(cx + (o + 2) * R, cy + 3 * R); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx + (o + 2) * R, cy - 1 * R); ctx.lineTo(cx + (o - 2) * R, cy + 3 * R); ctx.stroke();
+      }
+      ctx.restore();
+    });
+
+    // bright thin core (Malenia's streak)
+    paths.forEach(function (p) {
+      if (!p.core) return;
+      ctx.strokeStyle = rgba(rune.glow, 0.25 * alpha); ctx.lineWidth = 6 * k; strokePath(ctx, p.pts, cx, cy, R);
+      ctx.strokeStyle = rgba(rune.hot, 0.75 * alpha); ctx.lineWidth = 1.3 * Math.max(0.7, k); strokePath(ctx, p.pts, cx, cy, R);
+    });
+
+    if (style === "B" || style === "C") {
+      var la = style === "C" ? 0.45 : 0.85;
+      paths.forEach(function (p) {
+        if (p.core || p.hatch) return;
+        var i = 0;
+        while (i < p.pts.length - 1) {
+          var len = 2 + Math.floor(rand() * 6), gap = rand() < 0.14;
+          var end = Math.min(p.pts.length - 1, i + len);
+          if (!gap) {
+            ctx.beginPath();
+            for (var j = i; j <= end; j++) {
+              var x = cx + p.pts[j][0] * R + (rand() - 0.5) * 0.8, y = cy + p.pts[j][1] * R + (rand() - 0.5) * 0.8;
+              j === i ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+            }
+            ctx.strokeStyle = rgba(rune.col, la * alpha * (0.45 + rand() * 0.55) * Math.min(1, p.pts[i][2]));
+            ctx.lineWidth = 1.5 * k * (p.w || 1);
+            ctx.stroke();
+          }
+          i = end;
+        }
+      });
+    }
+
+    if (style === "A" || style === "C") {
+      var density = style === "C" ? 0.6 : 1;
+      paths.forEach(function (p) {
+        if (p.core || p.hatch || !p.w && p.w !== undefined) return;
+        for (var i = 0; i < p.pts.length - 1; i++) {
+          var a = p.pts[i], b = p.pts[i + 1];
+          var wgt = (a[2] + b[2]) / 2;
+          if (wgt <= 0.03) continue;
+          var seg = Math.hypot(b[0] - a[0], b[1] - a[1]) * R;
+          var n = Math.ceil(seg * 2.2 * density * (p.w || 1) * (p.smoke ? 1.6 : 1) * wgt);
+          var nx = -(b[1] - a[1]), ny = b[0] - a[0], nl = Math.hypot(nx, ny) || 1; nx /= nl; ny /= nl;
+          var spread = (p.smoke ? 5.5 : 2.2) * k * (p.spread || 1) * (p.petals ? 0.55 + 0.6 * wgt : 1) * (p.thick ? 0.55 + 0.55 * wgt : 1);
+          var petalChance = p.petals ? Math.min(0.7, Math.max(0, (wgt - 0.5) * 0.6)) : 0;
+          if (p.filament) n = Math.ceil(n * 0.55);
+          for (var m = 0; m < n; m++) {
+            var t = rand();
+            var off = (rand() + rand() + rand() - 1.5) * spread;
+            var x = cx + (a[0] + (b[0] - a[0]) * t) * R + nx * off;
+            var y = cy + (a[1] + (b[1] - a[1]) * t) * R + ny * off;
+            var hotness = Math.max(0, 1 - Math.abs(off) / spread);
+            var c = p.smoke && rand() < 0.65 ? rune.smoke : (rand() < 0.35 * hotness ? rune.hot : rune.col);
+            if (p.accent && rune.accent && rand() < 0.18) c = rune.accent;
+            var isPetal = rand() < petalChance;
+            if (isPetal) c = rand() < 0.6 ? rune.petal : rune.petal2;
+            else if (p.petals && wgt < 0.8 && rand() < 0.7) c = rune.wisp;
+            var sz = (0.35 + Math.pow(rand(), 2.2) * 1.5) * Math.max(0.7, k);
+            ctx.fillStyle = rgba(c, alpha * (0.25 + rand() * 0.6) * (p.petals ? 0.7 : 1));
+            if (isPetal) {
+              ctx.save(); ctx.translate(x, y); ctx.rotate(rand() * 6.28);
+              var pl = sz * (1.5 + rand() * 1.3);
+              ctx.beginPath(); ctx.ellipse(0, 0, pl, pl * 0.45, 0, 0, 6.2832); ctx.fill(); ctx.restore();
+            } else { ctx.beginPath(); ctx.arc(x, y, sz, 0, 6.2832); ctx.fill(); }
+          }
+          // dust spilling inward from the ring (Rennala)
+          if (p.spill) {
+            var smx = (a[0] + b[0]) / 2, smy = (a[1] + b[1]) / 2;
+            var sw = p.spill(Math.atan2(smy - 0.35 * R / R, smx) * 180 / Math.PI);
+            for (var sp = 0; sp < Math.round(sw * seg * 0.8); sp++) {
+              var inward = Math.pow(rand(), 1.8) * R * 0.28;
+              var sxp = cx + smx * R - smx / Math.hypot(smx, smy - 0.35) * inward + (rand() - 0.5) * 3 * k;
+              var syp = cy + smy * R - (smy - 0.35) / Math.hypot(smx, smy - 0.35) * inward + (rand() - 0.5) * 3 * k;
+              ctx.fillStyle = rgba(rand() < 0.3 ? rune.hot : rune.col, alpha * (0.15 + rand() * 0.4) * (1 - inward / (R * 0.3)));
+              ctx.beginPath(); ctx.arc(sxp, syp, (0.3 + Math.pow(rand(), 3) * 0.9) * Math.max(0.7, k), 0, 6.2832); ctx.fill();
+            }
+          }
+          // flame tongues: short curved licks leaving the ring outward and drifting up
+          if (p.flames) {
+            var mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+            var fw = p.flames(Math.atan2(my, mx) * 180 / Math.PI);
+            if (fw > 0.02 && rand() < 0.22 * fw) {
+              var ox = mx / (Math.hypot(mx, my) || 1), oy = my / (Math.hypot(mx, my) || 1);
+              var up = 0.4 + rand() * 0.5;
+              var dx = ox * 0.6, dy = oy * 0.6 - up, dl = Math.hypot(dx, dy) || 1; dx /= dl; dy /= dl;
+              var fl = R * (0.09 + Math.pow(rand(), 1.5) * 0.24) * (0.6 + 0.4 * fw);
+              var sx0 = cx + mx * R + (rand() - 0.5) * 2 * k, sy0 = cy + my * R + (rand() - 0.5) * 2 * k;
+              var bend = (rand() - 0.5) * fl * 1.1;
+              var ex = sx0 + dx * fl - dy * bend * 0.4, ey = sy0 + dy * fl + dx * bend * 0.4;
+              var qx = sx0 + dx * fl * 0.5 - dy * bend, qy = sy0 + dy * fl * 0.5 + dx * bend;
+              var grad = ctx.createLinearGradient(sx0, sy0, ex, ey);
+              grad.addColorStop(0, rgba(rune.col, alpha * (0.5 + rand() * 0.25)));
+              grad.addColorStop(0.55, rgba(rune.col, alpha * 0.3));
+              grad.addColorStop(1, rgba(rune.col, 0));
+              ctx.beginPath(); ctx.moveTo(sx0, sy0); ctx.quadraticCurveTo(qx, qy, ex, ey);
+              ctx.strokeStyle = grad; ctx.lineWidth = (1.6 + rand() * 1.6) * Math.max(0.7, k); ctx.stroke();
+              var grad2 = ctx.createLinearGradient(sx0, sy0, ex, ey);
+              grad2.addColorStop(0, rgba(rune.hot, alpha * (0.5 + rand() * 0.3)));
+              grad2.addColorStop(0.7, rgba(rune.hot, 0));
+              ctx.strokeStyle = grad2; ctx.lineWidth = 0.7 * Math.max(0.7, k); ctx.stroke();
+            }
+          }
+          // bright filament streaks along the stroke
+          if (p.streak && rand() < (p.filament ? 0.6 : 0.22) * wgt) {
+            var j2 = Math.min(p.pts.length - 1, i + 1 + Math.floor(rand() * 3));
+            ctx.strokeStyle = rgba(rune.hot, alpha * (0.35 + rand() * 0.45)); ctx.lineWidth = 0.8 * Math.max(0.7, k);
+            ctx.beginPath();
+            for (var s2 = i; s2 <= j2; s2++) { var o2 = (rand() - 0.5) * 1.6 * k; var px = cx + p.pts[s2][0] * R + nx * o2, py = cy + p.pts[s2][1] * R + ny * o2; s2 === i ? ctx.moveTo(px, py) : ctx.lineTo(px, py); }
+            ctx.stroke();
+          }
+        }
+      });
+      // four-pointed star flares where lines cross (Morgott, Rennala, Godrick)
+      (rune.stars || []).forEach(function (st) {
+        var sx = cx + st[0] * R, sy = cy + st[1] * R, ss = st[2] * R;
+        var halo = ctx.createRadialGradient(sx, sy, 0, sx, sy, ss * 0.55);
+        halo.addColorStop(0, rgba(rune.hot, 0.55 * alpha)); halo.addColorStop(0.35, rgba(rune.col, 0.25 * alpha)); halo.addColorStop(1, rgba(rune.col, 0));
+        ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(sx, sy, ss * 0.55, 0, 6.2832); ctx.fill();
+        [[0, -1, 0.62], [0, 1, 0.62], [-1, 0, 0.42], [1, 0, 0.42]].forEach(function (ray) {
+          var ex = sx + ray[0] * ss * ray[2], ey = sy + ray[1] * ss * ray[2];
+          var g = ctx.createLinearGradient(sx, sy, ex, ey);
+          g.addColorStop(0, rgba(rune.hot, 0.95 * alpha)); g.addColorStop(0.4, rgba(rune.col, 0.5 * alpha)); g.addColorStop(1, rgba(rune.col, 0));
+          ctx.strokeStyle = g;
+          ctx.lineWidth = 2.6 * Math.max(0.6, k) * Math.max(0.5, st[2]); ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+          ctx.lineWidth = 0.9 * Math.max(0.6, k); ctx.stroke();
+        });
+      });
+      // ash drifting inside the ring
+      if (rune.dust) {
+        for (var dI = 0; dI < R * 0.9; dI++) {
+          var dr = Math.sqrt(rand()) * R * 0.9, da = rand() * 6.2832;
+          ctx.fillStyle = rgba(rune.col, alpha * (0.15 + rand() * 0.3));
+          ctx.beginPath(); ctx.arc(cx + Math.cos(da) * dr, cy + Math.sin(da) * dr, (0.3 + Math.pow(rand(), 3) * 1.1) * Math.max(0.7, k), 0, 6.2832); ctx.fill();
+        }
+      }
+      // a few sparks thrown off
+      var sparks = Math.round(R * 0.5);
+      for (var s = 0; s < sparks; s++) {
+        var ang = rand() * 6.2832, rr = R * (1.05 + rand() * 0.45);
+        ctx.fillStyle = rgba(rune.hot, alpha * (0.2 + rand() * 0.5));
+        ctx.beginPath(); ctx.arc(cx + Math.cos(ang) * rr, cy + Math.sin(ang) * rr - rand() * R * 0.3, 0.4 + rand() * 0.8, 0, 6.2832); ctx.fill();
+      }
+    }
+
+    if (rune.broken) {
+      for (var f = 0; f < R * 6; f++) {
+        var fx = cx + (rand() - 0.5) * R * 1.5 * (0.4 + rand() * 0.6), fy = cy + R * (1.0 + Math.pow(rand(), 2) * 0.16) - rand() * R * 0.1;
+        ctx.fillStyle = rgba(rand() < 0.5 ? rune.col : rune.glow, alpha * (0.3 + rand() * 0.6));
+        ctx.save(); ctx.translate(fx, fy); ctx.rotate(rand() * 6.28);
+        var fl = (0.6 + rand() * 2.6) * k; ctx.fillRect(-fl, -0.4, fl * 2, 0.9); ctx.restore();
+      }
+      for (var sh = 0; sh < 7; sh++) {
+        ctx.strokeStyle = rgba(rune.hot, alpha * 0.55); ctx.lineWidth = 1;
+        var sx = cx + (rand() - 0.5) * R * 1.0, sy = cy + R * 1.04, sa = -Math.PI / 2 + (rand() - 0.5) * 1.6, sl = R * (0.12 + rand() * 0.22);
+        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + Math.cos(sa) * sl, sy + Math.sin(sa) * sl); ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
+  function setup(canvas) {
+    var dpr = window.devicePixelRatio || 1, r = canvas.getBoundingClientRect();
+    canvas.width = Math.max(1, Math.round(r.width * dpr)); canvas.height = Math.max(1, Math.round(r.height * dpr));
+    var ctx = canvas.getContext("2d"); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: r.width, h: r.height };
+  }
+
+  var jobs = [];
+  function later(canvas, fn) { jobs.push([canvas, fn]); }
+  function renderAll() { jobs.forEach(function (j) { var s = setup(j[0]); s.ctx.clearRect(0, 0, s.w, s.h); j[1](s); }); }
+
+  // where to centre / how big to draw a rune inside a square box of size `w`
+  function fit(r, w) {
+    if (r.tall) return { cx: w / 2, cy: w * 0.43, R: w * 0.205 };
+    if (r.scale) return { cx: w / 2, cy: w / 2 + w * 0.02, R: w * 0.29 * r.scale };
+    return { cx: w / 2, cy: w / 2 + (r.broken ? -w * 0.05 : 0), R: w * 0.29 };
+  }
+
+  // ---- reference grid ----
+  var host = document.getElementById("runes");
+  RUNES.forEach(function (r, i) {
+    var card = document.createElement("div"); card.className = "opt";
+    card.innerHTML = '<div class="tag"><b>' + r.id + "</b>" + r.name + (r.isNew ? ' <span class="new">new</span>' : "") + "</div>" +
+      '<canvas class="tile"></canvas>' +
+      "<dl><dt>Shape</dt><dd>" + r.shape + "</dd><dt>Colour</dt><dd><span class=\"chip\" style=\"background:" + r.col + "\"></span>" + r.col +
+      ' <span class="chip" style="background:' + r.glow + ';margin-left:6px"></span>' + r.glow + "</dd></dl>";
+    host.appendChild(card);
+    later(card.querySelector("canvas"), function (s) { var f = fit(r, s.w); drawRune(s.ctx, r, f.cx, f.cy, f.R, "A", 1, 11 + i); });
+  });
+
+  // ---- picker ----
+  var pick = document.getElementById("picker");
+  RUNES.forEach(function (r, i) {
+    var c = document.createElement("canvas"); c.title = r.name; pick.appendChild(c);
+    later(c, function (s) { var f = fit(r, s.w); drawRune(s.ctx, r, f.cx, f.cy, f.R, "A", 1, 31 + i); });
+  });
+
+  // ---- note mock-ups ----
+  var TEXT = '<div class="hd"></div><div class="ti">LANDS BETWEEN</div>Seek the three great runes. Rest at the site of grace before the gate, then ride north.<br><br>Bring smithing stones, two flasks and the old map.<br><br>Do not trust the merchant by the bridge.';
+  function noteCard(hostId, label, name, note, isNow, rune, draw) {
+    var card = document.createElement("div"); card.className = "opt";
+    card.innerHTML = '<div class="tag"><b>' + label + "</b>" + name + (isNow ? ' <span class="now">now</span>' : "") + (note ? " <span>" + note + "</span>" : "") + "</div>" +
+      '<div class="note" style="--rc:' + rune.col + '"><canvas></canvas><div class="txt">' + TEXT + "</div></div>";
+    document.getElementById(hostId).appendChild(card);
+    later(card.querySelector("canvas"), draw);
+  }
+  var morgott = RUNES[3], malenia = RUNES[5];
+  noteCard("styles", "A", "Embers", "particles and sparks, like the game", false, morgott, function (s) { drawRune(s.ctx, morgott, s.w - 68, s.h - 80, 40, "A", 1, 5); });
+  noteCard("styles", "B", "Worn line", "the broken gold line used now", true, morgott, function (s) { drawRune(s.ctx, morgott, s.w - 68, s.h - 80, 40, "B", 1, 5); });
+  noteCard("styles", "C", "Line + embers", "a faint line with embers on it", false, morgott, function (s) { drawRune(s.ctx, morgott, s.w - 68, s.h - 80, 40, "C", 1, 5); });
+
+  noteCard("places", "1", "Bottom right", "where the ring sits now", true, malenia, function (s) { drawRune(s.ctx, malenia, s.w - 68, s.h - 80, 40, "A", 1, 9); });
+  noteCard("places", "2", "Large, behind the text", "faint so the text stays readable", false, malenia, function (s) { drawRune(s.ctx, malenia, s.w / 2, s.h / 2 + 30, Math.min(s.w, s.h) * 0.3, "A", 0.42, 9); });
+  noteCard("places", "3", "Oversized, cut by the corner", "bold, partly off the note", false, malenia, function (s) { drawRune(s.ctx, malenia, s.w - 40, s.h - 30, 110, "A", 0.55, 9); });
+
+  function go() { renderAll(); }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(go); else go();
+  window.addEventListener("load", go);
+  var t; window.addEventListener("resize", function () { clearTimeout(t); t = setTimeout(go, 150); });
+})();
+</script>
