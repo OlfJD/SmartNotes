@@ -27,7 +27,8 @@ public static class EldenRingArt
     private static readonly WpfColor Soot = WpfColor.FromRgb(0x0A, 0x09, 0x05);
     private static readonly WpfColor Mist = WpfColor.FromRgb(0xC9, 0xC2, 0xA4);
 
-    public static Drawing Build(double w, double h, NoteColorTheme theme, string tag, string runeKey, double pixelsPerDip)
+    /// <param name="bottomReserve">Height at the bottom the rune must stay clear of (footer, input row).</param>
+    public static Drawing Build(double w, double h, NoteColorTheme theme, string tag, string runeKey, double pixelsPerDip, double bottomReserve)
     {
         WpfColor glow = theme.GlowBrush.Color;
         WpfColor frame = theme.BorderBrush.Color;
@@ -83,14 +84,19 @@ public static class EldenRingArt
             vignette.GradientStops.Add(new GradientStop(WithAlpha(Colors.Black, 0.46), 1));
             dc.DrawRectangle(vignette, null, new Rect(0, 0, w, h));
 
-            // The note's Great Rune, glowing in the bottom right (see RuneArt)
-            if (w > 200 && h > 230)
+            // The note's Great Rune, glowing in the bottom right above the footer / input row (see RuneArt).
+            // Its visible content spans about 0.42 of the box below the box centre and 0.46 above.
+            if (w > 200)
             {
                 double R = Math.Clamp(Math.Min(w, h) * 0.12, 30, 46);
                 double box = R / 0.29;
-                var c = new WpfPoint(w - M - 1.6 * R, h - M - 1.9 * R);
-                if (c.Y - box / 2 > HeaderBottom - 10)
+                double floor = h - Math.Max(bottomReserve, M + 8);
+                double room = floor - HeaderBottom;
+                box = Math.Min(box, room / 0.9);
+                if (box >= 90)
                 {
+                    R = box * 0.29;
+                    var c = new WpfPoint(w - M - 1.6 * R, floor - 0.42 * box);
                     var rune = RuneArt.Render(runeKey, (int)Math.Round(box * Math.Max(1, pixelsPerDip)));
                     dc.DrawImage(rune, new Rect(c.X - box / 2, c.Y - box / 2, box, box));
                 }

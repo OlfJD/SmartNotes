@@ -475,10 +475,38 @@ public partial class StickyNoteWindow : Window
             "Cyberpunk" => CyberpunkArt.Build(w, h, _currentTheme, _currentSkin, tag, VisualTreeHelper.GetDpi(this).PixelsPerDip),
             "Scroll" => EldenScrollArt.Build(w, h, _currentTheme, tag),
             "Paper" => PaperStickyArt.Build(w, h, _currentTheme),
-            "Elden" => EldenRingArt.Build(w, h, _currentTheme, tag, _note.RuneKey, VisualTreeHelper.GetDpi(this).PixelsPerDip),
+            "Elden" => EldenRingArt.Build(w, h, _currentTheme, tag, _note.RuneKey, VisualTreeHelper.GetDpi(this).PixelsPerDip, RuneBottomReserve(h)),
             "Astral" => AstralArt.Build(w, h, _currentTheme, tag),
             _ => null
         };
+    }
+
+    /// <summary>
+    /// Height at the bottom of the note the rune must stay clear of: the footer (time, LOCKED badge)
+    /// and, in checklist / copy mode, the "Add new..." input row.
+    /// </summary>
+    private double RuneBottomReserve(double h)
+    {
+        double footerTop = h - _currentSkin.ContentInset.Bottom - 28;
+        double top = footerTop;
+        foreach (var input in new FrameworkElement?[] { NewTaskContainer, NewCopyItemContainer })
+        {
+            if (input == null || !input.IsVisible || input.ActualHeight <= 0) continue;
+            try
+            {
+                double y = input.TranslatePoint(new Point(0, 0), RootGrid).Y;
+                if (y > 0 && y < top) top = y;
+            }
+            catch (InvalidOperationException) { }
+        }
+        return h - top + 4;
+    }
+
+    /// <summary>Repaints the skin art once layout has settled (e.g. after the view mode changed).</summary>
+    private void RefreshSkinArtAfterLayout()
+    {
+        if (!_currentSkin.CustomArt) return;
+        Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(UpdateSkinGeometry));
     }
 
     /// <summary>The stock window resize grip would float in the cut-away corner of shaped skins.</summary>
@@ -520,18 +548,20 @@ public partial class StickyNoteWindow : Window
         string lang = LocalizationService.Instance.CurrentLanguage;
         foreach (var rune in GreatRune.All)
         {
+            // 5 columns in the 220 px popup leave 44 px per button: 38 px tile + 2 px margin each side.
+            // The rune is drawn into the tile's full inner area, so nothing is clipped.
             var image = new System.Windows.Controls.Image
             {
-                Source = RuneArt.Render(rune.Key, (int)Math.Round(34 * Math.Max(1, dpi))),
-                Width = 34,
-                Height = 34,
+                Source = RuneArt.Render(rune.Key, (int)Math.Round(35 * Math.Max(1, dpi))),
+                Width = 35,
+                Height = 35,
                 Stretch = Stretch.Uniform
             };
             RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.HighQuality);
             var tile = new Border
             {
-                Width = 36,
-                Height = 36,
+                Width = 38,
+                Height = 38,
                 CornerRadius = new CornerRadius(7),
                 Background = NoteColorTheme.CreateFrozenBrush("#0A0A07"),
                 BorderThickness = new Thickness(1.5),
@@ -540,6 +570,7 @@ public partial class StickyNoteWindow : Window
             var button = new Button
             {
                 Style = TryFindResource("IconButton") as Style,
+                Padding = new Thickness(0),
                 Margin = new Thickness(2),
                 Tag = rune.Key,
                 ToolTip = rune.DisplayName(lang),
@@ -619,6 +650,8 @@ public partial class StickyNoteWindow : Window
         if (BtnTextMode != null) BtnTextMode.ToolTip = (mode == NoteViewMode.Text) ? LocalizationService.T("Tooltip_ActiveTextMode") : LocalizationService.T("Tooltip_TextMode");
         if (BtnChecklistMode != null) BtnChecklistMode.ToolTip = (mode == NoteViewMode.Checklist) ? LocalizationService.T("Tooltip_ActiveChecklistMode") : LocalizationService.T("Tooltip_ChecklistMode");
         if (BtnCopyMode != null) BtnCopyMode.ToolTip = (mode == NoteViewMode.CopyCompartments) ? LocalizationService.T("Tooltip_ActiveCopyMode") : LocalizationService.T("Tooltip_CopyMode");
+
+        RefreshSkinArtAfterLayout(); // the rune moves above the "Add new..." row in list modes
     }
 
     private void UpdatePinModeUI(NotePinMode mode)
