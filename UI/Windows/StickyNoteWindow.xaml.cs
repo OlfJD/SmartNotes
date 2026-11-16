@@ -300,6 +300,9 @@ public partial class StickyNoteWindow : Window
         _currentSkin = skin;
         _currentTheme = theme;
 
+        // Menus & colour popup: skins with their own menu look (e.g. Elden Ring's "Grace menu")
+        if (ColorPopupRoot != null) SkinMenus.ApplyToPanel(ColorPopupRoot, skin);
+
         // --- Body: classic rounded card, or a body painted by the skin's art (UI/Skins) ---
         if (skin.CustomArt)
         {
@@ -527,12 +530,12 @@ public partial class StickyNoteWindow : Window
         {
             var button = new Button
             {
-                Style = TryFindResource("GlowButton") as Style,
                 Padding = new Thickness(2, 6, 2, 6),
                 Margin = new Thickness(2),
                 Tag = skin.Key,
                 Content = new TextBlock { Text = LocalizationService.T(skin.LocalizationKey), FontSize = 11.5, FontWeight = FontWeights.SemiBold }
             };
+            button.SetResourceReference(StyleProperty, "PopupChoiceButtonStyle"); // skin-specific in themed popups
             button.Click += SkinButton_Click;
             SkinButtonsGrid.Children.Add(button);
         }
@@ -562,7 +565,7 @@ public partial class StickyNoteWindow : Window
             {
                 Width = 38,
                 Height = 38,
-                CornerRadius = new CornerRadius(7),
+                CornerRadius = new CornerRadius(1), // square, like the Grace menu frame
                 Background = NoteColorTheme.CreateFrozenBrush("#0A0A07"),
                 BorderThickness = new Thickness(1.5),
                 Child = image
@@ -585,7 +588,7 @@ public partial class StickyNoteWindow : Window
     private void UpdateRuneButtons()
     {
         if (RuneButtonsGrid == null) return;
-        var idle = NoteColorTheme.CreateFrozenBrush("#2A2B21");
+        var idle = RuneButtonsGrid.TryFindResource("MenuTileIdleBrush") as Brush ?? NoteColorTheme.CreateFrozenBrush("#2A2B21");
         var selectedBrush = GreatRune.Get(_note.RuneKey).Theme.GlowBrush;
         foreach (var child in RuneButtonsGrid.Children)
         {
@@ -625,12 +628,15 @@ public partial class StickyNoteWindow : Window
     private void UpdateSkinButtons()
     {
         if (SkinButtonsGrid == null) return;
-        var idle = TryFindResource("ControlBorderBrush") as Brush ?? NoteColorTheme.CreateFrozenBrush("#2A3752");
+        // Default menus: idle frame + the app accent; themed popups (SkinMenus) bring their own pair.
+        bool themed = SkinMenus.For(_currentSkin) != null;
+        var idle = SkinButtonsGrid.TryFindResource("MenuChoiceIdleBrush") as Brush ?? NoteColorTheme.CreateFrozenBrush("#2A3752");
+        var selectedBrush = themed ? SkinButtonsGrid.TryFindResource("MenuChoiceSelectedBrush") as Brush ?? AccentChromeBrush : AccentChromeBrush;
         foreach (var child in SkinButtonsGrid.Children)
         {
             if (child is not Button btn) continue;
             bool selected = string.Equals(btn.Tag as string, _currentSkin.Key, StringComparison.Ordinal);
-            btn.BorderBrush = selected ? AccentChromeBrush : idle;
+            btn.BorderBrush = selected ? selectedBrush : idle;
         }
     }
 
@@ -1426,6 +1432,7 @@ public partial class StickyNoteWindow : Window
         menu.Items.Add(AppMenu.Separator());
         menu.Items.Add(AppMenu.Item(LocalizationService.T("Menu_DeleteNote"), "trash-2", DeleteNote, MenuTone.Danger));
 
+        SkinMenus.Apply(menu, _currentSkin);
         menu.PlacementTarget = BtnMore;
         menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
         menu.IsOpen = true;
@@ -2274,6 +2281,7 @@ public partial class StickyNoteWindow : Window
 
         menu.Items.Add(proofingMenu);
 
+        SkinMenus.Apply(menu, _currentSkin);
         tb.ContextMenu = menu;
         menu.PlacementTarget = tb;
         menu.Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint;

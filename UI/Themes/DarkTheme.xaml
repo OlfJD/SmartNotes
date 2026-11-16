@@ -142,6 +142,28 @@
     <SolidColorBrush x:Key="HoverBgBrush" Color="#1E273C" po:Freeze="True"/>
     <SolidColorBrush x:Key="ControlBgBrush" Color="#1B2438" po:Freeze="True"/>
     <SolidColorBrush x:Key="ControlBorderBrush" Color="#2A3752" po:Freeze="True"/>
+    <!-- Menu & popup tokens. Menus and the note's colour popup read these by key, so a skin can override them
+         (UI/Controls/SkinMenus.cs merges e.g. UI/Themes/GraceMenu.xaml for Elden Ring). -->
+    <SolidColorBrush x:Key="MenuIconBrush" Color="{StaticResource TextSecondaryColor}" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuDangerBrush" Color="{StaticResource AlertRedColor}" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuPanelBgBrush" Color="#161D2E" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuPanelBorderBrush" Color="#2A3752" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuPanelInnerFrameBrush" Color="Transparent" po:Freeze="True"/>
+    <CornerRadius x:Key="MenuPanelRadius">10</CornerRadius>
+    <Visibility x:Key="MenuOrnamentVisibility">Collapsed</Visibility>
+    <SolidColorBrush x:Key="MenuOrnamentBrush" Color="Transparent" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuHeaderBrush" Color="#8898B4" po:Freeze="True"/>
+    <FontFamily x:Key="MenuHeaderFont">Segoe UI</FontFamily>
+    <sys:Double x:Key="MenuHeaderFontSize">11</sys:Double>
+    <SolidColorBrush x:Key="MenuSeparatorBrush" Color="#222D42" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuLabelBrush" Color="#CBD5E1" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuLabelMutedBrush" Color="#94A3B8" po:Freeze="True"/>
+    <FontFamily x:Key="MenuLabelFont">Segoe UI</FontFamily>
+    <sys:Double x:Key="MenuLabelFontSize">12</sys:Double>
+    <SolidColorBrush x:Key="MenuAccentBrush" Color="#5CC9B5" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceSelectedBrush" Color="#5CC9B5" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceIdleBrush" Color="#2A3752" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuTileIdleBrush" Color="#2A2B21" po:Freeze="True"/>
     <!-- One border weight -->
     <Thickness x:Key="StrokeThin">1</Thickness>
     <!-- Two radii: controls (buttons, inputs, menu rows) and panels (cards, menus, dialogs) -->
@@ -630,6 +652,11 @@
     </Style>
 
     <Style TargetType="{x:Type Slider}" BasedOn="{StaticResource ModernSlider}"/>
+
+    <!-- Default control styles of the note's colour popup; skins override these keys (see Menu tokens above) -->
+    <Style x:Key="PopupSliderStyle" TargetType="{x:Type Slider}" BasedOn="{StaticResource ModernSlider}"/>
+    <Style x:Key="PopupSwitchStyle" TargetType="{x:Type CheckBox}" BasedOn="{StaticResource ModernSwitch}"/>
+    <Style x:Key="PopupChoiceButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource GlowButton}"/>
 
     <!-- Modern Dark ComboBox ToggleButton Style -->
     <Style x:Key="ModernComboBoxToggleButton" TargetType="{x:Type ToggleButton}">

@@ -59,26 +59,29 @@ public static class AppMenu
 
     private static void Decorate(MenuItem item, string? iconKey, MenuTone tone, bool isChecked)
     {
-        WpfBrush? text = tone switch
+        // Colours are resource references, not values, so a skin's menu dictionary (SkinMenus) can recolour them.
+        string? textKey = tone switch
         {
-            MenuTone.Danger => Resource("AlertRedBrush"),
-            MenuTone.Muted => Resource("TextMutedBrush"),
+            MenuTone.Danger => "MenuDangerBrush",
+            MenuTone.Muted => "TextMutedBrush",
             _ => null
         };
-        if (text != null) item.Foreground = text;
+        if (textKey != null) item.SetResourceReference(Control.ForegroundProperty, textKey);
         if (tone == MenuTone.Accent) item.FontWeight = FontWeights.SemiBold;
 
         // A checked row shows the check glyph instead of its icon.
         if (iconKey != null && !isChecked)
         {
-            WpfBrush iconBrush = tone switch
+            string iconBrushKey = tone switch
             {
-                MenuTone.Danger => Resource("AlertRedBrush"),
-                MenuTone.Accent => Resource("AccentBrush"),
-                MenuTone.Muted => Resource("TextMutedBrush"),
-                _ => Resource("TextSecondaryBrush")
-            } ?? Brushes.White;
-            item.Icon = new LucideIcon { IconKey = iconKey, Size = 14, StrokeThickness = 1.9, Foreground = iconBrush };
+                MenuTone.Danger => "MenuDangerBrush",
+                MenuTone.Accent => "AccentBrush",
+                MenuTone.Muted => "TextMutedBrush",
+                _ => "MenuIconBrush"
+            };
+            var icon = new LucideIcon { IconKey = iconKey, Size = 14, StrokeThickness = 1.9 };
+            icon.SetResourceReference(LucideIcon.ForegroundProperty, iconBrushKey);
+            item.Icon = icon;
         }
     }
 
