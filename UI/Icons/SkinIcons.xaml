@@ -59,9 +59,9 @@
     <!-- Copy: two leaves with a curled corner -->
     <StreamGeometry x:Key="EldenIcon_copy">M 9 8 H 20.5 V 17.5 L 17 21.5 H 9 Z M 17 21.5 V 17.5 H 20.5 M 6 16 H 3.5 V 2.5 H 15 V 5</StreamGeometry>
 
-    <!-- Colours / style: a flask of dye -->
-    <StreamGeometry x:Key="EldenIcon_palette">M 9 2.5 H 15 M 10.2 2.5 V 8 L 5.4 17.6 C 4.6 19.8 5.8 21.5 8 21.5 H 16 C 18.2 21.5 19.4 19.8 18.6 17.6 L 13.8 8 V 2.5</StreamGeometry>
-    <StreamGeometry x:Key="EldenIconFill_palette">M 8.2 14 H 15.8 L 17.4 17.8 C 17.9 19.4 17.2 20.3 15.8 20.3 H 8.2 C 6.8 20.3 6.1 19.4 6.6 17.8 Z</StreamGeometry>
+    <!-- Colours / style: a Great Rune (ring crossed by a staff, diamond tip); the button opens the rune picker -->
+    <StreamGeometry x:Key="EldenIcon_palette">M 9.5 5.2 V 22.5 M 9.5 7.44 A 7 7 0 1 1 9.5 19.56 A 7 7 0 0 1 9.5 7.44</StreamGeometry>
+    <StreamGeometry x:Key="EldenIconFill_palette">M 9.5 0.8 L 11.1 2.9 L 9.5 5 L 7.9 2.9 Z</StreamGeometry>
 
     <!-- Lock: old padlock with a keyhole -->
     <StreamGeometry x:Key="EldenIcon_lock">M 8 11 V 8 C 8 4.6 9.6 2.5 12 2.5 C 14.4 2.5 16 4.6 16 8 V 11</StreamGeometry>

@@ -1,12 +1,7 @@
 <!--
-    "Grace menu": the Elden Ring skin's menus and colour popup (option A on docs/references/themed-menus-board.html).
+    Elden Ring: "Grace menu" (option A on docs/references/themed-menus-board.html).
     Olive-black panel, pale-gold double frame with diamond tips, golden selection band, Cinzel headings, EB Garamond rows.
-
-    Used two ways (see UI/Controls/SkinMenus.cs):
-      * merged into a ContextMenu's Resources: the keyed SkinContextMenu style plus the implicit MenuItem / menu-separator
-        styles restyle the whole menu, submenus included;
-      * merged into the colour popup's root Resources: the Menu*/Popup* keys below override the defaults in DarkTheme.xaml,
-        which the popup reads as DynamicResource.
+    Tokens only; the templates are in SkinMenuBase.xaml (see UI/Controls/SkinMenus.cs).
 -->
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -14,321 +9,88 @@
                     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                     xmlns:sys="clr-namespace:System;assembly=System.Runtime"
                     mc:Ignorable="po">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="SkinMenuBase.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
 
-    <!-- ===== Palette ===== -->
-    <Color x:Key="GraceGoldColor">#F4A23A</Color>
-    <LinearGradientBrush x:Key="GracePanelBrush" StartPoint="0,0" EndPoint="0,1" po:Freeze="True">
-        <GradientStop Color="#24251C" Offset="0"/>
-        <GradientStop Color="#191A13" Offset="0.6"/>
-        <GradientStop Color="#121309" Offset="1"/>
-    </LinearGradientBrush>
-    <SolidColorBrush x:Key="GraceFrameBrush" Color="#8E8665" po:Freeze="True"/>
-    <SolidColorBrush x:Key="GraceInnerFrameBrush" Color="#668E8665" po:Freeze="True"/>
-    <SolidColorBrush x:Key="GraceTipBrush" Color="#B49A5C" po:Freeze="True"/>
-    <SolidColorBrush x:Key="GraceTextBrush" Color="#DDD6C0" po:Freeze="True"/>
-    <SolidColorBrush x:Key="GraceHighlightTextBrush" Color="#FFF3D6" po:Freeze="True"/>
-    <SolidColorBrush x:Key="GraceGoldBrush" Color="#F4A23A" po:Freeze="True"/>
-    <SolidColorBrush x:Key="GraceBandEdgeBrush" Color="#55F4A23A" po:Freeze="True"/>
-    <LinearGradientBrush x:Key="GraceBandBrush" StartPoint="0,0" EndPoint="1,0" po:Freeze="True">
-        <GradientStop Color="#00F4A23A" Offset="0"/>
-        <GradientStop Color="#33F4A23A" Offset="0.2"/>
-        <GradientStop Color="#33F4A23A" Offset="0.8"/>
-        <GradientStop Color="#00F4A23A" Offset="1"/>
-    </LinearGradientBrush>
-    <LinearGradientBrush x:Key="GraceBandEdgeGradient" StartPoint="0,0" EndPoint="1,0" po:Freeze="True">
-        <GradientStop Color="#00F4A23A" Offset="0"/>
-        <GradientStop Color="#66F4A23A" Offset="0.2"/>
-        <GradientStop Color="#66F4A23A" Offset="0.8"/>
-        <GradientStop Color="#00F4A23A" Offset="1"/>
-    </LinearGradientBrush>
-    <LinearGradientBrush x:Key="GraceSeparatorBrush" StartPoint="0,0" EndPoint="1,0" po:Freeze="True">
-        <GradientStop Color="#008E8665" Offset="0"/>
-        <GradientStop Color="#AA8E8665" Offset="0.5"/>
-        <GradientStop Color="#008E8665" Offset="1"/>
-    </LinearGradientBrush>
-    <FontFamily x:Key="GraceBodyFont">pack://application:,,,/Assets/Fonts/#EB Garamond, Palatino Linotype, Georgia</FontFamily>
-    <FontFamily x:Key="GraceHeadFont">pack://application:,,,/Assets/Fonts/#Cinzel, Palatino Linotype, Georgia</FontFamily>
-
-    <!-- ===== Keys read by menus built with AppMenu and by the colour popup (defaults live in DarkTheme.xaml) ===== -->
-    <SolidColorBrush x:Key="MenuIconBrush" Color="#B4A57A" po:Freeze="True"/>
-    <SolidColorBrush x:Key="MenuDangerBrush" Color="#D06A52" po:Freeze="True"/>
-    <!-- (real definitions, not <StaticResource> aliases: WPF can resolve alias entries to the wrong value) -->
+    <!-- Panel -->
     <LinearGradientBrush x:Key="MenuPanelBgBrush" StartPoint="0,0" EndPoint="0,1" po:Freeze="True">
         <GradientStop Color="#24251C" Offset="0"/>
         <GradientStop Color="#191A13" Offset="0.6"/>
         <GradientStop Color="#121309" Offset="1"/>
     </LinearGradientBrush>
+    <SolidColorBrush x:Key="MenuShadowBrush" Color="#121309" po:Freeze="True"/>
     <SolidColorBrush x:Key="MenuPanelBorderBrush" Color="#8E8665" po:Freeze="True"/>
     <SolidColorBrush x:Key="MenuPanelInnerFrameBrush" Color="#668E8665" po:Freeze="True"/>
     <CornerRadius x:Key="MenuPanelRadius">0</CornerRadius>
+    <Thickness x:Key="MenuPanelPadding">7</Thickness>
     <Visibility x:Key="MenuOrnamentVisibility">Visible</Visibility>
     <SolidColorBrush x:Key="MenuOrnamentBrush" Color="#B49A5C" po:Freeze="True"/>
-    <SolidColorBrush x:Key="MenuHeaderBrush" Color="#C9B783" po:Freeze="True"/>
-    <FontFamily x:Key="MenuHeaderFont">pack://application:,,,/Assets/Fonts/#Cinzel, Palatino Linotype, Georgia</FontFamily>
-    <sys:Double x:Key="MenuHeaderFontSize">11.5</sys:Double>
+
+    <!-- Rows -->
+    <SolidColorBrush x:Key="MenuItemTextBrush" Color="#DDD6C0" po:Freeze="True"/>
+    <FontFamily x:Key="MenuItemFont">pack://application:,,,/Assets/Fonts/#EB Garamond, Palatino Linotype, Georgia</FontFamily>
+    <FontWeight x:Key="MenuItemFontWeight">Medium</FontWeight>
+    <sys:Double x:Key="MenuItemFontSize">14.5</sys:Double>
+    <CornerRadius x:Key="MenuItemRadius">0</CornerRadius>
+    <LinearGradientBrush x:Key="MenuItemHighlightBrush" StartPoint="0,0" EndPoint="1,0" po:Freeze="True">
+        <GradientStop Color="#00F4A23A" Offset="0"/>
+        <GradientStop Color="#33F4A23A" Offset="0.2"/>
+        <GradientStop Color="#33F4A23A" Offset="0.8"/>
+        <GradientStop Color="#00F4A23A" Offset="1"/>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="MenuItemHighlightEdgeBrush" StartPoint="0,0" EndPoint="1,0" po:Freeze="True">
+        <GradientStop Color="#00F4A23A" Offset="0"/>
+        <GradientStop Color="#66F4A23A" Offset="0.2"/>
+        <GradientStop Color="#66F4A23A" Offset="0.8"/>
+        <GradientStop Color="#00F4A23A" Offset="1"/>
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="MenuItemHighlightTextBrush" Color="#FFF3D6" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuIconBrush" Color="#B4A57A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuDangerBrush" Color="#D06A52" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuAccentBrush" Color="#F4A23A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuOnAccentBrush" Color="#1B1C15" po:Freeze="True"/>
     <LinearGradientBrush x:Key="MenuSeparatorBrush" StartPoint="0,0" EndPoint="1,0" po:Freeze="True">
         <GradientStop Color="#008E8665" Offset="0"/>
         <GradientStop Color="#AA8E8665" Offset="0.5"/>
         <GradientStop Color="#008E8665" Offset="1"/>
     </LinearGradientBrush>
+    <sys:Double x:Key="MenuToolTipFontSize">13.5</sys:Double>
+
+    <!-- Popup text -->
+    <SolidColorBrush x:Key="MenuHeaderBrush" Color="#C9B783" po:Freeze="True"/>
+    <FontFamily x:Key="MenuHeaderFont">pack://application:,,,/Assets/Fonts/#Cinzel, Palatino Linotype, Georgia</FontFamily>
+    <sys:Double x:Key="MenuHeaderFontSize">11.5</sys:Double>
     <SolidColorBrush x:Key="MenuLabelBrush" Color="#DDD6C0" po:Freeze="True"/>
     <SolidColorBrush x:Key="MenuLabelMutedBrush" Color="#9A927A" po:Freeze="True"/>
     <FontFamily x:Key="MenuLabelFont">pack://application:,,,/Assets/Fonts/#EB Garamond, Palatino Linotype, Georgia</FontFamily>
     <sys:Double x:Key="MenuLabelFontSize">14</sys:Double>
-    <SolidColorBrush x:Key="MenuAccentBrush" Color="#F4A23A" po:Freeze="True"/>
-    <SolidColorBrush x:Key="MenuChoiceSelectedBrush" Color="#F4A23A" po:Freeze="True"/>
+
+    <!-- Popup controls -->
+    <SolidColorBrush x:Key="MenuChoiceBgBrush" Color="#33000000" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceTextBrush" Color="#CFC6A8" po:Freeze="True"/>
     <SolidColorBrush x:Key="MenuChoiceIdleBrush" Color="#5C573F" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceSelectedBrush" Color="#F4A23A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceSelectedBgBrush" Color="#33000000" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceSelectedTextBrush" Color="#FFE6B0" po:Freeze="True"/>
+    <FontFamily x:Key="MenuChoiceFont">pack://application:,,,/Assets/Fonts/#Cinzel, Palatino Linotype, Georgia</FontFamily>
+    <CornerRadius x:Key="MenuChoiceRadius">0</CornerRadius>
     <SolidColorBrush x:Key="MenuTileIdleBrush" Color="#4A4634" po:Freeze="True"/>
-
-    <!-- ===== Context menu: olive-black panel, double frame, diamond tips ===== -->
-    <Style x:Key="SkinContextMenu" TargetType="{x:Type ContextMenu}">
-        <Setter Property="Background" Value="{StaticResource GracePanelBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource GraceFrameBrush}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Padding" Value="7"/>
-        <Setter Property="Foreground" Value="{StaticResource GraceTextBrush}"/>
-        <Setter Property="FontFamily" Value="{StaticResource GraceBodyFont}"/>
-        <Setter Property="SnapsToDevicePixels" Value="True"/>
-        <Setter Property="UseLayoutRounding" Value="True"/>
-        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
-        <Setter Property="Grid.IsSharedSizeScope" Value="True"/>
-        <Setter Property="HasDropShadow" Value="True"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type ContextMenu}">
-                    <Grid Margin="8" SnapsToDevicePixels="True" UseLayoutRounding="True">
-                        <Border Background="#121309">
-                            <Border.Effect>
-                                <DropShadowEffect BlurRadius="16" ShadowDepth="4" Opacity="0.8" Color="#000000"/>
-                            </Border.Effect>
-                        </Border>
-                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
-                            <Border BorderBrush="{StaticResource GraceInnerFrameBrush}" BorderThickness="1" Margin="3" Padding="{TemplateBinding Padding}">
-                                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                                    <StackPanel IsItemsHost="True"/>
-                                </ScrollViewer>
-                            </Border>
-                        </Border>
-                        <Rectangle Width="7" Height="7" Fill="{StaticResource GraceTipBrush}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-3.5,0,0" RenderTransformOrigin="0.5,0.5">
-                            <Rectangle.RenderTransform><RotateTransform Angle="45"/></Rectangle.RenderTransform>
-                        </Rectangle>
-                        <Rectangle Width="7" Height="7" Fill="{StaticResource GraceTipBrush}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,-3.5" RenderTransformOrigin="0.5,0.5">
-                            <Rectangle.RenderTransform><RotateTransform Angle="45"/></Rectangle.RenderTransform>
-                        </Rectangle>
-                    </Grid>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <!-- ===== Menu rows: golden band on the selected row, submenus in the same frame ===== -->
-    <Style TargetType="{x:Type MenuItem}">
-        <Setter Property="Foreground" Value="{StaticResource GraceTextBrush}"/>
-        <Setter Property="FontFamily" Value="{StaticResource GraceBodyFont}"/>
-        <Setter Property="FontWeight" Value="Medium"/>
-        <Setter Property="FontSize" Value="14.5"/>
-        <Setter Property="Padding" Value="10,6"/>
-        <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="SnapsToDevicePixels" Value="True"/>
-        <Setter Property="UseLayoutRounding" Value="True"/>
-        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type MenuItem}">
-                    <Grid SnapsToDevicePixels="True">
-                        <Border x:Name="ItemBd" Background="Transparent" Padding="{TemplateBinding Padding}" Margin="0,1">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" MinWidth="22"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <ContentPresenter Grid.Column="0" ContentSource="Icon" Margin="0,0,9,0" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                                <Path Grid.Column="0" x:Name="CheckGlyph" Data="M 1 5.5 L 4.5 9 L 11 1.5" Stroke="{StaticResource GraceGoldBrush}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Width="12" Height="10.5" Margin="0,0,9,0" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
-                                <ContentPresenter Grid.Column="1" ContentSource="Header" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Column="2" Text="{TemplateBinding InputGestureText}" Foreground="#9A927A" FontSize="12" VerticalAlignment="Center" Margin="14,0,0,0"/>
-                                <Path Grid.Column="3" x:Name="RightArrow" Data="M 1 1 L 5 5 L 1 9" Stroke="#B4A57A" StrokeThickness="1.4" StrokeStartLineCap="Round" StrokeEndLineCap="Round" VerticalAlignment="Center" Margin="10,0,2,0" Visibility="Collapsed"/>
-                            </Grid>
-                        </Border>
-                        <!-- band edges: thin gold hairlines above and below the selected row -->
-                        <Border x:Name="BandTop" Height="1" VerticalAlignment="Top" Margin="0,1,0,0" Background="{StaticResource GraceBandEdgeGradient}" Visibility="Collapsed"/>
-                        <Border x:Name="BandBottom" Height="1" VerticalAlignment="Bottom" Margin="0,0,0,1" Background="{StaticResource GraceBandEdgeGradient}" Visibility="Collapsed"/>
-                        <Popup x:Name="PART_Popup" AllowsTransparency="True" Focusable="False" IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}" Placement="Right" PopupAnimation="Fade" VerticalOffset="-12" HorizontalOffset="0">
-                            <Grid Margin="8" MinWidth="200">
-                                <Border Background="#121309">
-                                    <Border.Effect>
-                                        <DropShadowEffect BlurRadius="16" ShadowDepth="4" Opacity="0.8" Color="#000000"/>
-                                    </Border.Effect>
-                                </Border>
-                                <Border Background="{StaticResource GracePanelBrush}" BorderBrush="{StaticResource GraceFrameBrush}" BorderThickness="1">
-                                    <Border BorderBrush="{StaticResource GraceInnerFrameBrush}" BorderThickness="1" Margin="3" Padding="7">
-                                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                                            <StackPanel IsItemsHost="True"/>
-                                        </ScrollViewer>
-                                    </Border>
-                                </Border>
-                            </Grid>
-                        </Popup>
-                    </Grid>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="HasItems" Value="True">
-                            <Setter TargetName="RightArrow" Property="Visibility" Value="Visible"/>
-                        </Trigger>
-                        <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="CheckGlyph" Property="Visibility" Value="Visible"/>
-                        </Trigger>
-                        <Trigger Property="IsHighlighted" Value="True">
-                            <Setter TargetName="ItemBd" Property="Background" Value="{StaticResource GraceBandBrush}"/>
-                            <Setter TargetName="BandTop" Property="Visibility" Value="Visible"/>
-                            <Setter TargetName="BandBottom" Property="Visibility" Value="Visible"/>
-                            <Setter TargetName="RightArrow" Property="Stroke" Value="{StaticResource GraceGoldBrush}"/>
-                            <Setter Property="Foreground" Value="{StaticResource GraceHighlightTextBrush}"/>
-                        </Trigger>
-                        <Trigger Property="IsSubmenuOpen" Value="True">
-                            <Setter TargetName="ItemBd" Property="Background" Value="{StaticResource GraceBandBrush}"/>
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Opacity" Value="0.5"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style x:Key="{x:Static MenuItem.SeparatorStyleKey}" TargetType="{x:Type Separator}">
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type Separator}">
-                    <Border Height="1" Margin="6,5" Background="{StaticResource GraceSeparatorBrush}" SnapsToDevicePixels="True"/>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <!-- ===== Colour popup controls ===== -->
-    <!-- "Note Style" choice buttons: Cinzel, thin olive frame; the selected one gets the gold frame (set in code) -->
-    <Style x:Key="PopupChoiceButtonStyle" TargetType="{x:Type Button}">
-        <Setter Property="Background" Value="#33000000"/>
-        <Setter Property="Foreground" Value="#CFC6A8"/>
-        <Setter Property="BorderBrush" Value="#5C573F"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="FontFamily" Value="{StaticResource GraceHeadFont}"/>
-        <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type Button}">
-                    <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource GraceBandBrush}"/>
-                            <Setter Property="Foreground" Value="#FFE6B0"/>
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="#55000000"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <!-- Slider: bronze-to-gold fill, diamond thumb -->
-    <Style x:Key="PopupSliderStyle" TargetType="{x:Type Slider}">
-        <Setter Property="Stylus.IsPressAndHoldEnabled" Value="false"/>
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type Slider}">
-                    <Grid VerticalAlignment="Center" Height="22">
-                        <Border Height="3" Background="#2A2B21" BorderBrush="#4A4634" BorderThickness="0.5"/>
-                        <Track x:Name="PART_Track">
-                            <Track.DecreaseRepeatButton>
-                                <RepeatButton Command="{x:Static Slider.DecreaseLarge}">
-                                    <RepeatButton.Template>
-                                        <ControlTemplate>
-                                            <Border Height="3">
-                                                <Border.Background>
-                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                                        <GradientStop Color="#8E6A2A" Offset="0"/>
-                                                        <GradientStop Color="#F4A23A" Offset="1"/>
-                                                    </LinearGradientBrush>
-                                                </Border.Background>
-                                            </Border>
-                                        </ControlTemplate>
-                                    </RepeatButton.Template>
-                                </RepeatButton>
-                            </Track.DecreaseRepeatButton>
-                            <Track.IncreaseRepeatButton>
-                                <RepeatButton Command="{x:Static Slider.IncreaseLarge}">
-                                    <RepeatButton.Template>
-                                        <ControlTemplate>
-                                            <Border Background="Transparent"/>
-                                        </ControlTemplate>
-                                    </RepeatButton.Template>
-                                </RepeatButton>
-                            </Track.IncreaseRepeatButton>
-                            <Track.Thumb>
-                                <Thumb Width="14" Height="14" Cursor="Hand">
-                                    <Thumb.Template>
-                                        <ControlTemplate>
-                                            <Grid Width="14" Height="14" Background="Transparent">
-                                                <Rectangle Width="10" Height="10" Fill="{StaticResource GraceGoldBrush}" Stroke="#FFE6B0" StrokeThickness="0.8" RenderTransformOrigin="0.5,0.5">
-                                                    <Rectangle.RenderTransform><RotateTransform Angle="45"/></Rectangle.RenderTransform>
-                                                    <Rectangle.Effect>
-                                                        <DropShadowEffect BlurRadius="8" ShadowDepth="0" Opacity="0.7" Color="{StaticResource GraceGoldColor}"/>
-                                                    </Rectangle.Effect>
-                                                </Rectangle>
-                                            </Grid>
-                                        </ControlTemplate>
-                                    </Thumb.Template>
-                                </Thumb>
-                            </Track.Thumb>
-                        </Track>
-                    </Grid>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <!-- On/off switch: olive track, gold when on -->
-    <Style x:Key="PopupSwitchStyle" TargetType="{x:Type CheckBox}">
-        <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-        <Setter Property="SnapsToDevicePixels" Value="True"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type CheckBox}">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <Grid Width="42" Height="22" Margin="0,0,8,0" VerticalAlignment="Center">
-                            <Border x:Name="Track" CornerRadius="11" Background="#1B1C15" BorderBrush="#5C573F" BorderThickness="1"/>
-                            <Border x:Name="Thumb" Width="14" Height="14" CornerRadius="7" Background="#9A927A" HorizontalAlignment="Left" Margin="4,0,0,0" VerticalAlignment="Center"/>
-                        </Grid>
-                        <ContentPresenter VerticalAlignment="Center"/>
-                    </StackPanel>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Track" Property="BorderBrush" Value="#8E8665"/>
-                        </Trigger>
-                        <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="Track" Property="Background" Value="#3A2E17"/>
-                            <Setter TargetName="Track" Property="BorderBrush" Value="{StaticResource GraceGoldBrush}"/>
-                            <Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right"/>
-                            <Setter TargetName="Thumb" Property="Margin" Value="0,0,4,0"/>
-                            <Setter TargetName="Thumb" Property="Background" Value="{StaticResource GraceGoldBrush}"/>
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Opacity" Value="0.45"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
+    <SolidColorBrush x:Key="MenuSliderTrackBrush" Color="#2A2B21" po:Freeze="True"/>
+    <LinearGradientBrush x:Key="MenuSliderFillBrush" StartPoint="0,0" EndPoint="1,0" po:Freeze="True">
+        <GradientStop Color="#8E6A2A" Offset="0"/>
+        <GradientStop Color="#F4A23A" Offset="1"/>
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="MenuSliderThumbBrush" Color="#F4A23A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSliderThumbBorderBrush" Color="#FFE6B0" po:Freeze="True"/>
+    <Visibility x:Key="MenuSliderRoundVisibility">Collapsed</Visibility>
+    <Visibility x:Key="MenuSliderDiamondVisibility">Visible</Visibility>
+    <SolidColorBrush x:Key="MenuSwitchTrackBrush" Color="#1B1C15" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSwitchBorderBrush" Color="#5C573F" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSwitchThumbBrush" Color="#9A927A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSwitchOnTrackBrush" Color="#3A2E17" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSwitchOnThumbBrush" Color="#F4A23A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuInputBgBrush" Color="#0F100B" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuInputBorderBrush" Color="#5C573F" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuInputTextBrush" Color="#DDD6C0" po:Freeze="True"/>
 </ResourceDictionary>

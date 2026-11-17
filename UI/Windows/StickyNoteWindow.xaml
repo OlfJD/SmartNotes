@@ -405,10 +405,14 @@
             <Popup x:Name="ColorPopup" StaysOpen="False" AllowsTransparency="True" PlacementTarget="{Binding ElementName=BtnColorPicker}" Placement="Bottom" PopupAnimation="Fade" Opened="ColorPopup_Opened">
                 <!-- Colours, fonts and control styles are Menu*/Popup* resources (DarkTheme.xaml), overridden per skin via SkinMenus.ApplyToPanel -->
                 <Grid x:Name="ColorPopupRoot" Margin="0,4,0,4">
-                <Border Background="{DynamicResource MenuPanelBgBrush}" BorderBrush="{DynamicResource MenuPanelBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource MenuPanelRadius}">
-                    <Border.Effect>
+                <skins:CutBorder Background="{DynamicResource MenuShadowBrush}" CornerRadius="{DynamicResource MenuPanelRadius}" Cut="{DynamicResource MenuPanelCut}">
+                    <skins:CutBorder.Effect>
                         <DropShadowEffect BlurRadius="20" ShadowDepth="6" Opacity="0.7" Color="#000000"/>
-                    </Border.Effect>
+                    </skins:CutBorder.Effect>
+                </skins:CutBorder>
+                <skins:CutBorder Background="{DynamicResource MenuPanelBgBrush}" BorderBrush="{DynamicResource MenuPanelBorderBrush}" BorderThickness="{DynamicResource MenuPanelBorderThickness}" CornerRadius="{DynamicResource MenuPanelRadius}" Cut="{DynamicResource MenuPanelCut}">
+                    <DockPanel>
+                    <Border DockPanel.Dock="Top" Height="{DynamicResource MenuTopStripHeight}" Background="{DynamicResource MenuTopStripBrush}" CornerRadius="{DynamicResource MenuTopStripRadius}"/>
                     <Border BorderBrush="{DynamicResource MenuPanelInnerFrameBrush}" BorderThickness="1" Margin="2" Padding="9" CornerRadius="{DynamicResource MenuPanelRadius}">
                     <StackPanel Width="220">
                         <!-- Note Style (skin) selector -->
@@ -426,7 +430,7 @@
 
                         <StackPanel x:Name="ColorSection">
                         <!-- Top Header: Title & Quick Presets -->
-                        <TextBlock x:Name="TxtQuickNeonThemes" Text="Quick Neon Themes" FontSize="11" FontWeight="Bold" Foreground="#8898B4" Margin="2,0,0,6"/>
+                        <TextBlock x:Name="TxtQuickNeonThemes" Text="Quick Neon Themes" FontSize="{DynamicResource MenuHeaderFontSize}" FontFamily="{DynamicResource MenuHeaderFont}" FontWeight="Bold" Foreground="{DynamicResource MenuHeaderBrush}" Margin="2,0,0,6"/>
 
                         <!-- 8 Presets in a clean 4x2 UniformGrid with ZERO dead space -->
                         <UniformGrid Columns="4" Margin="0,0,0,10">
@@ -456,12 +460,12 @@
                             </Button>
                         </UniformGrid>
 
-                        <Separator Background="#222D42" Margin="0,0,0,10"/>
+                        <Separator Background="{DynamicResource MenuSeparatorBrush}" Margin="0,0,0,10"/>
 
                         <!-- Classic 2D Saturation / Value Gradient Canvas -->
-                        <TextBlock x:Name="TxtCustomPaletteCanvas" Text="Custom Palette Canvas" FontSize="11" FontWeight="Bold" Foreground="#8898B4" Margin="2,0,0,6"/>
+                        <TextBlock x:Name="TxtCustomPaletteCanvas" Text="Custom Palette Canvas" FontSize="{DynamicResource MenuHeaderFontSize}" FontFamily="{DynamicResource MenuHeaderFont}" FontWeight="Bold" Foreground="{DynamicResource MenuHeaderBrush}" Margin="2,0,0,6"/>
 
-                        <Border Width="220" Height="120" CornerRadius="8" ClipToBounds="True" BorderBrush="#2C3B58" BorderThickness="1" Margin="0,0,0,8" Cursor="Cross">
+                        <Border Width="220" Height="120" CornerRadius="{DynamicResource MenuChoiceRadius}" ClipToBounds="True" BorderBrush="{DynamicResource MenuInputBorderBrush}" BorderThickness="1" Margin="0,0,0,8" Cursor="Cross">
                             <Grid x:Name="SatValPickerGrid" Background="Transparent" MouseLeftButtonDown="SatValPicker_MouseDown" MouseMove="SatValPicker_MouseMove" MouseLeftButtonUp="SatValPicker_MouseUp">
                                 <!-- Base pure hue rectangle -->
                                 <Rectangle x:Name="HueBaseRect" Fill="#FF0000"/>
@@ -499,7 +503,7 @@
                         </Border>
 
                         <!-- Classic Hue Rainbow Spectrum Bar -->
-                        <Border Width="220" Height="14" CornerRadius="7" ClipToBounds="True" BorderBrush="#2C3B58" BorderThickness="1" Margin="0,0,0,10" Cursor="Hand">
+                        <Border Width="220" Height="14" CornerRadius="{DynamicResource MenuChoiceRadius}" ClipToBounds="True" BorderBrush="{DynamicResource MenuInputBorderBrush}" BorderThickness="1" Margin="0,0,0,10" Cursor="Hand">
                             <Grid x:Name="HueBarGrid" Background="Transparent" MouseLeftButtonDown="HueBar_MouseDown" MouseMove="HueBar_MouseMove" MouseLeftButtonUp="HueBar_MouseUp">
                                 <Rectangle>
                                     <Rectangle.Fill>
@@ -539,10 +543,10 @@
                             <Border Grid.Column="0" x:Name="CustomColorPreview" Width="30" Height="30" CornerRadius="6" Background="#FF5500" BorderBrush="#FFFFFF" BorderThickness="2" Margin="0,0,8,0"/>
 
                             <!-- Hex Input Box -->
-                            <TextBox Grid.Column="1" x:Name="TxtCustomHex" Text="#FF5500" Background="#141B2B" BorderBrush="#2F3E5D" BorderThickness="1" Foreground="#F8FAFC" FontSize="13" FontWeight="Bold" Padding="6,4" VerticalContentAlignment="Center" CaretBrush="{StaticResource AccentBrush}" Cursor="IBeam" Margin="0,0,8,0" TextChanged="TxtCustomHex_TextChanged"/>
+                            <TextBox Grid.Column="1" x:Name="TxtCustomHex" Text="#FF5500" Background="{DynamicResource MenuInputBgBrush}" BorderBrush="{DynamicResource MenuInputBorderBrush}" BorderThickness="1" Foreground="{DynamicResource MenuInputTextBrush}" FontFamily="{DynamicResource MenuLabelFont}" FontSize="13" FontWeight="Bold" Padding="6,4" VerticalContentAlignment="Center" CaretBrush="{DynamicResource MenuAccentBrush}" Cursor="IBeam" Margin="0,0,8,0" TextChanged="TxtCustomHex_TextChanged"/>
 
                             <!-- Apply Button -->
-                            <Button x:Name="BtnApplyCustomColor" Grid.Column="2" Style="{StaticResource PrimaryButton}" Height="30" Content="Apply" Click="BtnApplyCustomColor_Click" FontSize="12" FontWeight="Bold" Padding="12,0"/>
+                            <Button x:Name="BtnApplyCustomColor" Grid.Column="2" Style="{DynamicResource PopupPrimaryButtonStyle}" Height="30" Content="Apply" Click="BtnApplyCustomColor_Click" FontSize="12" FontWeight="Bold" Padding="12,0"/>
                         </Grid>
                         </StackPanel>
 
@@ -586,7 +590,8 @@
                         </StackPanel>
                     </StackPanel>
                     </Border>
-                </Border>
+                    </DockPanel>
+                </skins:CutBorder>
                 <!-- diamond tips on the frame (skins with MenuOrnamentVisibility = Visible) -->
                 <Rectangle Width="7" Height="7" Fill="{DynamicResource MenuOrnamentBrush}" Visibility="{DynamicResource MenuOrnamentVisibility}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-3.5,0,0" RenderTransformOrigin="0.5,0.5" IsHitTestVisible="False">
                     <Rectangle.RenderTransform><RotateTransform Angle="45"/></Rectangle.RenderTransform>

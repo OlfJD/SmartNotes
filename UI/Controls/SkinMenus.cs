@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using SmartNotes.Core.Models;
@@ -6,22 +8,34 @@ using SmartNotes.Core.Models;
 namespace SmartNotes.UI.Controls;
 
 /// <summary>
-/// Per-skin menu look. A skin with its own menu dictionary (UI/Themes/*Menu.xaml) gets it merged into
-/// the note's ContextMenus and colour popup; every other skin keeps the default menus from DarkTheme.xaml.
-/// A menu dictionary provides: the keyed "SkinContextMenu" style, implicit MenuItem and menu-separator styles,
-/// and overrides for the Menu*/Popup* keys that DarkTheme.xaml defines.
+/// Per-skin look for the note's menus, tooltips and colour popup.
+/// A skin with a menu dictionary (UI/Themes/*Menu.xaml: Menu* tokens + the shared templates in SkinMenuBase.xaml)
+/// gets it merged into the note window (popup, tooltips) and into each ContextMenu the note opens.
+/// Classic has none and keeps the default menus from DarkTheme.xaml.
 /// </summary>
 public static class SkinMenus
 {
-    private static ResourceDictionary? _grace;
+    private static readonly Dictionary<string, string> Files = new(StringComparer.Ordinal)
+    {
+        [NoteSkin.EldenRingKey] = "GraceMenu.xaml",
+        [NoteSkin.CyberpunkKey] = "CyberpunkMenu.xaml",
+        [NoteSkin.MedievalKey] = "MedievalMenu.xaml",
+        [NoteSkin.PaperKey] = "PaperMenu.xaml",
+        [NoteSkin.AstralKey] = "AstralMenu.xaml",
+    };
+
+    private static readonly Dictionary<string, ResourceDictionary> Loaded = new(StringComparer.Ordinal);
 
     /// <summary>The skin's menu dictionary, or null for the default menus.</summary>
     public static ResourceDictionary? For(NoteSkin? skin)
     {
-        if (skin == null) return null;
-        if (skin.Key == NoteSkin.EldenRingKey)
-            return _grace ??= new ResourceDictionary { Source = new Uri("pack://application:,,,/UI/Themes/GraceMenu.xaml", UriKind.Absolute) };
-        return null;
+        if (skin == null || !Files.TryGetValue(skin.Key, out var file)) return null;
+        if (!Loaded.TryGetValue(skin.Key, out var dict))
+        {
+            dict = new ResourceDictionary { Source = new Uri($"pack://application:,,,/UI/Themes/{file}", UriKind.Absolute) };
+            Loaded[skin.Key] = dict;
+        }
+        return dict;
     }
 
     /// <summary>Restyles a context menu (and its submenus) for the skin. No-op for skins without a menu dictionary.</summary>
@@ -33,14 +47,15 @@ public static class SkinMenus
         if (dict["SkinContextMenu"] is Style style) menu.Style = style;
     }
 
-    /// <summary>Points a panel's resources at the skin's menu dictionary (replacing a previous skin's), so
-    /// DynamicResource Menu*/Popup* lookups inside it switch over.</summary>
+    /// <summary>Swaps the skin's menu dictionary into an element's resources (replacing a previous skin's and
+    /// leaving any other merged dictionaries alone), so DynamicResource Menu* lookups and implicit ToolTip /
+    /// MenuItem styles below it switch over.</summary>
     public static void ApplyToPanel(FrameworkElement panel, NoteSkin? skin)
     {
         var dict = For(skin);
         var merged = panel.Resources.MergedDictionaries;
-        if (dict != null && merged.Count == 1 && ReferenceEquals(merged[0], dict)) return;
-        merged.Clear();
+        if (dict != null && merged.Contains(dict) && merged.Count(d => Loaded.ContainsValue(d)) == 1) return;
+        foreach (var old in merged.Where(d => Loaded.ContainsValue(d)).ToList()) merged.Remove(old);
         if (dict != null) merged.Add(dict);
     }
 }

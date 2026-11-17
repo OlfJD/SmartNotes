@@ -72,15 +72,15 @@ public static class AppMenu
         // A checked row shows the check glyph instead of its icon.
         if (iconKey != null && !isChecked)
         {
-            string iconBrushKey = tone switch
+            string? iconBrushKey = tone switch
             {
                 MenuTone.Danger => "MenuDangerBrush",
                 MenuTone.Accent => "AccentBrush",
                 MenuTone.Muted => "TextMutedBrush",
-                _ => "MenuIconBrush"
+                _ => null // inherits the row's icon colour, which the menu style sets (and changes on hover)
             };
             var icon = new LucideIcon { IconKey = iconKey, Size = 14, StrokeThickness = 1.9 };
-            icon.SetResourceReference(LucideIcon.ForegroundProperty, iconBrushKey);
+            if (iconBrushKey != null) icon.SetResourceReference(LucideIcon.ForegroundProperty, iconBrushKey);
             item.Icon = icon;
         }
     }

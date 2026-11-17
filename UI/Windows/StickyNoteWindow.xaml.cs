@@ -300,8 +300,8 @@ public partial class StickyNoteWindow : Window
         _currentSkin = skin;
         _currentTheme = theme;
 
-        // Menus & colour popup: skins with their own menu look (e.g. Elden Ring's "Grace menu")
-        if (ColorPopupRoot != null) SkinMenus.ApplyToPanel(ColorPopupRoot, skin);
+        // Menus, tooltips & colour popup in the skin's own look (UI/Themes/*Menu.xaml; Classic keeps the defaults)
+        SkinMenus.ApplyToPanel(this, skin);
 
         // --- Body: classic rounded card, or a body painted by the skin's art (UI/Skins) ---
         if (skin.CustomArt)
@@ -637,6 +637,17 @@ public partial class StickyNoteWindow : Window
             if (child is not Button btn) continue;
             bool selected = string.Equals(btn.Tag as string, _currentSkin.Key, StringComparison.Ordinal);
             btn.BorderBrush = selected ? selectedBrush : idle;
+            // themed skins can also fill the selected choice (Cyberpunk: yellow with black text)
+            if (themed && selected)
+            {
+                btn.SetResourceReference(BackgroundProperty, "MenuChoiceSelectedBgBrush");
+                btn.SetResourceReference(ForegroundProperty, "MenuChoiceSelectedTextBrush");
+            }
+            else
+            {
+                btn.ClearValue(BackgroundProperty);
+                btn.ClearValue(ForegroundProperty);
+            }
         }
     }
 

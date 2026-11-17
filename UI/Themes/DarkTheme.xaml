@@ -164,6 +164,48 @@
     <SolidColorBrush x:Key="MenuChoiceSelectedBrush" Color="#5CC9B5" po:Freeze="True"/>
     <SolidColorBrush x:Key="MenuChoiceIdleBrush" Color="#2A3752" po:Freeze="True"/>
     <SolidColorBrush x:Key="MenuTileIdleBrush" Color="#2A2B21" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuShadowBrush" Color="#161D2E" po:Freeze="True"/>
+    <Thickness x:Key="MenuPanelBorderThickness">1</Thickness>
+    <sys:Double x:Key="MenuPanelCut">0</sys:Double>
+    <Thickness x:Key="MenuPanelPadding">6</Thickness>
+    <sys:Double x:Key="MenuTopStripHeight">0</sys:Double>
+    <SolidColorBrush x:Key="MenuTopStripBrush" Color="Transparent" po:Freeze="True"/>
+    <CornerRadius x:Key="MenuTopStripRadius">0</CornerRadius>
+    <SolidColorBrush x:Key="MenuItemTextBrush" Color="{StaticResource TextSecondaryColor}" po:Freeze="True"/>
+    <FontFamily x:Key="MenuItemFont">Segoe UI</FontFamily>
+    <FontWeight x:Key="MenuItemFontWeight">SemiBold</FontWeight>
+    <sys:Double x:Key="MenuItemFontSize">13.5</sys:Double>
+    <CornerRadius x:Key="MenuItemRadius">7</CornerRadius>
+    <SolidColorBrush x:Key="MenuItemHighlightBrush" Color="#1E273C" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuItemHighlightEdgeBrush" Color="Transparent" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuItemHighlightTextBrush" Color="{StaticResource TextPrimaryColor}" po:Freeze="True"/>
+    <sys:Double x:Key="MenuToolTipFontSize">12.5</sys:Double>
+    <sys:Double x:Key="MenuToolTipCut">0</sys:Double>
+    <SolidColorBrush x:Key="MenuChoiceBgBrush" Color="#1B2438" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceTextBrush" Color="#F8FAFC" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceSelectedBgBrush" Color="#1B2438" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceSelectedTextBrush" Color="#F8FAFC" po:Freeze="True"/>
+    <FontFamily x:Key="MenuChoiceFont">Segoe UI</FontFamily>
+    <CornerRadius x:Key="MenuChoiceRadius">7</CornerRadius>
+    <sys:Double x:Key="MenuChoiceCut">0</sys:Double>
+    <SolidColorBrush x:Key="MenuOnAccentBrush" Color="#0D1017" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSliderTrackBrush" Color="#1A2338" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSliderFillBrush" Color="#5CC9B5" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSliderThumbBrush" Color="#FFFFFF" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSliderThumbBorderBrush" Color="#5CC9B5" po:Freeze="True"/>
+    <CornerRadius x:Key="MenuSliderThumbRadius">7</CornerRadius>
+    <Visibility x:Key="MenuSliderRoundVisibility">Visible</Visibility>
+    <Visibility x:Key="MenuSliderDiamondVisibility">Collapsed</Visibility>
+    <SolidColorBrush x:Key="MenuSwitchTrackBrush" Color="#182030" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSwitchBorderBrush" Color="#334366" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSwitchThumbBrush" Color="#8898B4" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSwitchOnTrackBrush" Color="#5CC9B5" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSwitchOnThumbBrush" Color="#0D1017" po:Freeze="True"/>
+    <CornerRadius x:Key="MenuSwitchRadius">11</CornerRadius>
+    <CornerRadius x:Key="MenuSwitchThumbRadius">7</CornerRadius>
+    <SolidColorBrush x:Key="MenuInputBgBrush" Color="#141B2B" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuInputBorderBrush" Color="#2F3E5D" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuInputTextBrush" Color="#F8FAFC" po:Freeze="True"/>
     <!-- One border weight -->
     <Thickness x:Key="StrokeThin">1</Thickness>
     <!-- Two radii: controls (buttons, inputs, menu rows) and panels (cards, menus, dialogs) -->
@@ -495,7 +537,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <ContentPresenter Grid.Column="0" ContentSource="Icon" Margin="0,0,8,0" VerticalAlignment="Center" HorizontalAlignment="Center" SnapsToDevicePixels="True" UseLayoutRounding="True"/>
+                                <ContentPresenter x:Name="IconHost" Grid.Column="0" ContentSource="Icon" Margin="0,0,8,0" VerticalAlignment="Center" HorizontalAlignment="Center" SnapsToDevicePixels="True" UseLayoutRounding="True" TextElement.Foreground="{StaticResource MenuIconBrush}"/>
                                 <!-- Checked state (IsChecked="True"): shown in the icon column, in the accent colour -->
                                 <Path Grid.Column="0" x:Name="CheckGlyph" Data="M 1 5.5 L 4.5 9 L 11 1.5" Stroke="{StaticResource AccentBrush}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Width="12" Height="10.5" Margin="0,0,8,0" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
                                 <ContentPresenter Grid.Column="1" ContentSource="Header" VerticalAlignment="Center" SnapsToDevicePixels="True" UseLayoutRounding="True"
@@ -657,6 +699,7 @@
     <Style x:Key="PopupSliderStyle" TargetType="{x:Type Slider}" BasedOn="{StaticResource ModernSlider}"/>
     <Style x:Key="PopupSwitchStyle" TargetType="{x:Type CheckBox}" BasedOn="{StaticResource ModernSwitch}"/>
     <Style x:Key="PopupChoiceButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource GlowButton}"/>
+    <Style x:Key="PopupPrimaryButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource PrimaryButton}"/>
 
     <!-- Modern Dark ComboBox ToggleButton Style -->
     <Style x:Key="ModernComboBoxToggleButton" TargetType="{x:Type ToggleButton}">

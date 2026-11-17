@@ -1,0 +1,82 @@
+<!--
+    Cyberpunk menus (proposal 1 on docs/references/themed-menus-board.html).
+    Black panel with cut corners and a yellow edge, solid yellow selection bar, Orbitron headings, Share Tech Mono rows.
+    Tokens only; the templates are in SkinMenuBase.xaml (see UI/Controls/SkinMenus.cs).
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:po="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+                    mc:Ignorable="po">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="SkinMenuBase.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- Panel -->
+    <SolidColorBrush x:Key="MenuPanelBgBrush" Color="#06070A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuShadowBrush" Color="#06070A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuPanelBorderBrush" Color="#F5D000" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuPanelInnerFrameBrush" Color="Transparent" po:Freeze="True"/>
+    <CornerRadius x:Key="MenuPanelRadius">0</CornerRadius>
+    <sys:Double x:Key="MenuPanelCut">14</sys:Double>
+    <Thickness x:Key="MenuPanelPadding">6,9,6,9</Thickness>
+
+    <!-- Rows -->
+    <SolidColorBrush x:Key="MenuItemTextBrush" Color="#DFF8FD" po:Freeze="True"/>
+    <FontFamily x:Key="MenuItemFont">pack://application:,,,/Assets/Fonts/#Share Tech Mono, Consolas</FontFamily>
+    <FontWeight x:Key="MenuItemFontWeight">Normal</FontWeight>
+    <sys:Double x:Key="MenuItemFontSize">13.5</sys:Double>
+    <CornerRadius x:Key="MenuItemRadius">0</CornerRadius>
+    <SolidColorBrush x:Key="MenuItemHighlightBrush" Color="#F5D000" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuItemHighlightEdgeBrush" Color="Transparent" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuItemHighlightTextBrush" Color="#06070A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuIconBrush" Color="#F5D000" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuDangerBrush" Color="#FF3B5C" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuAccentBrush" Color="#F5D000" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuOnAccentBrush" Color="#06070A" po:Freeze="True"/>
+    <!-- dashed rule -->
+    <LinearGradientBrush x:Key="MenuSeparatorBrush" StartPoint="0,0" EndPoint="10,0" MappingMode="Absolute" SpreadMethod="Repeat" po:Freeze="True">
+        <GradientStop Color="#88F5D000" Offset="0"/>
+        <GradientStop Color="#88F5D000" Offset="0.6"/>
+        <GradientStop Color="#00F5D000" Offset="0.6"/>
+        <GradientStop Color="#00F5D000" Offset="1"/>
+    </LinearGradientBrush>
+    <sys:Double x:Key="MenuToolTipFontSize">13</sys:Double>
+    <sys:Double x:Key="MenuToolTipCut">7</sys:Double>
+
+    <!-- Popup text -->
+    <SolidColorBrush x:Key="MenuHeaderBrush" Color="#F5D000" po:Freeze="True"/>
+    <FontFamily x:Key="MenuHeaderFont">pack://application:,,,/Assets/Fonts/#Orbitron, Segoe UI</FontFamily>
+    <sys:Double x:Key="MenuHeaderFontSize">10.5</sys:Double>
+    <SolidColorBrush x:Key="MenuLabelBrush" Color="#DFF8FD" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuLabelMutedBrush" Color="#7FA3AB" po:Freeze="True"/>
+    <FontFamily x:Key="MenuLabelFont">pack://application:,,,/Assets/Fonts/#Share Tech Mono, Consolas</FontFamily>
+    <sys:Double x:Key="MenuLabelFontSize">13</sys:Double>
+
+    <!-- Popup controls -->
+    <SolidColorBrush x:Key="MenuChoiceBgBrush" Color="Transparent" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceTextBrush" Color="#DFF8FD" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceIdleBrush" Color="#4A4A30" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceSelectedBrush" Color="#F5D000" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceSelectedBgBrush" Color="#F5D000" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceSelectedTextBrush" Color="#06070A" po:Freeze="True"/>
+    <FontFamily x:Key="MenuChoiceFont">pack://application:,,,/Assets/Fonts/#Orbitron, Segoe UI</FontFamily>
+    <CornerRadius x:Key="MenuChoiceRadius">0</CornerRadius>
+    <sys:Double x:Key="MenuChoiceCut">6</sys:Double>
+    <SolidColorBrush x:Key="MenuSliderTrackBrush" Color="#2A2A1A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSliderFillBrush" Color="#F5D000" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSliderThumbBrush" Color="#06070A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSliderThumbBorderBrush" Color="#F5D000" po:Freeze="True"/>
+    <CornerRadius x:Key="MenuSliderThumbRadius">0</CornerRadius>
+    <SolidColorBrush x:Key="MenuSwitchTrackBrush" Color="#0B0C10" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSwitchBorderBrush" Color="#4A4A30" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSwitchThumbBrush" Color="#7FA3AB" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSwitchOnTrackBrush" Color="#F5D000" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSwitchOnThumbBrush" Color="#06070A" po:Freeze="True"/>
+    <CornerRadius x:Key="MenuSwitchRadius">0</CornerRadius>
+    <CornerRadius x:Key="MenuSwitchThumbRadius">0</CornerRadius>
+    <SolidColorBrush x:Key="MenuInputBgBrush" Color="#0B0C10" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuInputBorderBrush" Color="#4A4A30" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuInputTextBrush" Color="#F5D000" po:Freeze="True"/>
+</ResourceDictionary>

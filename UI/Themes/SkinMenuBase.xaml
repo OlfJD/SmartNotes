@@ -1,0 +1,310 @@
+<!--
+    Shared templates for themed menus, tooltips and the colour popup's controls.
+    Every value comes from a Menu* token (DynamicResource), so a skin's menu dictionary (UI/Themes/*Menu.xaml)
+    only defines tokens and merges this file. A token a skin leaves out falls back to the Classic value in DarkTheme.xaml.
+    Loaded only through skin menu dictionaries; Classic keeps the plain styles in DarkTheme.xaml.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:skins="clr-namespace:SmartNotes.UI.Skins">
+
+    <!-- ===== Context menu ===== -->
+    <Style x:Key="SkinContextMenu" TargetType="{x:Type ContextMenu}">
+        <Setter Property="Foreground" Value="{DynamicResource MenuItemTextBrush}"/>
+        <Setter Property="FontFamily" Value="{DynamicResource MenuItemFont}"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="UseLayoutRounding" Value="True"/>
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="Grid.IsSharedSizeScope" Value="True"/>
+        <Setter Property="HasDropShadow" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ContextMenu}">
+                    <Grid Margin="8">
+                        <skins:CutBorder Background="{DynamicResource MenuShadowBrush}" CornerRadius="{DynamicResource MenuPanelRadius}" Cut="{DynamicResource MenuPanelCut}">
+                            <skins:CutBorder.Effect>
+                                <DropShadowEffect BlurRadius="16" ShadowDepth="4" Opacity="0.75" Color="#000000"/>
+                            </skins:CutBorder.Effect>
+                        </skins:CutBorder>
+                        <skins:CutBorder Background="{DynamicResource MenuPanelBgBrush}" BorderBrush="{DynamicResource MenuPanelBorderBrush}" BorderThickness="{DynamicResource MenuPanelBorderThickness}" CornerRadius="{DynamicResource MenuPanelRadius}" Cut="{DynamicResource MenuPanelCut}">
+                            <DockPanel>
+                                <Border DockPanel.Dock="Top" Height="{DynamicResource MenuTopStripHeight}" Background="{DynamicResource MenuTopStripBrush}" CornerRadius="{DynamicResource MenuTopStripRadius}"/>
+                                <Border BorderBrush="{DynamicResource MenuPanelInnerFrameBrush}" BorderThickness="1" Margin="3" Padding="{DynamicResource MenuPanelPadding}">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                        <StackPanel IsItemsHost="True"/>
+                                    </ScrollViewer>
+                                </Border>
+                            </DockPanel>
+                        </skins:CutBorder>
+                        <Rectangle Width="7" Height="7" Fill="{DynamicResource MenuOrnamentBrush}" Visibility="{DynamicResource MenuOrnamentVisibility}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-3.5,0,0" RenderTransformOrigin="0.5,0.5">
+                            <Rectangle.RenderTransform><RotateTransform Angle="45"/></Rectangle.RenderTransform>
+                        </Rectangle>
+                        <Rectangle Width="7" Height="7" Fill="{DynamicResource MenuOrnamentBrush}" Visibility="{DynamicResource MenuOrnamentVisibility}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,-3.5" RenderTransformOrigin="0.5,0.5">
+                            <Rectangle.RenderTransform><RotateTransform Angle="45"/></Rectangle.RenderTransform>
+                        </Rectangle>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===== Menu rows ===== -->
+    <Style TargetType="{x:Type MenuItem}">
+        <Setter Property="Foreground" Value="{DynamicResource MenuItemTextBrush}"/>
+        <Setter Property="FontFamily" Value="{DynamicResource MenuItemFont}"/>
+        <Setter Property="FontWeight" Value="{DynamicResource MenuItemFontWeight}"/>
+        <Setter Property="FontSize" Value="{DynamicResource MenuItemFontSize}"/>
+        <Setter Property="Padding" Value="10,6"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="UseLayoutRounding" Value="True"/>
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type MenuItem}">
+                    <Grid SnapsToDevicePixels="True">
+                        <Border x:Name="ItemBd" Background="Transparent" CornerRadius="{DynamicResource MenuItemRadius}" Padding="{TemplateBinding Padding}" Margin="0,1">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" MinWidth="22"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <!-- icons without their own colour inherit this one (AppMenu leaves Normal icons uncoloured) -->
+                                <ContentPresenter x:Name="IconHost" Grid.Column="0" ContentSource="Icon" Margin="0,0,9,0" VerticalAlignment="Center" HorizontalAlignment="Center" TextElement.Foreground="{DynamicResource MenuIconBrush}"/>
+                                <Path Grid.Column="0" x:Name="CheckGlyph" Data="M 1 5.5 L 4.5 9 L 11 1.5" Stroke="{DynamicResource MenuAccentBrush}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Width="12" Height="10.5" Margin="0,0,9,0" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed"/>
+                                <ContentPresenter Grid.Column="1" ContentSource="Header" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Text="{TemplateBinding InputGestureText}" Foreground="{DynamicResource MenuLabelMutedBrush}" FontSize="12" VerticalAlignment="Center" Margin="14,0,0,0"/>
+                                <Path Grid.Column="3" x:Name="RightArrow" Data="M 1 1 L 5 5 L 1 9" Stroke="{DynamicResource MenuIconBrush}" StrokeThickness="1.4" StrokeStartLineCap="Round" StrokeEndLineCap="Round" VerticalAlignment="Center" Margin="10,0,2,0" Visibility="Collapsed"/>
+                            </Grid>
+                        </Border>
+                        <Border x:Name="BandTop" Height="1" VerticalAlignment="Top" Margin="0,1,0,0" Background="{DynamicResource MenuItemHighlightEdgeBrush}" Visibility="Collapsed"/>
+                        <Border x:Name="BandBottom" Height="1" VerticalAlignment="Bottom" Margin="0,0,0,1" Background="{DynamicResource MenuItemHighlightEdgeBrush}" Visibility="Collapsed"/>
+                        <Popup x:Name="PART_Popup" AllowsTransparency="True" Focusable="False" IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}" Placement="Right" PopupAnimation="Fade" VerticalOffset="-12" HorizontalOffset="0">
+                            <Grid Margin="8" MinWidth="200">
+                                <skins:CutBorder Background="{DynamicResource MenuShadowBrush}" CornerRadius="{DynamicResource MenuPanelRadius}" Cut="{DynamicResource MenuPanelCut}">
+                                    <skins:CutBorder.Effect>
+                                        <DropShadowEffect BlurRadius="16" ShadowDepth="4" Opacity="0.75" Color="#000000"/>
+                                    </skins:CutBorder.Effect>
+                                </skins:CutBorder>
+                                <skins:CutBorder Background="{DynamicResource MenuPanelBgBrush}" BorderBrush="{DynamicResource MenuPanelBorderBrush}" BorderThickness="{DynamicResource MenuPanelBorderThickness}" CornerRadius="{DynamicResource MenuPanelRadius}" Cut="{DynamicResource MenuPanelCut}">
+                                    <DockPanel>
+                                        <Border DockPanel.Dock="Top" Height="{DynamicResource MenuTopStripHeight}" Background="{DynamicResource MenuTopStripBrush}" CornerRadius="{DynamicResource MenuTopStripRadius}"/>
+                                        <Border BorderBrush="{DynamicResource MenuPanelInnerFrameBrush}" BorderThickness="1" Margin="3" Padding="{DynamicResource MenuPanelPadding}">
+                                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                                <StackPanel IsItemsHost="True"/>
+                                            </ScrollViewer>
+                                        </Border>
+                                    </DockPanel>
+                                </skins:CutBorder>
+                            </Grid>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="HasItems" Value="True">
+                            <Setter TargetName="RightArrow" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="CheckGlyph" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="ItemBd" Property="Background" Value="{DynamicResource MenuItemHighlightBrush}"/>
+                            <Setter TargetName="BandTop" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="BandBottom" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="RightArrow" Property="Stroke" Value="{DynamicResource MenuItemHighlightTextBrush}"/>
+                            <Setter TargetName="CheckGlyph" Property="Stroke" Value="{DynamicResource MenuItemHighlightTextBrush}"/>
+                            <Setter TargetName="IconHost" Property="TextElement.Foreground" Value="{DynamicResource MenuItemHighlightTextBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource MenuItemHighlightTextBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsSubmenuOpen" Value="True">
+                            <Setter TargetName="ItemBd" Property="Background" Value="{DynamicResource MenuItemHighlightBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.5"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="{x:Static MenuItem.SeparatorStyleKey}" TargetType="{x:Type Separator}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Separator}">
+                    <Border Height="1" Margin="6,5" Background="{DynamicResource MenuSeparatorBrush}" SnapsToDevicePixels="True"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===== Tooltips (the explanation cards on the note's buttons) ===== -->
+    <Style TargetType="{x:Type ToolTip}">
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="HasDropShadow" Value="True"/>
+        <Setter Property="Foreground" Value="{DynamicResource MenuItemTextBrush}"/>
+        <Setter Property="FontFamily" Value="{DynamicResource MenuItemFont}"/>
+        <Setter Property="FontWeight" Value="{DynamicResource MenuItemFontWeight}"/>
+        <Setter Property="FontSize" Value="{DynamicResource MenuToolTipFontSize}"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="UseLayoutRounding" Value="True"/>
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ToolTip}">
+                    <Grid Margin="6">
+                        <skins:CutBorder Background="{DynamicResource MenuShadowBrush}" CornerRadius="{DynamicResource MenuPanelRadius}" Cut="{DynamicResource MenuToolTipCut}">
+                            <skins:CutBorder.Effect>
+                                <DropShadowEffect BlurRadius="12" ShadowDepth="3" Opacity="0.7" Color="#000000"/>
+                            </skins:CutBorder.Effect>
+                        </skins:CutBorder>
+                        <skins:CutBorder Background="{DynamicResource MenuPanelBgBrush}" BorderBrush="{DynamicResource MenuPanelBorderBrush}" BorderThickness="{DynamicResource MenuPanelBorderThickness}" CornerRadius="{DynamicResource MenuPanelRadius}" Cut="{DynamicResource MenuToolTipCut}">
+                            <Border BorderBrush="{DynamicResource MenuPanelInnerFrameBrush}" BorderThickness="1" Margin="2" Padding="9,4,9,5">
+                                <ContentPresenter/>
+                            </Border>
+                        </skins:CutBorder>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===== Colour popup controls ===== -->
+    <Style x:Key="PopupChoiceButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="{DynamicResource MenuChoiceBgBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource MenuChoiceTextBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource MenuChoiceIdleBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="FontFamily" Value="{DynamicResource MenuChoiceFont}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <skins:CutBorder x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource MenuChoiceRadius}" Cut="{DynamicResource MenuChoiceCut}" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </skins:CutBorder>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource MenuItemHighlightBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource MenuItemHighlightTextBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.8"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="PopupPrimaryButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="{DynamicResource MenuAccentBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource MenuOnAccentBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource MenuAccentBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="FontFamily" Value="{DynamicResource MenuChoiceFont}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <skins:CutBorder x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource MenuChoiceRadius}" Cut="{DynamicResource MenuChoiceCut}" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </skins:CutBorder>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.88"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.75"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="PopupSliderStyle" TargetType="{x:Type Slider}">
+        <Setter Property="Stylus.IsPressAndHoldEnabled" Value="false"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Slider}">
+                    <Grid VerticalAlignment="Center" Height="22">
+                        <Border Height="3" Background="{DynamicResource MenuSliderTrackBrush}"/>
+                        <Track x:Name="PART_Track">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Command="{x:Static Slider.DecreaseLarge}">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate>
+                                            <Border Height="3" Background="{DynamicResource MenuSliderFillBrush}"/>
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.DecreaseRepeatButton>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Command="{x:Static Slider.IncreaseLarge}">
+                                    <RepeatButton.Template>
+                                        <ControlTemplate>
+                                            <Border Background="Transparent"/>
+                                        </ControlTemplate>
+                                    </RepeatButton.Template>
+                                </RepeatButton>
+                            </Track.IncreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb Width="14" Height="14" Cursor="Hand">
+                                    <Thumb.Template>
+                                        <ControlTemplate>
+                                            <Grid Width="14" Height="14" Background="Transparent">
+                                                <!-- round / square thumb (MenuSliderThumbRadius) or a diamond (MenuSliderDiamondVisibility) -->
+                                                <Border Width="13" Height="13" Visibility="{DynamicResource MenuSliderRoundVisibility}" CornerRadius="{DynamicResource MenuSliderThumbRadius}" Background="{DynamicResource MenuSliderThumbBrush}" BorderBrush="{DynamicResource MenuSliderThumbBorderBrush}" BorderThickness="2"/>
+                                                <Rectangle Width="10" Height="10" Visibility="{DynamicResource MenuSliderDiamondVisibility}" Fill="{DynamicResource MenuSliderThumbBrush}" Stroke="{DynamicResource MenuSliderThumbBorderBrush}" StrokeThickness="0.8" RenderTransformOrigin="0.5,0.5">
+                                                    <Rectangle.RenderTransform><RotateTransform Angle="45"/></Rectangle.RenderTransform>
+                                                </Rectangle>
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="PopupSwitchStyle" TargetType="{x:Type CheckBox}">
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type CheckBox}">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Grid Width="42" Height="22" Margin="0,0,8,0" VerticalAlignment="Center">
+                            <Border x:Name="Track" CornerRadius="{DynamicResource MenuSwitchRadius}" Background="{DynamicResource MenuSwitchTrackBrush}" BorderBrush="{DynamicResource MenuSwitchBorderBrush}" BorderThickness="1"/>
+                            <Border x:Name="Thumb" Width="14" Height="14" CornerRadius="{DynamicResource MenuSwitchThumbRadius}" Background="{DynamicResource MenuSwitchThumbBrush}" HorizontalAlignment="Left" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                        </Grid>
+                        <ContentPresenter VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Track" Property="Background" Value="{DynamicResource MenuSwitchOnTrackBrush}"/>
+                            <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource MenuAccentBrush}"/>
+                            <Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right"/>
+                            <Setter TargetName="Thumb" Property="Margin" Value="0,0,4,0"/>
+                            <Setter TargetName="Thumb" Property="Background" Value="{DynamicResource MenuSwitchOnThumbBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.45"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>
