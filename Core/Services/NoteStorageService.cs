@@ -9,10 +9,7 @@ namespace SmartNotes.Core.Services;
 
 public class NoteStorageService
 {
-    private static readonly string AppFolder = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "SmartNotes"
-    );
+    private static readonly string AppFolder = AppPaths.DataFolder;
     private static readonly string NotesFilePath = Path.Combine(AppFolder, "notes.json");
     private static readonly string NotesBackupPath = Path.Combine(AppFolder, "notes.json.bak");
     private static readonly string TrashFolder = Path.Combine(AppFolder, "trash");

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
+using SmartNotes.Core;
 using SmartNotes.Core.Models;
 using SmartNotes.Core.Native;
 using SmartNotes.Core.Services;
@@ -61,7 +62,7 @@ public partial class App : Application
     {
         try
         {
-            string appFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SmartNotes");
+            string appFolder = AppPaths.DataFolder;
             Directory.CreateDirectory(appFolder);
             string logPath = Path.Combine(appFolder, "startup.log");
 

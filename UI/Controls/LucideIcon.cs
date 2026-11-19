@@ -167,13 +167,14 @@ public class LucideIcon : System.Windows.Controls.UserControl
         string key = IconKey?.ToLowerInvariant().Trim() ?? "file-text";
         string pack = GetPack(this) ?? "";
 
-        if (pack.Length > 0)
+        // A pack may name fallbacks: "Medieval|Elden" tries Medieval's glyph first, then Elden's, then Lucide.
+        foreach (var name in pack.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
-            var stroke = Application.Current?.TryFindResource($"{pack}Icon_{key}") as Geometry;
-            var fill = Application.Current?.TryFindResource($"{pack}IconFill_{key}") as Geometry;
+            var stroke = Application.Current?.TryFindResource($"{name}Icon_{key}") as Geometry;
+            var fill = Application.Current?.TryFindResource($"{name}IconFill_{key}") as Geometry;
             if (stroke != null || fill != null)
             {
-                bool blocky = pack == "Cyber";
+                bool blocky = name == "Cyber";
                 _path.Data = stroke;
                 _fillPath.Data = fill;
                 _path.StrokeThickness = StrokeThickness * (blocky ? 0.85 : 0.7);

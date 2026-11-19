@@ -16,10 +16,7 @@ public class TextProofingService
     private static readonly Lazy<TextProofingService> _instance = new(() => new TextProofingService());
     public static TextProofingService Instance => _instance.Value;
 
-    private static readonly string AppFolder = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "SmartNotes"
-    );
+    private static readonly string AppFolder = AppPaths.DataFolder;
 
     public static readonly string CustomDictPath = Path.Combine(AppFolder, "custom_dict.lex");
     public static readonly string CustomRulesPath = Path.Combine(AppFolder, "autocorrect_rules.json");

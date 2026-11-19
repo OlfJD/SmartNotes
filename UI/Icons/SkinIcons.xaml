@@ -74,4 +74,31 @@
     <StreamGeometry x:Key="EldenIconFill_pen-line">M 21 2.5 C 13 3.5 8 7.5 6.2 14.5 L 5.4 18.6 L 8.6 17.4 C 15 15.6 19.5 11 21 2.5 Z</StreamGeometry>
     <StreamGeometry x:Key="EldenIcon_pen-line">M 5.4 18.6 L 3 21.5</StreamGeometry>
     <StreamGeometry x:Key="EldenIconFill_check">M 3 12.5 Q 7 14 9.2 19 Q 13 10 21 4 Q 13.5 8.5 9 14.2 Q 7 12.5 3 12.5 Z</StreamGeometry>
+
+    <!-- ============ MEDIEVAL: Elden's glyphs ("Medieval|Elden" pack) except these ============ -->
+    <!-- Colours: a flask of dye -->
+    <StreamGeometry x:Key="MedievalIcon_palette">M 9 2.5 H 15 M 10.2 2.5 V 8 L 5.4 17.6 C 4.6 19.8 5.8 21.5 8 21.5 H 16 C 18.2 21.5 19.4 19.8 18.6 17.6 L 13.8 8 V 2.5</StreamGeometry>
+    <StreamGeometry x:Key="MedievalIconFill_palette">M 8.2 14 H 15.8 L 17.4 17.8 C 17.9 19.4 17.2 20.3 15.8 20.3 H 8.2 C 6.8 20.3 6.1 19.4 6.6 17.8 Z</StreamGeometry>
+
+    <!-- ============ ASTRAL: fine lines, star points, constellations ============ -->
+    <!-- New: thin cross with a star at its heart -->
+    <StreamGeometry x:Key="AstralIcon_plus">M 12 3.5 V 9 M 12 15 V 20.5 M 3.5 12 H 9 M 15 12 H 20.5</StreamGeometry>
+    <StreamGeometry x:Key="AstralIconFill_plus">M 12 7.5 L 13.1 10.9 L 16.5 12 L 13.1 13.1 L 12 16.5 L 10.9 13.1 L 7.5 12 L 10.9 10.9 Z</StreamGeometry>
+    <!-- Close: two fine strokes, a point at the crossing -->
+    <StreamGeometry x:Key="AstralIcon_x">M 6 6 L 18 18 M 18 6 L 6 18</StreamGeometry>
+    <!-- Pin: a fixed star on a needle (filled = pinned, outline = loose) -->
+    <StreamGeometry x:Key="AstralIconFill_pin">M 12 1.5 L 13.59 5.82 L 18.18 5.99 L 14.57 8.83 L 15.82 13.26 L 12 10.7 L 8.18 13.26 L 9.43 8.83 L 5.82 5.99 L 10.41 5.82 Z</StreamGeometry>
+    <StreamGeometry x:Key="AstralIcon_pin">M 12 11.5 V 22.5</StreamGeometry>
+    <StreamGeometry x:Key="AstralIcon_pin-off">M 12 1.5 L 13.59 5.82 L 18.18 5.99 L 14.57 8.83 L 15.82 13.26 L 12 10.7 L 8.18 13.26 L 9.43 8.83 L 5.82 5.99 L 10.41 5.82 Z M 12 13 V 22.5</StreamGeometry>
+    <!-- Text: a page with a crescent moon -->
+    <StreamGeometry x:Key="AstralIcon_file-text">M 6 3 H 14.5 L 19 7.5 V 21 H 6 Z M 9 15 H 16 M 9 18 H 13.5</StreamGeometry>
+    <StreamGeometry x:Key="AstralIconFill_file-text">M 12.5 7 A 3.3 3.3 0 1 0 12.5 12.6 A 2.6 2.6 0 1 1 12.5 7 Z</StreamGeometry>
+    <!-- Checklist: three stars joined like a constellation, with ruled lines -->
+    <StreamGeometry x:Key="AstralIconFill_list-todo">M 4.5 4.3 A 1.7 1.7 0 1 0 4.51 4.3 Z M 4.5 10.3 A 1.7 1.7 0 1 0 4.51 10.3 Z M 4.5 16.3 A 1.7 1.7 0 1 0 4.51 16.3 Z</StreamGeometry>
+    <StreamGeometry x:Key="AstralIcon_list-todo">M 4.5 7.8 V 10.2 M 4.5 13.8 V 16.2 M 10 6 H 21 M 10 12 H 19 M 10 18 H 21</StreamGeometry>
+    <!-- Colours / style: a constellation (the button picks the note's colour) -->
+    <StreamGeometry x:Key="AstralIcon_palette">M 4 17 L 8.5 14 L 12.5 15.5 L 15.5 10.5 L 20.5 9 M 15.5 10.5 L 17 4.5</StreamGeometry>
+    <StreamGeometry x:Key="AstralIconFill_palette">M 4 15.4 A 1.6 1.6 0 1 0 4.01 15.4 Z M 8.5 12.6 A 1.4 1.4 0 1 0 8.51 12.6 Z M 12.5 14.1 A 1.4 1.4 0 1 0 12.51 14.1 Z M 15.5 8.4 A 2.1 2.1 0 1 0 15.51 8.4 Z M 20.5 7.6 A 1.4 1.4 0 1 0 20.51 7.6 Z M 17 3.1 A 1.4 1.4 0 1 0 17.01 3.1 Z</StreamGeometry>
+    <!-- More: three stars of different sizes -->
+    <StreamGeometry x:Key="AstralIconFill_more-horizontal">M 4.5 10.5 A 1.5 1.5 0 1 0 4.51 10.5 Z M 12 9.4 A 2.6 2.6 0 1 0 12.01 9.4 Z M 19.5 10.5 A 1.5 1.5 0 1 0 19.51 10.5 Z</StreamGeometry>
 </ResourceDictionary>

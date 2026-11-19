@@ -479,7 +479,7 @@ public partial class StickyNoteWindow : Window
             "Scroll" => EldenScrollArt.Build(w, h, _currentTheme, tag),
             "Paper" => PaperStickyArt.Build(w, h, _currentTheme),
             "Elden" => EldenRingArt.Build(w, h, _currentTheme, tag, _note.RuneKey, VisualTreeHelper.GetDpi(this).PixelsPerDip, RuneBottomReserve(h)),
-            "Astral" => AstralArt.Build(w, h, _currentTheme, tag),
+            "Astral" => AstralArt.Build(w, h, _currentTheme, tag, RuneBottomReserve(h)),
             _ => null
         };
     }

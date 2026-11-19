@@ -7,10 +7,7 @@ namespace SmartNotes.Core.Services;
 
 public class SettingsService
 {
-    private static readonly string AppFolder = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "SmartNotes"
-    );
+    private static readonly string AppFolder = AppPaths.DataFolder;
     private static readonly string SettingsPath = Path.Combine(AppFolder, "settings.json");
 
     public AppSettings Settings { get; private set; } = new();

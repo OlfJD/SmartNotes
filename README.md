@@ -8,7 +8,7 @@ Sticky notes for the Windows desktop.
 
 ## Features
 
-- **Six themes**: Classic, Paper Sticky, Cyberpunk, Medieval, Elden Ring and Astral, each with its own fonts, icons, menus and tooltips. Choose them per note.
+- **Six themes**: Classic, Paper Sticky, Cyberpunk, Medieval, Elden Ring and Astral (a night sky with its own constellation on every note), each with its own fonts, icons, menus and tooltips. Choose them per note.
 - **Stays on the desktop**: notes sit behind your apps, even after `Win + D`, or float on top if you prefer.
 - **Three modes**: text, checklist (drag tasks to reorder) and copy snippets.
 - **Magnetic docking**: notes snap together and move as a stack.

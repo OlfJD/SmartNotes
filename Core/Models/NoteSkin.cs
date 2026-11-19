@@ -308,7 +308,7 @@ public class NoteSkin
                 new SkinFontOption("Macondo", "Macondo", FontWeights.Normal, 1.08)
             },
             MetaFontStack = "./Assets/Fonts/#IM FELL English, Palatino Linotype, Georgia, serif",
-            IconPack = "Elden",
+            IconPack = "Medieval|Elden", // Elden's inked glyphs, but a dye flask (not a rune) on the colour button
             AccentTitle = true,
             TintPanels = true,
             MutedHex = "#5B4528",
@@ -404,9 +404,9 @@ public class NoteSkin
             }
         },
 
-        // Dark panel with a pale-gold double frame, notched corners, a glowing ring in the note's
-        // colour and drifting motes (the first Elden Ring look). Kept as the base for an
-        // astrology / starry-sky skin. Painted by AstralArt.
+        // Night sky: deep navy panel, a nebula in the note's colour, a star field, one constellation
+        // per note (lower right) and a thin silver frame with sparkles. Own star icons ("Astral" pack).
+        // Painted by AstralArt.
         new NoteSkin
         {
             Key = AstralKey,
@@ -426,31 +426,32 @@ public class NoteSkin
             TitleFonts = new[]
             {
                 new SkinFontOption("Cinzel", "Cinzel", FontWeights.Bold, 1.05),
-                new SkinFontOption("GrenzeGotisch", "Grenze Gotisch", FontWeights.Bold, 1.4),
-                new SkinFontOption("Metamorphous", "Metamorphous", FontWeights.Normal, 1.05)
+                new SkinFontOption("Metamorphous", "Metamorphous", FontWeights.Normal, 1.05),
+                new SkinFontOption("ZenDots", "Zen Dots", FontWeights.Normal, 0.95)
             },
             TextFonts = new[]
             {
                 new SkinFontOption("EBGaramond", "EB Garamond", FontWeights.Medium, 1.1),
-                new SkinFontOption("IMFellEnglish", "IM FELL English", FontWeights.Normal, 1.05, "IM Fell English"),
-                new SkinFontOption("Almendra", "Almendra", FontWeights.Normal, 1.08)
+                new SkinFontOption("Almendra", "Almendra", FontWeights.Normal, 1.08),
+                new SkinFontOption("Oxanium", "Oxanium", FontWeights.Medium, 1.0)
             },
             MetaFontStack = "./Assets/Fonts/#EB Garamond, Palatino Linotype, Georgia, serif",
-            IconPack = "Elden",
+            IconPack = "Astral",
             AccentTitle = true,
             TintPanels = true,
-            MutedHex = "#A39A7C",
-            FaintHex = "#7F7861",
-            PlaceholderHex = "#716B56",
-            DangerHex = "#C8503F",
-            AmberHex = "#D9B45A",
-            EmeraldHex = "#9CC283",
-            CyanHex = "#86B9CB",
-            PanelBgHex = "#40000000",
-            PanelBorderHex = "#806F6A52",
+            MutedHex = "#9AA6C6",
+            FaintHex = "#6B7593",
+            PlaceholderHex = "#646E8C",
+            DangerHex = "#E07A8A",
+            AmberHex = "#E8C77A",
+            EmeraldHex = "#8FD3B5",
+            CyanHex = "#8FC4E8",
+            PanelBgHex = "#40000010",
+            PanelBorderHex = "#665F6E99",
             Recolor = t =>
             {
-                string glow = Mix(t.PrimaryHex, "#F3D98C", 0.38);
+                // the note colour, washed toward starlight
+                string glow = Mix(t.PrimaryHex, "#CFE0FF", 0.42);
                 return new NoteColorTheme
                 {
                     Key = t.Key,
@@ -458,11 +459,11 @@ public class NoteSkin
                     PrimaryHex = glow,
                     GlowHex = glow,
                     AccentHex = glow,
-                    BgHex = "#1B1C15",
-                    HeaderBgHex = "#2A2B21",
-                    BorderHex = Mix("#8E8665", glow, 0.18),   // frame
-                    TextPrimaryHex = "#DDD6C0",
-                    TextMutedHex = "#9A927A"
+                    BgHex = "#0F1324",
+                    HeaderBgHex = "#182038",
+                    BorderHex = Mix("#A9B8E0", glow, 0.2),    // silver frame
+                    TextPrimaryHex = "#E1E6F4",
+                    TextMutedHex = "#8A93AD"
                 };
             }
         }
