@@ -237,6 +237,7 @@ public partial class StickyNoteWindow : Window
         // Copy list setup
         _copyItems = new ObservableCollection<CopySnippetItem>(_note.CopyList);
         CopyItemsControl.ItemsSource = _copyItems;
+        SetupItemDrag();
 
         // Ensure backward compatibility
         if (_note.IsChecklistMode && _note.ViewMode == NoteViewMode.Text)
@@ -1814,112 +1815,19 @@ public partial class StickyNoteWindow : Window
         }
     }
 
-    // ---- Checklist: drag a task's grip to reorder (GitHub issue #2) ----
-    // The mouse is captured by the ItemsControl, not the grip: moving an item re-parents its container,
-    // which would drop a capture held by the grip.
-    private TodoCheckItem? _draggedTask;
+    // ---- Drag rows to reorder (checklist tasks and copy items) ----
+    // A row is lifted into a floating ghost that can leave the note and springs back into its slot on release;
+    // see ListItemDragController. Released outside the note, the order is left unchanged.
+    private ListItemDragController<TodoCheckItem>? _checklistDrag;
+    private ListItemDragController<CopySnippetItem>? _copyDrag;
 
-    // A press anywhere on a task (text included) becomes a drag once the mouse clearly moves up or down;
-    // sideways movement stays a text selection, and buttons / the checkbox keep working.
-    private TodoCheckItem? _pendingTask;
-    private Point _pendingStart;
-
-    private void TaskRow_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    private void SetupItemDrag()
     {
-        _pendingTask = null;
-        if (_note.IsLocked || sender is not FrameworkElement { DataContext: TodoCheckItem item }) return;
-        for (var d = e.OriginalSource as DependencyObject; d != null && d != sender; d = VisualTreeHelper.GetParent(d))
-            if (d is System.Windows.Controls.Primitives.ButtonBase) return; // delete button, checkbox
-        _pendingTask = item;
-        _pendingStart = e.GetPosition(ChecklistItemsControl);
-    }
-
-    private void ChecklistItems_PreviewMouseMove(object sender, MouseEventArgs e)
-    {
-        if (_draggedTask != null || _pendingTask == null) return;
-        if (e.LeftButton != MouseButtonState.Pressed) { _pendingTask = null; return; }
-        Vector d = e.GetPosition(ChecklistItemsControl) - _pendingStart;
-        if (Math.Abs(d.Y) < 8 || Math.Abs(d.Y) < Math.Abs(d.X)) return;
-
-        _draggedTask = _pendingTask;
-        _pendingTask = null;
-        SetDraggedTaskLook(true);
-        Mouse.Capture(ChecklistItemsControl); // takes the mouse from the text box, ending its selection
-    }
-
-    private void ChecklistItems_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e) => _pendingTask = null;
-
-    private void TaskGrip_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        if (_note.IsLocked || sender is not FrameworkElement { DataContext: TodoCheckItem item }) return;
-        _draggedTask = item;
-        SetDraggedTaskLook(true);
-        Mouse.Capture(ChecklistItemsControl);
-        e.Handled = true; // no window drag / text focus
-    }
-
-    private void ChecklistItems_MouseMove(object sender, MouseEventArgs e)
-    {
-        if (_draggedTask == null) return;
-        if (e.LeftButton != MouseButtonState.Pressed) { EndTaskDrag(); return; }
-
-        int from = _checklistItems.IndexOf(_draggedTask);
-        if (from < 0) { EndTaskDrag(); return; }
-
-        // Target index = how many of the other rows have their middle above the pointer.
-        // Using midpoints (not row edges) keeps rows of different heights from flipping back and forth.
-        double y = e.GetPosition(ChecklistItemsControl).Y;
-        int to = 0;
-        for (int i = 0; i < _checklistItems.Count; i++)
-        {
-            if (i == from) continue;
-            if (ChecklistItemsControl.ItemContainerGenerator.ContainerFromIndex(i) is not FrameworkElement row) continue;
-            double mid = row.TranslatePoint(new Point(0, row.ActualHeight / 2), ChecklistItemsControl).Y;
-            if (y > mid) to++;
-        }
-        if (to != from)
-        {
-            _checklistItems.Move(from, to);
-            SetDraggedTaskLook(true);
-        }
-
-        // Scroll when the pointer nears the top / bottom of the list
-        if (ChecklistScroll != null)
-        {
-            double sy = e.GetPosition(ChecklistScroll).Y;
-            if (sy < 18) ChecklistScroll.ScrollToVerticalOffset(ChecklistScroll.VerticalOffset - 8);
-            else if (sy > ChecklistScroll.ActualHeight - 18) ChecklistScroll.ScrollToVerticalOffset(ChecklistScroll.VerticalOffset + 8);
-        }
-    }
-
-    private void ChecklistItems_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-    {
-        if (_draggedTask == null) return;
-        EndTaskDrag();
-        e.Handled = true;
-    }
-
-    // LostMouseCapture bubbles: the text box losing the mouse to the list (drag start) must not end the drag.
-    private void ChecklistItems_LostMouseCapture(object sender, MouseEventArgs e)
-    {
-        if (ReferenceEquals(e.OriginalSource, ChecklistItemsControl)) EndTaskDrag();
-    }
-
-    private void EndTaskDrag()
-    {
-        if (_draggedTask == null) return;
-        SetDraggedTaskLook(false);
-        _draggedTask = null;
-        if (Mouse.Captured == ChecklistItemsControl) Mouse.Capture(null);
-        RequestSave(isTyping: false);
-    }
-
-    /// <summary>Dims the row being dragged so it reads as "lifted".</summary>
-    private void SetDraggedTaskLook(bool dragging)
-    {
-        if (_draggedTask == null) return;
-        if (ChecklistItemsControl.ItemContainerGenerator.ContainerFromItem(_draggedTask) is UIElement row)
-            row.Opacity = dragging ? 0.55 : 1.0;
+        if (_checklistDrag != null) return;
+        _checklistDrag = new ListItemDragController<TodoCheckItem>(ChecklistItemsControl, ChecklistScroll,
+            () => _checklistItems, () => !_note.IsLocked, () => RequestSave(isTyping: false));
+        _copyDrag = new ListItemDragController<CopySnippetItem>(CopyItemsControl, CopyScroll,
+            () => _copyItems, () => !_note.IsLocked, () => RequestSave(isTyping: false));
     }
 
     // Copy Compartment Item Events

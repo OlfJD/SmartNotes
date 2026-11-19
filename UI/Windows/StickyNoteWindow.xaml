@@ -246,12 +246,11 @@
 
                     <!-- Scrollable Tasks -->
                     <ScrollViewer x:Name="ChecklistScroll" Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,0,8">
-                        <!-- Drag the grip on a task to reorder (GitHub issue #2); the drag runs on the ItemsControl, see TaskGrip_MouseLeftButtonDown -->
-                        <ItemsControl x:Name="ChecklistItemsControl" MouseMove="ChecklistItems_MouseMove" MouseLeftButtonUp="ChecklistItems_MouseLeftButtonUp" LostMouseCapture="ChecklistItems_LostMouseCapture"
-                                      PreviewMouseMove="ChecklistItems_PreviewMouseMove" PreviewMouseLeftButtonUp="ChecklistItems_PreviewMouseLeftButtonUp">
+                        <!-- Rows are dragged physically (lifted into a floating ghost) by ListItemDragController, see SetupItemDrag -->
+                        <ItemsControl x:Name="ChecklistItemsControl">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <skins:CutBorder PreviewMouseLeftButtonDown="TaskRow_PreviewMouseLeftButtonDown" Cut="{DynamicResource SkinItemCut}" Background="{DynamicResource SkinItemBgBrush}" BorderBrush="{DynamicResource SkinItemBorderBrush}" BorderThickness="{DynamicResource SkinItemBorder}" CornerRadius="{DynamicResource SkinItemRadius}" Margin="0,2,0,4" Padding="2,6,8,6">
+                                    <skins:CutBorder Cut="{DynamicResource SkinItemCut}" Background="{DynamicResource SkinItemBgBrush}" BorderBrush="{DynamicResource SkinItemBorderBrush}" BorderThickness="{DynamicResource SkinItemBorder}" CornerRadius="{DynamicResource SkinItemRadius}" Margin="0,2,0,4" Padding="2,6,8,6">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
@@ -261,7 +260,7 @@
                                             </Grid.ColumnDefinitions>
 
                                             <!-- Drag grip (six dots) -->
-                                            <Border x:Name="TaskGrip" Grid.Column="0" Width="16" Background="Transparent" Cursor="SizeAll" Margin="0,0,2,0" ToolTip="Drag to reorder" MouseLeftButtonDown="TaskGrip_MouseLeftButtonDown">
+                                            <Border x:Name="TaskGrip" Tag="DragGrip" Grid.Column="0" Width="16" Background="Transparent" Cursor="SizeAll" Margin="0,0,2,0" ToolTip="Drag to reorder">
                                                 <Path Data="M 1.7 2 A 1.3 1.3 0 1 0 4.3 2 A 1.3 1.3 0 1 0 1.7 2 Z M 6.7 2 A 1.3 1.3 0 1 0 9.3 2 A 1.3 1.3 0 1 0 6.7 2 Z M 1.7 7 A 1.3 1.3 0 1 0 4.3 7 A 1.3 1.3 0 1 0 1.7 7 Z M 6.7 7 A 1.3 1.3 0 1 0 9.3 7 A 1.3 1.3 0 1 0 6.7 7 Z M 1.7 12 A 1.3 1.3 0 1 0 4.3 12 A 1.3 1.3 0 1 0 1.7 12 Z M 6.7 12 A 1.3 1.3 0 1 0 9.3 12 A 1.3 1.3 0 1 0 6.7 12 Z"
                                                       Fill="{DynamicResource SkinMutedBrush}" Opacity="0.85" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
                                             </Border>
@@ -325,13 +324,15 @@
                     </Grid.RowDefinitions>
 
                     <!-- Scrollable Copy Items -->
-                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,0,8">
+                    <ScrollViewer x:Name="CopyScroll" Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,0,8">
                         <ItemsControl x:Name="CopyItemsControl">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <skins:CutBorder Cut="{DynamicResource SkinItemCut}" Background="{DynamicResource SkinItemBgBrush}" BorderBrush="{DynamicResource SkinItemBorderBrush}" BorderThickness="{DynamicResource SkinItemBorder}" CornerRadius="{DynamicResource SkinItemRadius}" Margin="0,2,0,4" Padding="8,5">
+                                    <skins:CutBorder Cut="{DynamicResource SkinItemCut}" Background="{DynamicResource SkinItemBgBrush}" BorderBrush="{DynamicResource SkinItemBorderBrush}" BorderThickness="{DynamicResource SkinItemBorder}" CornerRadius="{DynamicResource SkinItemRadius}" Margin="0,2,0,4" Padding="2,5,8,5">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
+                                                <!-- Drag grip -->
+                                                <ColumnDefinition Width="Auto"/>
                                                 <!-- Snippet Text Input -->
                                                 <ColumnDefinition Width="*"/>
                                                 <!-- Copy Button directly to the right in the same line -->
@@ -340,16 +341,22 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
 
+                                            <!-- Drag grip (six dots) -->
+                                            <Border Tag="DragGrip" Grid.Column="0" Width="16" Background="Transparent" Cursor="SizeAll" Margin="0,0,4,0" ToolTip="Drag to reorder">
+                                                <Path Data="M 1.7 2 A 1.3 1.3 0 1 0 4.3 2 A 1.3 1.3 0 1 0 1.7 2 Z M 6.7 2 A 1.3 1.3 0 1 0 9.3 2 A 1.3 1.3 0 1 0 6.7 2 Z M 1.7 7 A 1.3 1.3 0 1 0 4.3 7 A 1.3 1.3 0 1 0 1.7 7 Z M 6.7 7 A 1.3 1.3 0 1 0 9.3 7 A 1.3 1.3 0 1 0 6.7 7 Z M 1.7 12 A 1.3 1.3 0 1 0 4.3 12 A 1.3 1.3 0 1 0 1.7 12 Z M 6.7 12 A 1.3 1.3 0 1 0 9.3 12 A 1.3 1.3 0 1 0 6.7 12 Z"
+                                                      Fill="{DynamicResource SkinMutedBrush}" Opacity="0.85" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
+                                            </Border>
+
                                             <!-- Snippet Text Box -->
-                                            <TextBox Grid.Column="0" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="CopyItemText_Changed" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SkinItemTextBrush}" FontFamily="{DynamicResource SkinFont}" FontWeight="{DynamicResource SkinBodyWeight}" FontSize="{DynamicResource SkinItemFontSize}" CaretBrush="{DynamicResource SkinCaretBrush}" Cursor="IBeam" VerticalAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" PreviewKeyDown="TextBox_PreviewKeyDown" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
+                                            <TextBox Grid.Column="1" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="CopyItemText_Changed" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SkinItemTextBrush}" FontFamily="{DynamicResource SkinFont}" FontWeight="{DynamicResource SkinBodyWeight}" FontSize="{DynamicResource SkinItemFontSize}" CaretBrush="{DynamicResource SkinCaretBrush}" Cursor="IBeam" VerticalAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" PreviewKeyDown="TextBox_PreviewKeyDown" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
 
                                             <!-- Dedicated Copy Button on the right in the same line -->
-                                            <Button Grid.Column="1" Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnCopyRow_Click" ToolTip="Copy this line to clipboard" Margin="4,0,2,0" Padding="4">
+                                            <Button Grid.Column="2" Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnCopyRow_Click" ToolTip="Copy this line to clipboard" Margin="4,0,2,0" Padding="4">
                                                 <controls:LucideIcon IconKey="copy" Size="14" StrokeThickness="2.6" Foreground="{DynamicResource SkinCyanBrush}"/>
                                             </Button>
 
                                             <!-- Delete Row Button -->
-                                            <Button Grid.Column="2" Style="{StaticResource IconButton}" Width="24" Height="24" Click="BtnDeleteCopyItem_Click" ToolTip="Delete item" Padding="3">
+                                            <Button Grid.Column="3" Style="{StaticResource IconButton}" Width="24" Height="24" Click="BtnDeleteCopyItem_Click" ToolTip="Delete item" Padding="3">
                                                 <controls:LucideIcon IconKey="x" Size="13" StrokeThickness="2.6" Foreground="{DynamicResource SkinPlaceholderBrush}"/>
                                             </Button>
                                         </Grid>
