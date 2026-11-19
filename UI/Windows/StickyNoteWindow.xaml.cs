@@ -1819,6 +1819,36 @@ public partial class StickyNoteWindow : Window
     // which would drop a capture held by the grip.
     private TodoCheckItem? _draggedTask;
 
+    // A press anywhere on a task (text included) becomes a drag once the mouse clearly moves up or down;
+    // sideways movement stays a text selection, and buttons / the checkbox keep working.
+    private TodoCheckItem? _pendingTask;
+    private Point _pendingStart;
+
+    private void TaskRow_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        _pendingTask = null;
+        if (_note.IsLocked || sender is not FrameworkElement { DataContext: TodoCheckItem item }) return;
+        for (var d = e.OriginalSource as DependencyObject; d != null && d != sender; d = VisualTreeHelper.GetParent(d))
+            if (d is System.Windows.Controls.Primitives.ButtonBase) return; // delete button, checkbox
+        _pendingTask = item;
+        _pendingStart = e.GetPosition(ChecklistItemsControl);
+    }
+
+    private void ChecklistItems_PreviewMouseMove(object sender, MouseEventArgs e)
+    {
+        if (_draggedTask != null || _pendingTask == null) return;
+        if (e.LeftButton != MouseButtonState.Pressed) { _pendingTask = null; return; }
+        Vector d = e.GetPosition(ChecklistItemsControl) - _pendingStart;
+        if (Math.Abs(d.Y) < 8 || Math.Abs(d.Y) < Math.Abs(d.X)) return;
+
+        _draggedTask = _pendingTask;
+        _pendingTask = null;
+        SetDraggedTaskLook(true);
+        Mouse.Capture(ChecklistItemsControl); // takes the mouse from the text box, ending its selection
+    }
+
+    private void ChecklistItems_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e) => _pendingTask = null;
+
     private void TaskGrip_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (_note.IsLocked || sender is not FrameworkElement { DataContext: TodoCheckItem item }) return;
@@ -1869,7 +1899,11 @@ public partial class StickyNoteWindow : Window
         e.Handled = true;
     }
 
-    private void ChecklistItems_LostMouseCapture(object sender, MouseEventArgs e) => EndTaskDrag();
+    // LostMouseCapture bubbles: the text box losing the mouse to the list (drag start) must not end the drag.
+    private void ChecklistItems_LostMouseCapture(object sender, MouseEventArgs e)
+    {
+        if (ReferenceEquals(e.OriginalSource, ChecklistItemsControl)) EndTaskDrag();
+    }
 
     private void EndTaskDrag()
     {
