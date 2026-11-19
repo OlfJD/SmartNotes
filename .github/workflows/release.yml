@@ -33,6 +33,8 @@ jobs:
           $tag = if ($env:GITHUB_REF_NAME) { $env:GITHUB_REF_NAME } else { "v1.1.3" }
           $zipName = "SmartNotes-$tag-win-x64.zip"
           Compress-Archive -Path "release_output\*" -DestinationPath $zipName -Force
+          # Fixed-name copy: the README's download button links to releases/latest/download/SmartNotes-win-x64.zip
+          Copy-Item $zipName "SmartNotes-win-x64.zip"
           Write-Output "ZIP_NAME=$zipName" >> $env:GITHUB_ENV
 
       - name: Create GitHub Release

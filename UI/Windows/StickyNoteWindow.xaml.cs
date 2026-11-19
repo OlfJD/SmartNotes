@@ -1814,6 +1814,80 @@ public partial class StickyNoteWindow : Window
         }
     }
 
+    // ---- Checklist: drag a task's grip to reorder (GitHub issue #2) ----
+    // The mouse is captured by the ItemsControl, not the grip: moving an item re-parents its container,
+    // which would drop a capture held by the grip.
+    private TodoCheckItem? _draggedTask;
+
+    private void TaskGrip_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (_note.IsLocked || sender is not FrameworkElement { DataContext: TodoCheckItem item }) return;
+        _draggedTask = item;
+        SetDraggedTaskLook(true);
+        Mouse.Capture(ChecklistItemsControl);
+        e.Handled = true; // no window drag / text focus
+    }
+
+    private void ChecklistItems_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (_draggedTask == null) return;
+        if (e.LeftButton != MouseButtonState.Pressed) { EndTaskDrag(); return; }
+
+        int from = _checklistItems.IndexOf(_draggedTask);
+        if (from < 0) { EndTaskDrag(); return; }
+
+        // Target index = how many of the other rows have their middle above the pointer.
+        // Using midpoints (not row edges) keeps rows of different heights from flipping back and forth.
+        double y = e.GetPosition(ChecklistItemsControl).Y;
+        int to = 0;
+        for (int i = 0; i < _checklistItems.Count; i++)
+        {
+            if (i == from) continue;
+            if (ChecklistItemsControl.ItemContainerGenerator.ContainerFromIndex(i) is not FrameworkElement row) continue;
+            double mid = row.TranslatePoint(new Point(0, row.ActualHeight / 2), ChecklistItemsControl).Y;
+            if (y > mid) to++;
+        }
+        if (to != from)
+        {
+            _checklistItems.Move(from, to);
+            SetDraggedTaskLook(true);
+        }
+
+        // Scroll when the pointer nears the top / bottom of the list
+        if (ChecklistScroll != null)
+        {
+            double sy = e.GetPosition(ChecklistScroll).Y;
+            if (sy < 18) ChecklistScroll.ScrollToVerticalOffset(ChecklistScroll.VerticalOffset - 8);
+            else if (sy > ChecklistScroll.ActualHeight - 18) ChecklistScroll.ScrollToVerticalOffset(ChecklistScroll.VerticalOffset + 8);
+        }
+    }
+
+    private void ChecklistItems_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_draggedTask == null) return;
+        EndTaskDrag();
+        e.Handled = true;
+    }
+
+    private void ChecklistItems_LostMouseCapture(object sender, MouseEventArgs e) => EndTaskDrag();
+
+    private void EndTaskDrag()
+    {
+        if (_draggedTask == null) return;
+        SetDraggedTaskLook(false);
+        _draggedTask = null;
+        if (Mouse.Captured == ChecklistItemsControl) Mouse.Capture(null);
+        RequestSave(isTyping: false);
+    }
+
+    /// <summary>Dims the row being dragged so it reads as "lifted".</summary>
+    private void SetDraggedTaskLook(bool dragging)
+    {
+        if (_draggedTask == null) return;
+        if (ChecklistItemsControl.ItemContainerGenerator.ContainerFromItem(_draggedTask) is UIElement row)
+            row.Opacity = dragging ? 0.55 : 1.0;
+    }
+
     // Copy Compartment Item Events
     private void NewCopyItemContainer_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {

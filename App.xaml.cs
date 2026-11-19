@@ -24,6 +24,7 @@ public partial class App : Application
     private SettingsService _settingsService = null!;
     private NoteStorageService _storageService = null!;
     private TrayManager _trayManager = null!;
+    private ShowDesktopWatcher? _showDesktopWatcher;
     private GlobalHotKeyManager? _hotKeyManager;
     private Window? _dummyHwndHost;
 
@@ -180,6 +181,17 @@ public partial class App : Application
             // Restore active notes on the desktop at their exact saved coordinates
             RestoreAllDesktopNotes();
             LogStartup("Desktop notes restored.");
+
+            // Keep "Desktop Stuck" notes visible through Show Desktop / Win+D (GitHub issue #1)
+            _showDesktopWatcher = new ShowDesktopWatcher(() => _activeNoteWindows.Values.ToList());
+            LogStartup("ShowDesktopWatcher started.");
+
+            // Silent updates: download in the background, restart into the new version only while the
+            // user is away (3 min without input) and no note has focus. No dialogs.
+            UpdateService.StartAutomaticUpdates(() =>
+                Win32Api.GetIdleTime() >= TimeSpan.FromMinutes(3) &&
+                !_activeNoteWindows.Values.Any(w => w.IsActive));
+            LogStartup("Automatic updates scheduled.");
 
             CheckAndPromptLanguageSelection();
             LogStartup("Language prompt checked.");
@@ -680,6 +692,7 @@ public partial class App : Application
         {
             try { win.FlushPendingSave(); } catch { }
         }
+        try { _showDesktopWatcher?.Dispose(); } catch { }
         try { _trayManager?.Dispose(); } catch { }
         try { _hotKeyManager?.Dispose(); } catch { }
         try { _instanceEvent?.Dispose(); } catch { }

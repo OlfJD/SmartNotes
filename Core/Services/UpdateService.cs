@@ -45,8 +45,165 @@ public static class UpdateService
         catch { }
     }
 
+    // ---------------------------------------------------------------------------------------------
+    // Silent automatic updates (no dialogs, no toasts)
+    //   * check GitHub shortly after start and every few hours;
+    //   * download + extract a newer release into a staging folder in the background;
+    //   * restart into it only when the caller says it is a good moment (user idle, no note focused).
+    // The manual "Check for Updates…" menu item below still shows its dialogs: the user asked for it.
+    // ---------------------------------------------------------------------------------------------
+    private static readonly TimeSpan FirstCheckDelay = TimeSpan.FromSeconds(45);
+    private static readonly TimeSpan CheckInterval = TimeSpan.FromHours(6);
+    private static readonly TimeSpan ApplyPollInterval = TimeSpan.FromMinutes(1);
+
+    private static System.Windows.Threading.DispatcherTimer? _checkTimer;
+    private static System.Windows.Threading.DispatcherTimer? _applyTimer;
+    private static string? _stagedDir;      // extracted, ready-to-copy release
+    private static Version? _stagedVersion;
+    private static bool _busy;
+    private static bool _applying;
+
+    /// <param name="isGoodMomentToRestart">Called once a minute while an update is staged; return true to restart into it now.</param>
+    public static void StartAutomaticUpdates(Func<bool> isGoodMomentToRestart)
+    {
+        if (_checkTimer != null) return;
+        _checkTimer = new System.Windows.Threading.DispatcherTimer { Interval = FirstCheckDelay };
+        _checkTimer.Tick += async (_, _) =>
+        {
+            _checkTimer.Interval = CheckInterval;
+            await CheckAndStageSilentlyAsync();
+        };
+        _checkTimer.Start();
+
+        _applyTimer = new System.Windows.Threading.DispatcherTimer { Interval = ApplyPollInterval };
+        _applyTimer.Tick += (_, _) =>
+        {
+            if (_stagedDir == null || _applying) return;
+            bool now;
+            try { now = isGoodMomentToRestart(); } catch { now = false; }
+            if (now) ApplyStaged();
+        };
+        _applyTimer.Start();
+    }
+
+    private static async Task CheckAndStageSilentlyAsync()
+    {
+        if (_busy || _stagedDir != null || _applying) return;
+        _busy = true;
+        try
+        {
+            var latest = await GetLatestReleaseAsync();
+            if (latest == null || latest.Value.version <= CurrentVersion || string.IsNullOrEmpty(latest.Value.zipUrl)) return;
+
+            string dir = Path.Combine(Path.GetTempPath(), "SmartNotes_Update");
+            string zipPath = Path.Combine(dir, "update.zip");
+            string extractPath = Path.Combine(dir, "extracted");
+            if (Directory.Exists(dir)) Directory.Delete(dir, true);
+            Directory.CreateDirectory(dir);
+
+            var bytes = await HttpClient.GetByteArrayAsync(latest.Value.zipUrl);
+            await File.WriteAllBytesAsync(zipPath, bytes);
+            ZipFile.ExtractToDirectory(zipPath, extractPath, true);
+
+            // Only stage a package that actually contains the app
+            if (!File.Exists(Path.Combine(extractPath, "SmartNotes.exe"))) return;
+            _stagedDir = extractPath;
+            _stagedVersion = latest.Value.version;
+        }
+        catch
+        {
+            // offline, rate-limited, disk full …: try again at the next interval, silently
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private static async Task<(Version version, string? zipUrl)?> GetLatestReleaseAsync()
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, GitHubApiUrl);
+        request.Headers.Add("Accept", "application/vnd.github.v3+json");
+        using var response = await HttpClient.SendAsync(request);
+        if (!response.IsSuccessStatusCode) return null;
+
+        using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var root = doc.RootElement;
+        string tag = root.TryGetProperty("tag_name", out var t) ? t.GetString() ?? "" : "";
+        string clean = tag.Trim().TrimStart('v', 'V');
+        if (!(Version.TryParse(clean, out var ver) || TryParseLooseVersion(clean, out ver))) return null;
+        return (ver, FindZipAsset(root));
+    }
+
+    private static string? FindZipAsset(JsonElement root)
+    {
+        if (!root.TryGetProperty("assets", out var assets) || assets.ValueKind != JsonValueKind.Array) return null;
+        foreach (var asset in assets.EnumerateArray())
+        {
+            string name = asset.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "";
+            string url = asset.TryGetProperty("browser_download_url", out var u) ? u.GetString() ?? "" : "";
+            if (name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)) return url;
+        }
+        return null;
+    }
+
+    /// <summary>Restarts into the staged release: the app exits normally (pending note saves are flushed in OnExit),
+    /// a hidden script copies the new files over the app folder and starts it again.</summary>
+    private static void ApplyStaged()
+    {
+        if (_stagedDir == null || _applying) return;
+        _applying = true;
+        try
+        {
+            StartCopyScript(_stagedDir, restart: true);
+            Application.Current.Dispatcher.Invoke(() => Application.Current.Shutdown());
+        }
+        catch
+        {
+            _applying = false; // stay on this version; the next check stages again
+            _stagedDir = null;
+        }
+    }
+
+    /// <summary>Writes and starts (hidden) the script that waits for this process to exit, copies the new
+    /// files over the app folder and, if asked, starts the app again.</summary>
+    private static void StartCopyScript(string extractPath, bool restart)
+    {
+        string appDir = AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\', '/');
+        int pid = Environment.ProcessId;
+        string scriptPath = Path.Combine(Path.GetDirectoryName(extractPath)!, "apply_update.bat");
+        // Wait (up to ~30 s) for the app to exit on its own so pending note saves are flushed;
+        // only force-kill as a last resort.
+        string script = $@"@echo off
+set /a tries=0
+:waitloop
+tasklist /FI ""PID eq {pid}"" 2>nul | find ""{pid}"" >nul
+if errorlevel 1 goto apply
+set /a tries+=1
+if %tries% geq 30 (
+    taskkill /F /PID {pid} > nul 2>&1
+    timeout /t 1 /nobreak > nul
+    goto apply
+)
+timeout /t 1 /nobreak > nul
+goto waitloop
+:apply
+xcopy /Y /E /I ""{extractPath}\*"" ""{appDir}\"" > nul
+{(restart ? $@"start """" ""{Path.Combine(appDir, "SmartNotes.exe")}""" : "")}
+exit
+";
+        File.WriteAllText(scriptPath, script);
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = scriptPath,
+            UseShellExecute = true,
+            CreateNoWindow = true,
+            WindowStyle = ProcessWindowStyle.Hidden
+        });
+    }
+
     /// <summary>
-    /// Checks for updates asynchronously against the GitHub repository.
+    /// Manual check from the "Check for Updates…" menu item: reports the result in a dialog.
     /// </summary>
     public static async Task CheckForUpdatesAsync(bool isManualCheck = false, Action<string, string>? notifyCallback = null)
     {
@@ -158,8 +315,10 @@ public static class UpdateService
 
     private static async Task DownloadAndApplyUpdateAsync(string downloadUrl)
     {
+        if (_busy || _applying) return; // a silent download / restart is already under way
         try
         {
+            _stagedDir = null; // the folder is about to be replaced
             string tempDir = Path.Combine(Path.GetTempPath(), "SmartNotes_Update");
             if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true);
             Directory.CreateDirectory(tempDir);
@@ -172,40 +331,8 @@ public static class UpdateService
 
             ZipFile.ExtractToDirectory(zipPath, extractPath, true);
 
-            string appDir = AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\', '/');
-            int currentPid = Environment.ProcessId;
-
-            string scriptPath = Path.Combine(tempDir, "apply_update.bat");
-            // Wait (up to ~15 s) for the app to exit on its own so pending note saves are flushed;
-            // only force-kill as a last resort.
-            string scriptContent = $@"@echo off
-set /a tries=0
-:waitloop
-tasklist /FI ""PID eq {currentPid}"" 2>nul | find ""{currentPid}"" >nul
-if errorlevel 1 goto apply
-set /a tries+=1
-if %tries% geq 30 (
-    taskkill /F /PID {currentPid} > nul 2>&1
-    timeout /t 1 /nobreak > nul
-    goto apply
-)
-timeout /t 1 /nobreak > nul
-goto waitloop
-:apply
-xcopy /Y /E /I ""{extractPath}\*"" ""{appDir}\"" > nul
-start """" ""{Path.Combine(appDir, "SmartNotes.exe")}""
-exit
-";
-            await File.WriteAllTextAsync(scriptPath, scriptContent);
-
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = scriptPath,
-                UseShellExecute = true,
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden
-            });
-
+            _applying = true;
+            StartCopyScript(extractPath, restart: true);
             Application.Current.Dispatcher.Invoke(() => Application.Current.Shutdown());
         }
         catch (Exception ex)

@@ -245,20 +245,28 @@
                     </Grid.RowDefinitions>
 
                     <!-- Scrollable Tasks -->
-                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,0,8">
-                        <ItemsControl x:Name="ChecklistItemsControl">
+                    <ScrollViewer x:Name="ChecklistScroll" Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,0,8">
+                        <!-- Drag the grip on a task to reorder (GitHub issue #2); the drag runs on the ItemsControl, see TaskGrip_MouseLeftButtonDown -->
+                        <ItemsControl x:Name="ChecklistItemsControl" MouseMove="ChecklistItems_MouseMove" MouseLeftButtonUp="ChecklistItems_MouseLeftButtonUp" LostMouseCapture="ChecklistItems_LostMouseCapture">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <skins:CutBorder Cut="{DynamicResource SkinItemCut}" Background="{DynamicResource SkinItemBgBrush}" BorderBrush="{DynamicResource SkinItemBorderBrush}" BorderThickness="{DynamicResource SkinItemBorder}" CornerRadius="{DynamicResource SkinItemRadius}" Margin="0,2,0,4" Padding="8,6">
+                                    <skins:CutBorder Cut="{DynamicResource SkinItemCut}" Background="{DynamicResource SkinItemBgBrush}" BorderBrush="{DynamicResource SkinItemBorderBrush}" BorderThickness="{DynamicResource SkinItemBorder}" CornerRadius="{DynamicResource SkinItemRadius}" Margin="0,2,0,4" Padding="2,6,8,6">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
 
+                                            <!-- Drag grip (six dots) -->
+                                            <Border x:Name="TaskGrip" Grid.Column="0" Width="14" Background="Transparent" Cursor="SizeNS" Margin="0,0,2,0" ToolTip="Drag to reorder" MouseLeftButtonDown="TaskGrip_MouseLeftButtonDown">
+                                                <Path Data="M 1.7 2 A 1.3 1.3 0 1 0 4.3 2 A 1.3 1.3 0 1 0 1.7 2 Z M 6.7 2 A 1.3 1.3 0 1 0 9.3 2 A 1.3 1.3 0 1 0 6.7 2 Z M 1.7 7 A 1.3 1.3 0 1 0 4.3 7 A 1.3 1.3 0 1 0 1.7 7 Z M 6.7 7 A 1.3 1.3 0 1 0 9.3 7 A 1.3 1.3 0 1 0 6.7 7 Z M 1.7 12 A 1.3 1.3 0 1 0 4.3 12 A 1.3 1.3 0 1 0 1.7 12 Z M 6.7 12 A 1.3 1.3 0 1 0 9.3 12 A 1.3 1.3 0 1 0 6.7 12 Z"
+                                                      Fill="{DynamicResource SkinPlaceholderBrush}" Opacity="0.6" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
+                                            </Border>
+
                                             <!-- Checkbox with 2.5px thick border -->
-                                            <CheckBox Grid.Column="0" IsChecked="{Binding IsDone}" Click="CheckItem_Click" VerticalAlignment="Center" Cursor="Hand" Margin="0,0,10,0">
+                                            <CheckBox Grid.Column="1" IsChecked="{Binding IsDone}" Click="CheckItem_Click" VerticalAlignment="Center" Cursor="Hand" Margin="0,0,10,0">
                                                 <CheckBox.Template>
                                                     <ControlTemplate TargetType="{x:Type CheckBox}">
                                                         <Grid Width="20" Height="20">
@@ -277,10 +285,10 @@
                                             </CheckBox>
 
                                             <!-- Task Text -->
-                                            <TextBox Grid.Column="1" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="TaskText_Changed" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SkinItemTextBrush}" FontFamily="{DynamicResource SkinFont}" FontWeight="{DynamicResource SkinBodyWeight}" FontSize="{DynamicResource SkinItemFontSize}" CaretBrush="{DynamicResource SkinCaretBrush}" VerticalAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" PreviewKeyDown="TextBox_PreviewKeyDown" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
+                                            <TextBox Grid.Column="2" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="TaskText_Changed" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SkinItemTextBrush}" FontFamily="{DynamicResource SkinFont}" FontWeight="{DynamicResource SkinBodyWeight}" FontSize="{DynamicResource SkinItemFontSize}" CaretBrush="{DynamicResource SkinCaretBrush}" VerticalAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" PreviewKeyDown="TextBox_PreviewKeyDown" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
 
                                             <!-- Delete Task Item Button -->
-                                            <Button Grid.Column="2" Style="{StaticResource IconButton}" Width="24" Height="24" Click="BtnDeleteTask_Click" ToolTip="Delete task" Padding="3">
+                                            <Button Grid.Column="3" Style="{StaticResource IconButton}" Width="24" Height="24" Click="BtnDeleteTask_Click" ToolTip="Delete task" Padding="3">
                                                 <controls:LucideIcon IconKey="x" Size="13" StrokeThickness="2.6" Foreground="{DynamicResource SkinPlaceholderBrush}"/>
                                             </Button>
                                         </Grid>
