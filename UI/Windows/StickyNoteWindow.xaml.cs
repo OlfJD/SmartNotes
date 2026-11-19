@@ -186,6 +186,7 @@ public partial class StickyNoteWindow : Window
         if (TxtQuickNeonThemes != null) TxtQuickNeonThemes.Text = LocalizationService.T("ColorPopup_QuickThemes");
         if (TxtGreatRunesHeader != null) TxtGreatRunesHeader.Text = LocalizationService.T("ColorPopup_GreatRunes");
         if (RuneButtonsGrid != null) RuneButtonsGrid.Children.Clear(); // rebuilt with localized tooltips on next open
+        if (TxtConstellationHeader != null) TxtConstellationHeader.Text = LocalizationService.T("ColorPopup_Constellation");
         if (TxtCustomPaletteCanvas != null) TxtCustomPaletteCanvas.Text = LocalizationService.T("ColorPopup_CustomCanvas");
         if (BtnApplyCustomColor != null) BtnApplyCustomColor.Content = LocalizationService.T("ColorPopup_Apply");
         if (TxtTransparencyDimming != null) TxtTransparencyDimming.Text = LocalizationService.T("ColorPopup_TransparencyDimming");
@@ -480,7 +481,7 @@ public partial class StickyNoteWindow : Window
             "Scroll" => EldenScrollArt.Build(w, h, _currentTheme, tag),
             "Paper" => PaperStickyArt.Build(w, h, _currentTheme),
             "Elden" => EldenRingArt.Build(w, h, _currentTheme, tag, _note.RuneKey, VisualTreeHelper.GetDpi(this).PixelsPerDip, RuneBottomReserve(h)),
-            "Astral" => AstralArt.Build(w, h, _currentTheme, tag, RuneBottomReserve(h)),
+            "Astral" => AstralArt.Build(w, h, _currentTheme, tag, RuneBottomReserve(h), _note.ConstellationKey),
             _ => null
         };
     }
@@ -612,6 +613,80 @@ public partial class StickyNoteWindow : Window
         {
             if (RuneButtonsGrid.Children.Count == 0) BuildRuneButtons();
             else UpdateRuneButtons();
+        }
+
+        bool astral = _currentSkin.ArtKey == "Astral";
+        if (ConstellationSection != null) ConstellationSection.Visibility = astral ? Visibility.Visible : Visibility.Collapsed;
+        if (astral) BuildConstellationButtons(); // tiles are tinted with the note colour, so rebuilt each time
+    }
+
+    /// <summary>Fills the "Constellation" picker (Astral skin): Automatic, then one tile per figure.</summary>
+    private void BuildConstellationButtons()
+    {
+        if (ConstellationButtonsGrid == null) return;
+        ConstellationButtonsGrid.Children.Clear();
+        double dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+        string lang = LocalizationService.Instance.CurrentLanguage;
+        var glow = _currentTheme.GlowBrush.Color;
+        var keys = new List<string> { "" };
+        keys.AddRange(AstralArt.ConstellationKeys);
+        foreach (var key in keys)
+        {
+            // 6 columns in the 220 px popup leave ~36 px per button: 32 px tile + 2 px margin each side.
+            var image = new System.Windows.Controls.Image
+            {
+                Source = AstralArt.RenderTile(key, (int)Math.Round(29 * Math.Max(1, dpi)), glow),
+                Width = 29,
+                Height = 29,
+                Stretch = Stretch.Uniform
+            };
+            RenderOptions.SetBitmapScalingMode(image, BitmapScalingMode.HighQuality);
+            var tile = new Border
+            {
+                Width = 32,
+                Height = 32,
+                CornerRadius = new CornerRadius(2),
+                BorderThickness = new Thickness(1.5),
+                Child = image
+            };
+            var button = new Button
+            {
+                Style = TryFindResource("IconButton") as Style,
+                Padding = new Thickness(0),
+                Margin = new Thickness(2),
+                Tag = key,
+                ToolTip = key.Length == 0 ? LocalizationService.T("Constellation_Auto") : AstralArt.DisplayName(key, lang),
+                Content = tile
+            };
+            button.Click += ConstellationButton_Click;
+            ConstellationButtonsGrid.Children.Add(button);
+        }
+        UpdateConstellationButtons();
+    }
+
+    private void UpdateConstellationButtons()
+    {
+        if (ConstellationButtonsGrid == null) return;
+        var idle = ConstellationButtonsGrid.TryFindResource("MenuTileIdleBrush") as Brush ?? NoteColorTheme.CreateFrozenBrush("#2A3752");
+        string current = _note.ConstellationKey ?? "";
+        foreach (var child in ConstellationButtonsGrid.Children)
+        {
+            if (child is Button { Content: Border tile } btn)
+            {
+                bool selected = string.Equals(btn.Tag as string, current, StringComparison.OrdinalIgnoreCase);
+                tile.BorderBrush = selected ? _currentTheme.GlowBrush : idle;
+            }
+        }
+    }
+
+    private void ConstellationButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is string key)
+        {
+            _note.ConstellationKey = key;
+            UpdateConstellationButtons();
+            UpdateSkinGeometry();
+            RequestSave(isTyping: false);
         }
     }
 

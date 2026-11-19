@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using SmartNotes.Core.Models;
 using WpfPen = System.Windows.Media.Pen;
 using WpfColor = System.Windows.Media.Color;
@@ -13,7 +15,8 @@ namespace SmartNotes.UI.Skins;
 /// Paints the Astral skin: a night-sky panel (deep navy, a soft nebula in the note's colour, a seeded
 /// field of faint stars and a dotted ecliptic arc), one constellation drawn as linked, flaring stars in the
 /// lower right, and a thin silver double frame with notched corners and small four-point sparkles.
-/// The constellation is picked from the note's id, so every note keeps its own figure.
+/// The constellation is the one chosen in the colour popup (NoteItem.ConstellationKey), or, when none is
+/// chosen, picked from the note's id, so every note keeps its own figure.
 /// Coordinates must stay in sync with NoteSkin.ContentInset for the Astral skin.
 /// </summary>
 public static class AstralArt
@@ -24,6 +27,25 @@ public static class AstralArt
 
     /// <summary>A constellation: stars in a 0..1 box (x, y, brightness 0..1) and the lines between them.</summary>
     private sealed record Figure(string Name, (double x, double y, double mag)[] Stars, (int a, int b)[] Lines);
+
+    /// <summary>German names, by Figure.Name (the Name is also the key stored on the note).</summary>
+    private static readonly Dictionary<string, string> NamesDe = new()
+    {
+        ["Cassiopeia"] = "Kassiopeia",
+        ["Ursa Major"] = "Großer Bär",
+        ["Cygnus"] = "Schwan",
+        ["Orion"] = "Orion",
+        ["Lyra"] = "Leier",
+    };
+
+    /// <summary>Keys of all constellations, in picker order.</summary>
+    public static IReadOnlyList<string> ConstellationKeys => Array.ConvertAll(Figures, f => f.Name);
+
+    public static string DisplayName(string key, string language) =>
+        language.StartsWith("de", StringComparison.OrdinalIgnoreCase) && NamesDe.TryGetValue(key, out var de) ? de : key;
+
+    private static Figure? Find(string? key) =>
+        string.IsNullOrEmpty(key) ? null : Array.Find(Figures, f => string.Equals(f.Name, key, StringComparison.OrdinalIgnoreCase));
 
     // Real star patterns (public sky), simplified.
     private static readonly Figure[] Figures =
@@ -45,7 +67,7 @@ public static class AstralArt
             new[] { (0, 1), (0, 2), (1, 2), (2, 3), (3, 4), (4, 1) }),
     };
 
-    public static Drawing Build(double w, double h, NoteColorTheme theme, string tag, double bottomReserve = 0)
+    public static Drawing Build(double w, double h, NoteColorTheme theme, string tag, double bottomReserve = 0, string? constellation = null)
     {
         WpfColor glow = theme.GlowBrush.Color;
         WpfColor frame = theme.BorderBrush.Color;
@@ -113,7 +135,7 @@ public static class AstralArt
             // The note's constellation, lower right, clear of the footer / input row
             if (w > 200)
             {
-                var fig = Figures[(int)(Hash(6, seed) * Figures.Length) % Figures.Length];
+                var fig = Find(constellation) ?? Figures[(int)(Hash(6, seed) * Figures.Length) % Figures.Length];
                 double floor = h - Math.Max(bottomReserve, M + 8);
                 double box = Math.Min(Math.Min(w, h) * 0.46, 150);
                 box = Math.Min(box, (floor - HeaderBottom) * 0.8);
@@ -152,6 +174,55 @@ public static class AstralArt
 
         group.Freeze();
         return group;
+    }
+
+    /// <summary>Picker tile: the constellation (or, for an empty key, "automatic": a few loose stars) on a
+    /// small night-sky square, rendered at <paramref name="px"/> pixels.</summary>
+    public static ImageSource RenderTile(string? key, int px, WpfColor glow)
+    {
+        const double S = 32; // drawn in a 32 x 32 box, scaled to px
+        WpfColor white = WpfColor.FromRgb(0xEE, 0xF2, 0xFF);
+        var dv = new DrawingVisual();
+        using (var dc = dv.RenderOpen())
+        {
+            dc.PushTransform(new ScaleTransform(px / S, px / S));
+            var sky = new RadialGradientBrush { RadiusX = 0.9, RadiusY = 0.9 };
+            sky.GradientStops.Add(new GradientStop(Blend(WpfColor.FromRgb(0x0B, 0x10, 0x24), glow, 0.14), 0));
+            sky.GradientStops.Add(new GradientStop(WpfColor.FromRgb(0x07, 0x0A, 0x18), 1));
+            dc.DrawRectangle(sky, null, new Rect(0, 0, S, S));
+
+            var fig = Find(key);
+            if (fig == null)
+            {
+                // Automatic: three loose stars of different sizes, no lines
+                var flare = Solid(Blend(glow, white, 0.6), 0.9);
+                dc.DrawGeometry(flare, null, Sparkle(new WpfPoint(13, 14), 8.5, 0.16));
+                dc.DrawGeometry(flare, null, Sparkle(new WpfPoint(23, 22), 5, 0.18));
+                dc.DrawGeometry(flare, null, Sparkle(new WpfPoint(22, 8), 3.2, 0.2));
+                dc.DrawEllipse(Solid(Blend(glow, white, 0.8)), null, new WpfPoint(13, 14), 1.3, 1.3);
+            }
+            else
+            {
+                const double pad = 4, box = S - 2 * pad;
+                WpfPoint P(int i) => new(pad + fig.Stars[i].x * box, pad + fig.Stars[i].y * box);
+                var line = new WpfPen(Solid(Blend(glow, white, 0.45), 0.75), 0.8) { StartLineCap = PenLineCap.Round, EndLineCap = PenLineCap.Round };
+                foreach (var (a, b) in fig.Lines) dc.DrawLine(line, P(a), P(b));
+                for (int i = 0; i < fig.Stars.Length; i++)
+                {
+                    double r = 0.8 + fig.Stars[i].mag * 0.9;
+                    var halo = new RadialGradientBrush();
+                    halo.GradientStops.Add(new GradientStop(WithAlpha(glow, 0.6), 0));
+                    halo.GradientStops.Add(new GradientStop(WithAlpha(glow, 0), 1));
+                    dc.DrawEllipse(halo, null, P(i), r * 3, r * 3);
+                    dc.DrawEllipse(Solid(Blend(glow, white, 0.8)), null, P(i), r, r);
+                }
+            }
+            dc.Pop();
+        }
+        var bmp = new RenderTargetBitmap(px, px, 96, 96, PixelFormats.Pbgra32);
+        bmp.Render(dv);
+        bmp.Freeze();
+        return bmp;
     }
 
     private static void DrawCloud(DrawingContext dc, double w, double h, double cx, double cy, double rx, double ry, WpfColor color)

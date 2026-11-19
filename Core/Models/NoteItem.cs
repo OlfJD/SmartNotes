@@ -33,6 +33,8 @@ public class NoteItem
     public string SkinKey { get; set; } = "Classic";
     /// <summary>Great Rune shown by the Elden Ring skin (replaces the colour there). See GreatRune.</summary>
     public string RuneKey { get; set; } = GreatRune.DefaultKey;
+    /// <summary>Constellation shown by the Astral skin; empty = picked automatically from the note's id.</summary>
+    public string ConstellationKey { get; set; } = "";
     public NotePinMode PinMode { get; set; } = NotePinMode.DesktopStuck;
     public bool IsLocked { get; set; } = false;
     public bool IsCollapsed { get; set; } = false;
