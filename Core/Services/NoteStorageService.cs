@@ -19,6 +19,7 @@ public class NoteStorageService
 
     private readonly List<NoteItem> _notes = new();
     private readonly object _lock = new();
+    private bool _loadIncomplete; // notes.json exists but could not be read at startup (see Load / Save)
 
     public string TrashDirectoryPath => TrashFolder;
 
@@ -43,6 +44,7 @@ public class NoteStorageService
         lock (_lock)
         {
             _notes.Clear();
+            _loadIncomplete = false;
             bool isFirstRun = false;
             bool recoveredFromBackup = false;
             try
@@ -56,6 +58,12 @@ public class NoteStorageService
                 isFirstRun = !File.Exists(NotesFilePath) && !File.Exists(NotesBackupPath);
 
                 var list = TryReadNotes(NotesFilePath, out bool mainFileCorrupt);
+                if (list == null && (mainFileCorrupt || File.Exists(NotesFilePath)))
+                {
+                    // notes.json exists but could not be read: copy everything aside BEFORE anything can write,
+                    // so a later save can never replace the user's real notes (and then the .bak) with an empty list
+                    DataBackupService.Snapshot("unreadable-notes");
+                }
                 if (mainFileCorrupt)
                 {
                     // Never let a damaged notes.json be overwritten: keep it aside for manual recovery
@@ -66,6 +74,8 @@ public class NoteStorageService
                     list = TryReadNotes(NotesBackupPath, out _);
                     recoveredFromBackup = list != null;
                 }
+                // notes.json is there but stayed locked: don't overwrite it later, merge with it once readable
+                _loadIncomplete = !mainFileCorrupt && File.Exists(NotesFilePath) && !recoveredFromBackup && list == null;
 
                 if (list != null)
                 {
@@ -102,14 +112,31 @@ public class NoteStorageService
         }
     }
 
-    /// <summary>Returns null if the file is missing or unreadable; <paramref name="corrupt"/> tells which.</summary>
+    /// <summary>
+    /// Returns null if the file is missing or unreadable. <paramref name="corrupt"/> is true only when the content
+    /// itself is bad (invalid JSON). A file that is merely locked (antivirus, backup or sync tools) is retried
+    /// and is never called corrupt, so it is not moved aside.
+    /// </summary>
     private static List<NoteItem>? TryReadNotes(string path, out bool corrupt)
     {
         corrupt = false;
         if (!File.Exists(path)) return null;
+
+        string? text = null;
+        for (int attempt = 0; attempt < 8 && text == null; attempt++)
+        {
+            try { text = File.ReadAllText(path); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                System.Diagnostics.Debug.WriteLine($"Notes file busy ({attempt + 1}/8): {ex.Message}");
+                System.Threading.Thread.Sleep(250);
+            }
+        }
+        if (text == null) return null; // still locked: not corrupt, leave it where it is
+
         try
         {
-            var list = JsonSerializer.Deserialize<List<NoteItem>>(File.ReadAllText(path));
+            var list = JsonSerializer.Deserialize<List<NoteItem>>(text);
             if (list == null) corrupt = true;
             return list;
         }
@@ -141,6 +168,21 @@ public class NoteStorageService
             try
             {
                 Directory.CreateDirectory(AppFolder);
+                if (_loadIncomplete)
+                {
+                    var onDisk = TryReadNotes(NotesFilePath, out _);
+                    if (onDisk == null)
+                    {
+                        // still unreadable: keep this session's notes in a side file, never over the real one
+                        AtomicFile.WriteAllText(Path.Combine(AppFolder, "notes.pending.json"), JsonSerializer.Serialize(_notes, JsonOptions));
+                        return;
+                    }
+                    foreach (var item in onDisk)
+                    {
+                        if (!item.IsDeleted && !_notes.Any(n => n.Id == item.Id)) _notes.Add(item);
+                    }
+                    _loadIncomplete = false;
+                }
                 string json = JsonSerializer.Serialize(_notes, JsonOptions);
                 AtomicFile.WriteAllText(NotesFilePath, json, NotesBackupPath);
             }

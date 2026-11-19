@@ -17,8 +17,10 @@ namespace SmartNotes;
 
 public partial class App : Application
 {
-    private const string AppMutexName = @"Local\SmartNotes_SingleInstance_Mutex_987654";
-    private const string AppEventName = @"Local\SmartNotes_SingleInstance_Event_987654";
+    private static readonly string AppMutexName = @"Local\SmartNotes_SingleInstance_Mutex_987654" + AppPaths.InstanceSuffix;
+    private static readonly string AppEventName = @"Local\SmartNotes_SingleInstance_Event_987654" + AppPaths.InstanceSuffix;
+    private static readonly string AppExitEventName = @"Local\SmartNotes_Exit_Event_987654" + AppPaths.InstanceSuffix;
+    private EventWaitHandle? _exitEvent;
     private Mutex? _instanceMutex;
     private EventWaitHandle? _instanceEvent;
 
@@ -95,6 +97,24 @@ public partial class App : Application
             ev.Handled = true;
         };
 
+        // "SmartNotes.exe --exit": ask the running instance to quit normally (it saves every note first), then leave.
+        // Used by "Launch SmartNotes.bat" so a rebuild can replace the files.
+        if (e.Args.Any(a => string.Equals(a, "--exit", StringComparison.OrdinalIgnoreCase)))
+        {
+            try
+            {
+                using var quit = EventWaitHandle.OpenExisting(AppExitEventName);
+                quit.Set();
+                LogStartup("--exit: asked the running instance to quit.");
+            }
+            catch (Exception ex)
+            {
+                LogStartup($"--exit: no running instance to signal ({ex.Message}).");
+            }
+            Shutdown();
+            return;
+        }
+
         bool ownsMutex = false;
         try
         {
@@ -154,11 +174,40 @@ public partial class App : Application
             LogStartup($"EventWaitHandle create exception: {ex.Message}");
         }
 
+        // Quit request from "SmartNotes.exe --exit": a normal shutdown, so OnExit flushes every note's pending save
+        try
+        {
+            _exitEvent = new EventWaitHandle(false, EventResetMode.AutoReset, AppExitEventName);
+            var exitEvent = _exitEvent;
+            new Thread(() =>
+            {
+                try
+                {
+                    if (exitEvent.WaitOne())
+                    {
+                        Dispatcher.BeginInvoke(() =>
+                        {
+                            LogStartup("Quit requested by --exit.");
+                            Shutdown();
+                        });
+                    }
+                }
+                catch { }
+            })
+            { IsBackground = true, Name = "SmartNotes_Exit_Listener" }.Start();
+        }
+        catch (Exception ex)
+        {
+            LogStartup($"Exit event create exception: {ex.Message}");
+        }
+
         base.OnStartup(e);
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
         try
         {
+            // First start of a new version (e.g. after an update): copy notes + settings aside before anything loads them
+            DataBackupService.SnapshotIfNewVersion(UpdateService.CurrentVersion);
             _settingsService = new SettingsService();
             LogStartup("SettingsService loaded.");
             _storageService = new NoteStorageService();
@@ -697,6 +746,7 @@ public partial class App : Application
         try { _trayManager?.Dispose(); } catch { }
         try { _hotKeyManager?.Dispose(); } catch { }
         try { _instanceEvent?.Dispose(); } catch { }
+        try { _exitEvent?.Dispose(); } catch { }
         _instanceEvent = null;
         try
         {
