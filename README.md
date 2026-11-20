@@ -1,6 +1,6 @@
 # SmartNotes
 
-Sticky notes for the Windows desktop.
+Cool and unique Sticky notes for your Windows desktop.
 
 **[Download for Windows (.zip)](https://github.com/OlfJD/SmartNotes/releases/latest/download/SmartNotes-win-x64.zip)**. Portable: extract and run `SmartNotes.exe`. Needs the [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0).
 
