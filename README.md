@@ -1,7 +1,7 @@
 # SmartNotes
 
-Cool and unique Sticky notes for your Windows desktop. 
-Its free :) 
+Cool and unique sticky notes for your Windows desktop.\
+It's free :)\
 Put notes, to-do lists and checklists right on your desktop. Open source, no account, no cloud, everything stays on your PC.
 
 **[Download for Windows (.zip)](https://github.com/OlfJD/SmartNotes/releases/latest/download/SmartNotes-win-x64.zip)**. Portable: extract and run `SmartNotes.exe`. Needs the [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0).
