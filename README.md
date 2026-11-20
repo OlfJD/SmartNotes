@@ -1,6 +1,8 @@
 # SmartNotes
 
-Cool and unique Sticky notes for your Windows desktop.
+Cool and unique Sticky notes for your Windows desktop. 
+Its free :) 
+Put notes, to-do lists and checklists right on your desktop. Open source, no account, no cloud, everything stays on your PC.
 
 **[Download for Windows (.zip)](https://github.com/OlfJD/SmartNotes/releases/latest/download/SmartNotes-win-x64.zip)**. Portable: extract and run `SmartNotes.exe`. Needs the [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0).
 
@@ -36,6 +38,10 @@ In the Elden Ring theme the colour picker offers nine Great Runes instead of col
 | `Win + Alt + D` | Show / hide all notes |
 | `Ctrl + Shift + C` | Copy the note's content |
 | `Alt` / `Ctrl` + drag | Move one note out of a stack |
+
+## Where are my notes?
+
+In `%AppData%\SmartNotes` (`notes.json`). Copy that folder to back up or move your notes to another PC.
 
 ## Build
 
