@@ -206,6 +206,14 @@ public static class Win32Api
     [DllImport("user32.dll")]
     public static extern IntPtr GetForegroundWindow();
 
+    [DllImport("user32.dll")]
+    public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+    public const int ASFW_ANY = -1;
+
+    [DllImport("user32.dll")]
+    public static extern bool AllowSetForegroundWindow(int dwProcessId);
+
     // --- Idle time (silent updates restart only while the user is away) ---
     [StructLayout(LayoutKind.Sequential)]
     public struct LASTINPUTINFO

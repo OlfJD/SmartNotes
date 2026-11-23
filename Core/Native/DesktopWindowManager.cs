@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Threading;
 using SmartNotes.Core.Models;
 using SmartNotes.UI.Windows;
 
@@ -165,10 +166,38 @@ public class DesktopWindowManager
     public void SetInteracting(bool interacting)
     {
         _isInteracting = interacting;
-        if (!interacting && _currentPinMode == NotePinMode.DesktopStuck)
+        if (!interacting) LowerAfterDeactivate();
+    }
+
+    private bool _lowerPending;
+
+    /// <summary>
+    /// A Desktop Stuck note lost focus. Once the switch has settled, send it back to the bottom, but only when
+    /// focus really left SmartNotes. Moving between our own notes (clicking note 1, then note 2; Bring All to Front)
+    /// must keep them where they are, or a note drops behind the raised Show Desktop window or behind other apps
+    /// (GitHub issues #1 and #3). When the desktop itself took focus, ShowDesktopWatcher places the notes.
+    /// </summary>
+    private void LowerAfterDeactivate()
+    {
+        _isInteracting = false;
+        if (_currentPinMode != NotePinMode.DesktopStuck || _lowerPending) return;
+        _lowerPending = true;
+        _window.Dispatcher.BeginInvoke(DispatcherPriority.Background, () =>
         {
+            _lowerPending = false;
+            if (_currentPinMode != NotePinMode.DesktopStuck || _window.IsActive) return;
+            if (ForegroundKeepsNotesUp()) return;
             SendToDesktopBottom();
-        }
+        });
+    }
+
+    private static bool ForegroundKeepsNotesUp()
+    {
+        IntPtr fg = Win32Api.GetForegroundWindow();
+        if (fg == IntPtr.Zero) return false;
+        Win32Api.GetWindowThreadProcessId(fg, out uint pid);
+        if (pid == (uint)Environment.ProcessId) return true;
+        return ShowDesktopWatcher.IsDesktopWindow(Win32Api.GetAncestor(fg, Win32Api.GA_ROOT));
     }
 
     private static readonly uint WmBringToFront = Win32Api.RegisterWindowMessage("SmartNotes_BringToFront_Broadcast_987654");
@@ -199,6 +228,17 @@ public class DesktopWindowManager
             _window.Focus();
         }
         catch { }
+    }
+
+    /// <summary>Puts the note on top of the normal windows (or the topmost band) without taking focus.</summary>
+    public void RaiseWithoutActivating()
+    {
+        if (_hwnd == IntPtr.Zero) return;
+        _isInteracting = true;
+        bool onTop = _currentPinMode == NotePinMode.AlwaysOnTop;
+        _window.Topmost = onTop;
+        Win32Api.SetWindowPos(_hwnd, onTop ? Win32Api.HWND_TOPMOST : Win32Api.HWND_TOP, 0, 0, 0, 0,
+            Win32Api.SWP_NOMOVE | Win32Api.SWP_NOSIZE | Win32Api.SWP_NOACTIVATE | Win32Api.SWP_SHOWWINDOW);
     }
 
     public void ApplyPinMode(NotePinMode pinMode)
@@ -369,24 +409,15 @@ public class DesktopWindowManager
             if (msg == Win32Api.WM_ACTIVATE)
             {
                 int wa = (int)(wParam.ToInt64() & 0xFFFF);
-                if (wa == Win32Api.WA_INACTIVE)
-                {
-                    _isInteracting = false;
-                    SendToDesktopBottom();
-                }
+                if (wa == Win32Api.WA_INACTIVE) LowerAfterDeactivate();
             }
             else if (msg == Win32Api.WM_KILLFOCUS)
             {
-                _isInteracting = false;
-                SendToDesktopBottom();
+                LowerAfterDeactivate();
             }
             else if (msg == Win32Api.WM_ACTIVATEAPP)
             {
-                if (wParam == IntPtr.Zero)
-                {
-                    _isInteracting = false;
-                    SendToDesktopBottom();
-                }
+                if (wParam == IntPtr.Zero) LowerAfterDeactivate();
             }
         }
 

@@ -68,7 +68,7 @@ public sealed class ShowDesktopWatcher : IDisposable
         }
     }
 
-    private static bool IsDesktopWindow(IntPtr hwnd)
+    internal static bool IsDesktopWindow(IntPtr hwnd)
     {
         if (hwnd == IntPtr.Zero) return false;
         var sb = new StringBuilder(32);

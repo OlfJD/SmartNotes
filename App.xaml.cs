@@ -151,6 +151,9 @@ public partial class App : Application
             LogStartup("Not owning mutex, signaling existing instance and shutting down...");
             try
             {
+                // This launch came from the user, so it may take the foreground; pass that right on to the
+                // running instance so it can actually bring its notes forward.
+                Win32Api.AllowSetForegroundWindow(Win32Api.ASFW_ANY);
                 using var evt = EventWaitHandle.OpenExisting(AppEventName);
                 evt.Set();
             }
@@ -463,19 +466,27 @@ public partial class App : Application
             return;
         }
 
+        // Activating the notes one by one made each take focus from the previous one, which then dropped back to
+        // the bottom (GitHub issue #3). Instead: one note takes the foreground (Windows ignores raising windows of
+        // an app that is not in the foreground), then the others are raised without taking focus.
+        var windows = new List<StickyNoteWindow>();
         foreach (var note in activeNotes)
         {
-            if (_activeNoteWindows.TryGetValue(note.Id, out var win))
+            if (!_activeNoteWindows.TryGetValue(note.Id, out var win))
             {
-                win.Show();
-                win.Activate();
-                win.DesktopWindowManager.BringToFront();
+                SpawnStickyNoteWindow(note, bringToFront: false);
+                if (!_activeNoteWindows.TryGetValue(note.Id, out win)) continue;
             }
-            else
-            {
-                SpawnStickyNoteWindow(note, bringToFront: true);
-            }
+            win.Show();
+            windows.Add(win);
         }
+        if (windows.Count == 0) return;
+
+        var focused = windows[^1];
+        focused.Activate();
+        focused.DesktopWindowManager.BringToFront();
+        foreach (var win in windows) win.DesktopWindowManager.RaiseWithoutActivating();
+        focused.DesktopWindowManager.RaiseWithoutActivating();
     }
 
     public void LocateNote(Guid id)
