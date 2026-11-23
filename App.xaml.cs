@@ -58,28 +58,7 @@ public partial class App : Application
         return result;
     }
 
-    private static bool _logRotated;
-
-    private static void LogStartup(string msg)
-    {
-        try
-        {
-            string appFolder = AppPaths.DataFolder;
-            Directory.CreateDirectory(appFolder);
-            string logPath = Path.Combine(appFolder, "startup.log");
-
-            // The log is appended on every launch; start fresh once it passes 512 KB
-            if (!_logRotated)
-            {
-                _logRotated = true;
-                var info = new FileInfo(logPath);
-                if (info.Exists && info.Length > 512 * 1024) info.Delete();
-            }
-
-            File.AppendAllText(logPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] {msg}\n");
-        }
-        catch { }
-    }
+    private static void LogStartup(string msg) => AppLog.Write(msg);
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -215,43 +194,68 @@ public partial class App : Application
             LogStartup("SettingsService loaded.");
             _storageService = new NoteStorageService();
             LogStartup($"NoteStorageService loaded. Active notes: {_storageService.Notes.Count}");
-            MigrateSkinKeys();
 
             LocalizationService.Instance.SetLanguage(_settingsService.Settings.AppLanguage);
             LogStartup("LocalizationService initialized.");
-
-            MemoryOptimizer.Initialize(_settingsService.Settings.AutoOptimizeMemory);
-            LogStartup("MemoryOptimizer initialized.");
             InitDummyHwndHost();
             LogStartup("DummyHwndHost initialized.");
-            InitGlobalHotkeys();
-            LogStartup("GlobalHotkeys initialized.");
             InitTrayManager();
             LogStartup("TrayManager initialized.");
-            StartSingleInstanceListener();
-            LogStartup("SingleInstanceListener started.");
-
-            // Restore active notes on the desktop at their exact saved coordinates
-            RestoreAllDesktopNotes();
-            LogStartup("Desktop notes restored.");
-
-            // Keep "Desktop Stuck" notes visible through Show Desktop / Win+D (GitHub issue #1)
-            _showDesktopWatcher = new ShowDesktopWatcher(() => _activeNoteWindows.Values.ToList());
-            LogStartup("ShowDesktopWatcher started.");
-
-            // Silent updates: download in the background, restart into the new version only while the
-            // user is away (3 min without input) and no note has focus. No dialogs.
-            UpdateService.StartAutomaticUpdates(() =>
-                Win32Api.GetIdleTime() >= TimeSpan.FromMinutes(3) &&
-                !_activeNoteWindows.Values.Any(w => w.IsActive));
-            LogStartup("Automatic updates scheduled.");
-
-            CheckAndPromptLanguageSelection();
-            LogStartup("Language prompt checked.");
         }
         catch (Exception ex)
         {
-            LogStartup($"Error during service initialization: {ex}\n{ex.StackTrace}");
+            // Without settings, notes or a tray icon the user could not even quit the app. Say what happened and
+            // exit, instead of leaving an invisible process behind that also blocks every later start (single instance).
+            LogStartup($"[Error] Startup failed: {ex}");
+            ShowStartupFailure(ex);
+            Shutdown(1);
+            return;
+        }
+
+        // Everything below is optional: one failing step must not take the others down with it
+        RunStartupStep("Skin key migration", MigrateSkinKeys);
+        RunStartupStep("MemoryOptimizer", () => MemoryOptimizer.Initialize(_settingsService.Settings.AutoOptimizeMemory));
+        RunStartupStep("GlobalHotkeys", InitGlobalHotkeys);
+        RunStartupStep("SingleInstanceListener", StartSingleInstanceListener);
+
+        // Restore active notes on the desktop at their exact saved coordinates
+        RunStartupStep("Desktop notes restore", RestoreAllDesktopNotes);
+
+        // Keep "Desktop Stuck" notes visible through Show Desktop / Win+D (GitHub issue #1)
+        RunStartupStep("ShowDesktopWatcher", () => _showDesktopWatcher = new ShowDesktopWatcher(() => _activeNoteWindows.Values.ToList()));
+
+        // Silent updates: download in the background, restart into the new version only while the
+        // user is away (3 min without input) and no note has focus. No dialogs.
+        RunStartupStep("Automatic updates", () => UpdateService.StartAutomaticUpdates(() =>
+            Win32Api.GetIdleTime() >= TimeSpan.FromMinutes(3) &&
+            !_activeNoteWindows.Values.Any(w => w.IsActive)));
+
+        RunStartupStep("Language prompt", CheckAndPromptLanguageSelection);
+    }
+
+    private static void RunStartupStep(string name, Action step)
+    {
+        try
+        {
+            step();
+            LogStartup($"{name}: ok.");
+        }
+        catch (Exception ex)
+        {
+            LogStartup($"[Error] {name} failed: {ex}");
+        }
+    }
+
+    private static void ShowStartupFailure(Exception ex)
+    {
+        try
+        {
+            MessageBox.Show(LocalizationService.T("Startup_FailedMsg", ex.Message, AppLog.FilePath),
+                LocalizationService.T("Startup_FailedTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        catch
+        {
+            // nothing more we can do; the log has the details
         }
     }
 
@@ -357,7 +361,15 @@ public partial class App : Application
 
         foreach (var note in activeNotes)
         {
-            SpawnStickyNoteWindow(note, bringToFront: true);
+            try
+            {
+                SpawnStickyNoteWindow(note, bringToFront: true);
+            }
+            catch (Exception ex)
+            {
+                // One note that cannot be shown must not keep the others off the desktop
+                LogStartup($"[Error] Note {note.Id} could not be shown: {ex}");
+            }
         }
 
         UpdateTrayTooltip();

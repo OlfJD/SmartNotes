@@ -291,6 +291,11 @@ public class LocalizationService
             ["Time_HoursAgo"] = "{0}h ago",
             ["Status_Typing"] = "Typing...",
             ["Status_Saved"] = "Saved",
+            ["Status_SaveFailed"] = "Not saved, retrying...",
+            ["Delete_FailedTitle"] = "Note kept",
+            ["Delete_FailedMsg"] = "The note could not be moved to the trash, so it was not deleted. Details are in startup.log in the SmartNotes data folder.",
+            ["Startup_FailedTitle"] = "SmartNotes could not start",
+            ["Startup_FailedMsg"] = "Something went wrong while starting SmartNotes. Your notes were not changed.\n\n{0}\n\nDetails are in {1}",
             ["Status_Locked"] = "LOCKED",
 
             // Note Export
@@ -579,6 +584,11 @@ public class LocalizationService
             ["Time_HoursAgo"] = "Vor {0} Std.",
             ["Status_Typing"] = "Schreibt...",
             ["Status_Saved"] = "Gespeichert",
+            ["Status_SaveFailed"] = "Nicht gespeichert, neuer Versuch...",
+            ["Delete_FailedTitle"] = "Notiz behalten",
+            ["Delete_FailedMsg"] = "Die Notiz konnte nicht in den Papierkorb verschoben werden und wurde deshalb nicht gelöscht. Details stehen in startup.log im SmartNotes-Datenordner.",
+            ["Startup_FailedTitle"] = "SmartNotes konnte nicht starten",
+            ["Startup_FailedMsg"] = "Beim Start von SmartNotes ist ein Fehler aufgetreten. Ihre Notizen wurden nicht verändert.\n\n{0}\n\nDetails stehen in {1}",
             ["Status_Locked"] = "GESPERRT",
 
             // Note Export

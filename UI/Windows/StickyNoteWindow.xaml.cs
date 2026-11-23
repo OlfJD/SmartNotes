@@ -138,6 +138,7 @@ public partial class StickyNoteWindow : Window
         Closed += (s, e) =>
         {
             LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
+            _saveRetryTimer?.Stop();
         };
     }
 
@@ -867,12 +868,45 @@ public partial class StickyNoteWindow : Window
         _savedStatusResetTimer.Start();
     }
 
-    /// <summary>Writes any change still waiting on the save debounce (called on app exit).</summary>
+    /// <summary>The save failed (file locked, read-only, disk full ...): say so instead of "Saved" and try again shortly.</summary>
+    private void ShowSaveFailedIndicator()
+    {
+        if (!_isLoaded) return;
+        _savedStatusResetTimer?.Stop();
+        var danger = TryFindResource("SkinDangerBrush") as Brush ?? Brushes.OrangeRed;
+
+        TxtModifiedTime.Visibility = Visibility.Collapsed;
+        TypingIndicatorContainer.Visibility = Visibility.Visible;
+        IconTypingStatus.IconKey = "refresh-cw";
+        IconTypingStatus.Foreground = danger;
+        TxtTypingStatus.Text = LocalizationService.T("Status_SaveFailed");
+        TxtTypingStatus.Foreground = danger;
+    }
+
+    private DispatcherTimer? _saveRetryTimer;
+
+    private void ScheduleSaveRetry()
+    {
+        if (_saveRetryTimer == null)
+        {
+            _saveRetryTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
+            _saveRetryTimer.Tick += (s, e) =>
+            {
+                _saveRetryTimer.Stop();
+                SaveNoteState();
+            };
+        }
+        _saveRetryTimer.Stop();
+        _saveRetryTimer.Start();
+    }
+
+    /// <summary>Writes any change still waiting on the save debounce or a retry (called on app exit).</summary>
     public void FlushPendingSave()
     {
-        if (_saveDebounceTimer?.IsEnabled == true)
+        if (_saveDebounceTimer?.IsEnabled == true || _saveRetryTimer?.IsEnabled == true)
         {
-            _saveDebounceTimer.Stop();
+            _saveDebounceTimer?.Stop();
+            _saveRetryTimer?.Stop();
             SaveNoteState();
         }
     }
@@ -928,8 +962,16 @@ public partial class StickyNoteWindow : Window
         // _note.FontSize is the unscaled size; it is changed only in SetFontSize().
         _note.ModifiedAt = DateTime.Now;
 
-        _storageService.UpdateNote(_note);
-        ShowSavedIndicator();
+        if (_storageService.UpdateNote(_note))
+        {
+            _saveRetryTimer?.Stop();
+            ShowSavedIndicator();
+        }
+        else
+        {
+            ShowSaveFailedIndicator();
+            ScheduleSaveRetry();
+        }
     }
 
     // Window Dragging
@@ -1806,7 +1848,13 @@ public partial class StickyNoteWindow : Window
     private void DeleteNote()
     {
         SaveNoteState();
-        _storageService.DeleteNote(_note.Id, permanent: false);
+        if (!_storageService.DeleteNote(_note.Id, permanent: false))
+        {
+            // The trash copy could not be written, so the note was kept: never close it without a copy somewhere
+            ModernMessageBox.Show(LocalizationService.T("Delete_FailedMsg"), "SmartNotes", ModernMessageButtons.OK,
+                ModernMessageIcon.Warning, LocalizationService.T("Delete_FailedTitle"), this);
+            return;
+        }
         _onClosedCallback(this);
         Close();
         MemoryOptimizer.TrimMemory();
