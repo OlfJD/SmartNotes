@@ -111,9 +111,20 @@ public static class EndToEndTests
         try
         {
             Assert.True(suggested.IndexOfAny(Path.GetInvalidFileNameChars()) < 0, $"suggested file name is valid, got '{suggested}'");
-            SetText(nameBox, target);
+            // Like a user: go to the folder first (Save with a folder name opens it), then save under a plain name
+            SetText(nameBox, app.DataDir);
             Invoke(Find(dialog!, "1"));
-            Assert.Eventually(() => File.Exists(target), "file written");
+            Thread.Sleep(1200);
+            SetText(Find(dialog!, "1001"), "exported.md");
+            Invoke(Find(dialog!, "1"));
+            try
+            {
+                Assert.Eventually(() => File.Exists(target), "file written");
+            }
+            catch (TestFailure)
+            {
+                throw new TestFailure($"file not written; windows: {app.DescribeWindows()}");
+            }
             Assert.Contains("# To-do: today", File.ReadAllText(target), "exported title");
             Assert.Contains("buy milk", File.ReadAllText(target), "exported text");
         }
@@ -180,6 +191,32 @@ public static class EndToEndTests
         PressWinAlt('N');
         Thread.Sleep(1500);
         Assert.Equal(2, app.NoteWindows().Count, "note windows after pressing Win+Alt+N with hotkeys switched off");
+    }
+
+    [Test(E2E = true)]
+    public static void Settings_CancelDoesNotKeepThePreviewedLanguage()
+    {
+        using var app = Start(nameof(Settings_CancelDoesNotKeepThePreviewedLanguage), new[] { Note("Only") });
+        var w = app.WaitForNoteWindows(1)[0];
+        string english = Find(w, "BtnNewNote").Current.HelpText;
+
+        Invoke(Find(w, "BtnMore"));
+        app.InvokeMenuItem("Settings & Preferences...");
+        AutomationElement? settings = null;
+        Assert.Eventually(() => (settings = app.WindowContaining("BtnSave")) != null, "settings window");
+        var combo = Find(settings!, "CmbAppLanguage");
+        var expand = (ExpandCollapsePattern)combo.GetCurrentPattern(ExpandCollapsePattern.Pattern);
+        expand.Expand();
+        AutomationElement? german = null;
+        Assert.Eventually(() => (german = combo.FindFirst(TreeScope.Descendants,
+            new PropertyCondition(AutomationElement.NameProperty, "Deutsch (German)"))) != null, "German in the list");
+        ((SelectionItemPattern)german!.GetCurrentPattern(SelectionItemPattern.Pattern)).Select();
+        expand.Collapse();
+        Assert.Eventually(() => Find(w, "BtnNewNote").Current.HelpText != english, "precondition: the note previews German");
+
+        Invoke(Find(settings!, "BtnCancel"));
+        Assert.Eventually(() => app.WindowContaining("BtnSave") == null, "settings closed");
+        Assert.Eventually(() => Find(w, "BtnNewNote").Current.HelpText == english, "note back in English after Cancel");
     }
 
     [Test(E2E = true)]

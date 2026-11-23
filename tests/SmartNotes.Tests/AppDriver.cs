@@ -163,6 +163,12 @@ public sealed class AppDriver : IDisposable
         return null;
     }
 
+    /// <summary>For failure messages: the app's windows and the windows they own.</summary>
+    public string DescribeWindows() => string.Join(" | ", TopWindows().Select(w =>
+        $"{w.Current.ClassName} '{w.Current.Name}'" + string.Concat(w.FindAll(TreeScope.Children,
+            new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Window)).Cast<AutomationElement>()
+            .Select(c => $" > {c.Current.ClassName} '{c.Current.Name}'"))));
+
     // ---------------------------------------------------------------- elements
 
     public static AutomationElement? TryFind(AutomationElement scope, string automationId) =>
