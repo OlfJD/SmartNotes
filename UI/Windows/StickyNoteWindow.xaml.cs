@@ -236,7 +236,6 @@ public partial class StickyNoteWindow : Window
         TxtContentPlaceholder.Visibility = string.IsNullOrEmpty(_note.Content) ? Visibility.Visible : Visibility.Collapsed;
 
         ApplyFontSizes();
-        ApplyFontSizes();
 
         // Checklist setup
         _checklistItems = new ObservableCollection<TodoCheckItem>(_note.Checklist);
@@ -257,6 +256,19 @@ public partial class StickyNoteWindow : Window
         UpdatePinModeUI(_note.PinMode);
         UpdateLockUI(_note.IsLocked);
         UpdateModifiedTime();
+        _savedContent = ContentFingerprint();
+    }
+
+    /// <summary>What counts as an edit for "modified ... ago": text, tasks and copy rows (not moving, resizing or focus).</summary>
+    private string? _savedContent;
+
+    private string ContentFingerprint()
+    {
+        var sb = new StringBuilder();
+        sb.Append(TxtTitle.Text).Append('\u0001').Append(TxtContent.Text).Append('\u0001').Append((int)_note.ViewMode);
+        foreach (var item in _checklistItems) sb.Append('\u0002').Append(item.IsDone ? '1' : '0').Append(item.Text);
+        foreach (var item in _copyItems) sb.Append('\u0003').Append(item.Text);
+        return sb.ToString();
     }
 
     public void ApplyTheme(string colorKey)
@@ -969,7 +981,13 @@ public partial class StickyNoteWindow : Window
         _note.Height = Height;
         _note.Opacity = _userConfiguredOpacity;
         // _note.FontSize is the unscaled size; it is changed only in SetFontSize().
-        _note.ModifiedAt = DateTime.Now;
+        // Clicking into a note and out again, or moving it, used to make it "modified just now"
+        string content = ContentFingerprint();
+        if (content != _savedContent)
+        {
+            _note.ModifiedAt = DateTime.Now;
+            _savedContent = content;
+        }
 
         if (_storageService.UpdateNote(_note))
         {
@@ -1995,7 +2013,7 @@ public partial class StickyNoteWindow : Window
                         timer.Stop();
                         icon.IconKey = oldKey;
                         icon.Foreground = oldBrush;
-                        btn.ToolTip = "Copy this line to clipboard";
+                        btn.SetResourceReference(ToolTipProperty, "StrCopyRow");
                     };
                     timer.Start();
                 }

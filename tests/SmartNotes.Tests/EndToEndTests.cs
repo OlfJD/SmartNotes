@@ -26,6 +26,29 @@ public static class EndToEndTests
     }
 
     [Test(E2E = true)]
+    public static void FocusAndMoving_DoNotCountAsAnEdit()
+    {
+        var note = Note("Old note", "unchanged");
+        note.ModifiedAt = DateTime.Now.AddDays(-3);
+        using var app = Start(nameof(FocusAndMoving_DoNotCountAsAnEdit), new[] { note });
+        var w = app.WaitForNoteWindows(1)[0];
+
+        // click into the text and out again, then move the note: both save the note
+        Find(w, "TxtContent").SetFocus();
+        Find(w, "TxtTitle").SetFocus();
+        var r = w.Current.BoundingRectangle;
+        ((TransformPattern)w.GetCurrentPattern(TransformPattern.Pattern)).Move(r.X + 60, r.Y + 40);
+        Assert.Eventually(() => app.ReadNotes().Single().X != note.X, "the move was saved");
+        Thread.Sleep(800);
+        var saved = app.ReadNotes().Single();
+        Assert.True(Math.Abs((saved.ModifiedAt - note.ModifiedAt).TotalMinutes) < 1,
+            $"modified time unchanged by focus and moving, got {saved.ModifiedAt:g}");
+
+        SetText(Find(w, "TxtContent"), "now edited");
+        Assert.Eventually(() => (DateTime.Now - app.ReadNotes().Single().ModifiedAt).TotalMinutes < 1, "a real edit updates the modified time");
+    }
+
+    [Test(E2E = true)]
     public static void NewNoteButton_CreatesASavedNote()
     {
         using var app = Start(nameof(NewNoteButton_CreatesASavedNote), new[] { Note("Only") });
