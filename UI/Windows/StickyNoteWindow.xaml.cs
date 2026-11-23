@@ -786,6 +786,9 @@ public partial class StickyNoteWindow : Window
         _note.IsLocked = isLocked;
         if (TxtTitle != null) TxtTitle.IsReadOnly = isLocked;
         if (TxtContent != null) TxtContent.IsReadOnly = isLocked;
+        // checklist tasks and copy rows: text read-only, delete buttons off (ticking tasks off stays possible)
+        Resources["NoteItemsReadOnly"] = isLocked;
+        Resources["NoteItemsEditable"] = !isLocked;
         if (TxtNewTask != null) TxtNewTask.IsEnabled = !isLocked;
         if (TxtNewCopyItem != null) TxtNewCopyItem.IsEnabled = !isLocked;
         if (ResizeOverlayGrid != null)
@@ -1546,7 +1549,7 @@ public partial class StickyNoteWindow : Window
 
         menu.Items.Add(AppMenu.Separator());
 
-        if (_note.ViewMode == NoteViewMode.Checklist)
+        if (_note.ViewMode == NoteViewMode.Checklist && !_note.IsLocked)
         {
             menu.Items.Add(AppMenu.Item(LocalizationService.T("Menu_ClearCompletedTasks"), "check-check", ClearCompletedTasks));
             menu.Items.Add(AppMenu.Separator());
@@ -1830,6 +1833,7 @@ public partial class StickyNoteWindow : Window
 
     private void ClearCompletedTasks()
     {
+        if (_note.IsLocked) return;
         for (int i = _checklistItems.Count - 1; i >= 0; i--)
         {
             if (_checklistItems[i].IsDone)
@@ -1931,6 +1935,7 @@ public partial class StickyNoteWindow : Window
 
     private void BtnDeleteTask_Click(object sender, RoutedEventArgs e)
     {
+        if (_note.IsLocked) return;
         if (sender is Button btn && btn.DataContext is TodoCheckItem item)
         {
             _checklistItems.Remove(item);
@@ -2021,6 +2026,7 @@ public partial class StickyNoteWindow : Window
 
     private void BtnDeleteCopyItem_Click(object sender, RoutedEventArgs e)
     {
+        if (_note.IsLocked) return;
         if (sender is Button btn && btn.DataContext is CopySnippetItem item)
         {
             _copyItems.Remove(item);
@@ -2093,6 +2099,27 @@ public partial class StickyNoteWindow : Window
         proofing.ApplyProofingToTextBox(TxtTitle, settings);
         proofing.ApplyProofingToTextBox(TxtNewTask, settings);
         proofing.ApplyProofingToTextBox(TxtNewCopyItem, settings);
+        foreach (var list in new DependencyObject[] { ChecklistItemsControl, CopyItemsControl })
+        {
+            foreach (var row in FindDescendants<TextBox>(list)) proofing.ApplyProofingToTextBox(row, settings);
+        }
+    }
+
+    /// <summary>Task and copy rows are created by templates: give each the same spell check settings as the note.</summary>
+    private void ItemTextBox_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is TextBox tb) TextProofingService.Instance.ApplyProofingToTextBox(tb, _settingsService.Settings);
+    }
+
+    private static IEnumerable<T> FindDescendants<T>(DependencyObject root) where T : DependencyObject
+    {
+        int count = VisualTreeHelper.GetChildrenCount(root);
+        for (int i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            if (child is T match) yield return match;
+            foreach (var nested in FindDescendants<T>(child)) yield return nested;
+        }
     }
 
     private void TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
