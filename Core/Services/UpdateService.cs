@@ -34,13 +34,20 @@ public static class UpdateService
         Timeout = TimeSpan.FromSeconds(15)
     };
 
+    // The release zip (~2 MB) shared the 15 s limit above, so on a connection slower than ~1 Mbit/s every
+    // download timed out and the app never updated. Downloads get their own, generous limit.
+    private static readonly HttpClient DownloadClient = new()
+    {
+        Timeout = TimeSpan.FromMinutes(5)
+    };
+
     static UpdateService()
     {
         try
         {
-            HttpClient.DefaultRequestHeaders.UserAgent.Add(
-                new ProductInfoHeaderValue("SmartNotes-AutoUpdater", CurrentVersion.ToString())
-            );
+            var agent = new ProductInfoHeaderValue("SmartNotes-AutoUpdater", CurrentVersion.ToString());
+            HttpClient.DefaultRequestHeaders.UserAgent.Add(agent);
+            DownloadClient.DefaultRequestHeaders.UserAgent.Add(agent);
         }
         catch { }
     }
@@ -101,18 +108,24 @@ public static class UpdateService
             if (Directory.Exists(dir)) Directory.Delete(dir, true);
             Directory.CreateDirectory(dir);
 
-            var bytes = await HttpClient.GetByteArrayAsync(latest.Value.zipUrl);
+            var bytes = await DownloadClient.GetByteArrayAsync(latest.Value.zipUrl);
             await File.WriteAllBytesAsync(zipPath, bytes);
             ZipFile.ExtractToDirectory(zipPath, extractPath, true);
 
             // Only stage a package that actually contains the app
-            if (!File.Exists(Path.Combine(extractPath, "SmartNotes.exe"))) return;
+            if (!File.Exists(Path.Combine(extractPath, "SmartNotes.exe")))
+            {
+                AppLog.Write($"[Update] v{latest.Value.version} downloaded, but the zip has no SmartNotes.exe; not installing it.");
+                return;
+            }
             _stagedDir = extractPath;
             _stagedVersion = latest.Value.version;
+            AppLog.Write($"[Update] v{_stagedVersion} downloaded; restarting into it once the user is away.");
         }
-        catch
+        catch (Exception ex)
         {
-            // offline, rate-limited, disk full …: try again at the next interval, silently
+            // offline, rate-limited, disk full …: try again at the next interval, without bothering the user
+            AppLog.Error("[Update] Background update check", ex);
         }
         finally
         {
@@ -158,8 +171,9 @@ public static class UpdateService
             StartCopyScript(_stagedDir, restart: true);
             Application.Current.Dispatcher.Invoke(() => Application.Current.Shutdown());
         }
-        catch
+        catch (Exception ex)
         {
+            AppLog.Error("[Update] Restarting into the downloaded version", ex);
             _applying = false; // stay on this version; the next check stages again
             _stagedDir = null;
         }
@@ -326,7 +340,7 @@ exit
             string zipPath = Path.Combine(tempDir, "update.zip");
             string extractPath = Path.Combine(tempDir, "extracted");
 
-            var zipBytes = await HttpClient.GetByteArrayAsync(downloadUrl);
+            var zipBytes = await DownloadClient.GetByteArrayAsync(downloadUrl);
             await File.WriteAllBytesAsync(zipPath, zipBytes);
 
             ZipFile.ExtractToDirectory(zipPath, extractPath, true);

@@ -100,6 +100,16 @@ public static class LogicTests
     }
 
     [Test]
+    public static void Updates_DownloadsAllowSlowConnections()
+    {
+        // ~2 MB within the API's 15 s limit needs > 1 Mbit/s; downloads must have their own, longer limit
+        var field = typeof(UpdateService).GetField("DownloadClient", BindingFlags.NonPublic | BindingFlags.Static);
+        Assert.NotNull(field, "a separate HttpClient for downloads");
+        var client = (System.Net.Http.HttpClient)field!.GetValue(null)!;
+        Assert.True(client.Timeout >= TimeSpan.FromMinutes(2), $"download timeout is {client.Timeout}");
+    }
+
+    [Test]
     public static void NoteClone_CopiesContentWithNewIds()
     {
         var note = new NoteItem { Title = "T", Content = "C", Checklist = new() { new TodoCheckItem { Text = "x" } } };
