@@ -430,8 +430,19 @@ public partial class App : Application
         UpdateTrayTooltip();
     }
 
+    /// <summary>
+    /// A new or restored note must be seen: while all notes are hidden (Win+Alt+D) it would otherwise be created
+    /// invisible, and the hotkey or tray item looked like it did nothing.
+    /// </summary>
+    private void ShowNotesIfHidden()
+    {
+        if (_settingsService.Settings.HideAllNotes) ToggleHideAllNotes();
+    }
+
     public void CreateNewStickyNote()
     {
+        ShowNotesIfHidden();
+
         // Compute smart spawn coordinate on desktop
         double spawnX = 140;
         double spawnY = 140;
@@ -679,6 +690,7 @@ public partial class App : Application
         var restored = _storageService.RestoreNoteFromTrash(id);
         if (restored != null)
         {
+            ShowNotesIfHidden();
             SpawnStickyNoteWindow(restored, bringToFront: true);
             string title = string.IsNullOrWhiteSpace(restored.Title) ? restored.SnippetPreview : restored.Title;
             if (title.Length > 25) title = title.Substring(0, 22) + "...";
@@ -690,6 +702,7 @@ public partial class App : Application
     public void RestoreAllNotesFromTrash()
     {
         var restored = _storageService.RestoreAllTrash();
+        if (restored.Count > 0) ShowNotesIfHidden();
         foreach (var note in restored)
         {
             SpawnStickyNoteWindow(note, bringToFront: true);
