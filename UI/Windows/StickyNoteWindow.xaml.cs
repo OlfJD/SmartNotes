@@ -1570,27 +1570,11 @@ public partial class StickyNoteWindow : Window
         menu.IsOpen = true;
     }
 
-    private void OpenSettings()
-    {
-        var dlg = new SettingsDialog(_settingsService, _storageService, () =>
-        {
-            App.Instance?.NotifyAppearanceSettingsChanged();
-            ApplyFocusOpacity(IsActive);
-            ApplyProofingSettings();
-            App.Instance?.NotifyProofingSettingsChanged();
-            App.Instance?.NotifyTransparencySettingsChanged();
-            MemoryOptimizer.TrimMemory();
-        });
-        dlg.Owner = this;
-        dlg.ShowDialog();
-    }
-
-    private MenuItem CreateMenuItem(string header, Action action)
-    {
-        var item = new MenuItem { Header = header };
-        item.Click += (s, e) => action();
-        return item;
-    }
+    /// <summary>
+    /// Same settings dialog and the same "apply everything" step as the tray menu. This used to have its own, smaller
+    /// callback, so e.g. switching global hotkeys off from a note had no effect until the next start.
+    /// </summary>
+    private void OpenSettings() => App.Instance?.OpenSettingsDialog(this);
 
     private void AdjustFontSize(double delta)
     {

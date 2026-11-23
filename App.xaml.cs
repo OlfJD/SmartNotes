@@ -599,7 +599,9 @@ public partial class App : Application
         }
     }
 
-    public void OpenSettingsDialog()
+    public void OpenSettingsDialog() => OpenSettingsDialog(null);
+
+    public void OpenSettingsDialog(Window? owner)
     {
         var dlg = new SettingsDialog(_settingsService, _storageService, () =>
         {
@@ -613,9 +615,10 @@ public partial class App : Application
             MemoryOptimizer.TrimMemory();
         });
 
-        if (_activeNoteWindows.Count > 0)
+        var dialogOwner = owner ?? _activeNoteWindows.Values.FirstOrDefault(w => w.IsVisible);
+        if (dialogOwner != null)
         {
-            dlg.Owner = _activeNoteWindows.Values.FirstOrDefault();
+            dlg.Owner = dialogOwner;
         }
 
         dlg.ShowDialog();
