@@ -94,17 +94,9 @@ public partial class SettingsDialog : Window
             PopulateSkinCombo(s.DefaultSkinKey);
             BuildSkinFontRows(s);
 
-            // Populate Font Sizes
-            CmbDefaultFontSize.ItemsSource = new List<string> { "12 pt (Compact)", "14 pt (Default)", "16 pt (Large)", "18 pt (Extra Large)", "20 pt (Headline)" };
-            int idx = s.DefaultFontSize switch
-            {
-                12.0 => 0,
-                16.0 => 2,
-                18.0 => 3,
-                20.0 => 4,
-                _ => 1
-            };
-            CmbDefaultFontSize.SelectedIndex = idx;
+            // Populate Font Sizes ("Default" used to sit on 14 pt although new notes start at 16 pt)
+            CmbDefaultFontSize.ItemsSource = FontSizeChoices.Select(size => LocalizationService.T($"FontSize_{size}")).ToList();
+            CmbDefaultFontSize.SelectedIndex = NearestFontSizeIndex(s.DefaultFontSize);
         }
         finally
         {
@@ -112,12 +104,27 @@ public partial class SettingsDialog : Window
         }
     }
 
+    private static readonly int[] FontSizeChoices = { 12, 14, 16, 18, 20 };
+
+    /// <summary>The closest offered size, so opening and saving Settings never changes an in-between value much.</summary>
+    private static int NearestFontSizeIndex(double size)
+    {
+        int best = 2; // 16 pt, the default
+        for (int i = 0; i < FontSizeChoices.Length; i++)
+        {
+            if (Math.Abs(FontSizeChoices[i] - size) < Math.Abs(FontSizeChoices[best] - size)) best = i;
+        }
+        return best;
+    }
+
+    private double SelectedFontSize => FontSizeChoices[Math.Clamp(CmbDefaultFontSize.SelectedIndex, 0, FontSizeChoices.Length - 1)];
+
     private void ApplyLocalization()
     {
         // Window Title & Headers
         Title = LocalizationService.T("Settings_Title");
         TxtSettingsHeaderTitle.Text = LocalizationService.T("Settings_Title");
-        TxtSettingsHeaderBadge.Text = LocalizationService.T("App_VersionBadge");
+        TxtSettingsHeaderBadge.Text = LocalizationService.T("App_VersionBadge", UpdateService.CurrentVersion.ToString(3));
         TxtSettingsHeaderSubtitle.Text = LocalizationService.T("Settings_Subtitle");
         TxtSidebarPreferences.Text = LocalizationService.T("Settings_PreferencesNav");
         TxtEngineTitle.Text = LocalizationService.T("Settings_Engine");
@@ -163,6 +170,15 @@ public partial class SettingsDialog : Window
         }
         TxtQuickSwatchesTitle.Text = LocalizationService.T("Appearance_QuickSwatches");
         TxtDefaultFontSizeTitle.Text = LocalizationService.T("Appearance_DefaultFontSizeTitle");
+        if (CmbDefaultFontSize.Items.Count > 0)
+        {
+            bool wasSuppressed = _suppressEvents;
+            _suppressEvents = true;
+            int selected = CmbDefaultFontSize.SelectedIndex;
+            CmbDefaultFontSize.ItemsSource = FontSizeChoices.Select(size => LocalizationService.T($"FontSize_{size}")).ToList();
+            CmbDefaultFontSize.SelectedIndex = selected;
+            _suppressEvents = wasSuppressed;
+        }
         TxtDefaultFontSizeDesc.Text = LocalizationService.T("Appearance_DefaultFontSizeDesc");
         TxtLivePreviewTitle.Text = LocalizationService.T("Appearance_LivePreview");
         PreviewNoteTitle.Text = LocalizationService.T("Appearance_PreviewTitle");
@@ -459,28 +475,13 @@ public partial class SettingsDialog : Window
             PreviewNoteIcon.Foreground = theme.PrimaryBrush;
         }
 
-        double fontSize = CmbDefaultFontSize.SelectedIndex switch
-        {
-            0 => 12.0,
-            2 => 16.0,
-            3 => 18.0,
-            4 => 20.0,
-            _ => 14.0
-        };
-        PreviewNoteBody.FontSize = fontSize * (previewTextFont?.Scale ?? 1.0);
+        PreviewNoteBody.FontSize = SelectedFontSize * (previewTextFont?.Scale ?? 1.0);
     }
 
     private void RefreshTrashStatus()
     {
-        if (_storageService != null)
-        {
-            int count = _storageService.GetDeletedNotes().Count;
-            TxtTrashCount.Text = LocalizationService.T("Trash_CountFormat", count, count == 1 ? "" : "s");
-        }
-        else
-        {
-            TxtTrashCount.Text = LocalizationService.T("Trash_CountFormat", 0, "s");
-        }
+        int count = _storageService?.GetDeletedNotes().Count ?? 0;
+        TxtTrashCount.Text = LocalizationService.T("Trash_CountFormat", count, LocalizationService.PluralSuffix(count));
     }
 
     private void RefreshRamStatus()
@@ -512,7 +513,7 @@ public partial class SettingsDialog : Window
         TxtRamStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(16, 185, 129));
         if (BtnOptimizeRam.Content is StackPanel sp && sp.Children.OfType<TextBlock>().FirstOrDefault() is TextBlock tb)
         {
-            tb.Text = "✓ Trimmed!";
+            tb.Text = LocalizationService.T("Perf_TrimmedBtn");
         }
     }
 
@@ -529,7 +530,8 @@ public partial class SettingsDialog : Window
         }
         catch (Exception ex)
         {
-            ModernMessageBox.Show($"Could not open custom dictionary: {ex.Message}", "SmartNotes", ModernMessageButtons.OK, ModernMessageIcon.Warning, "Dictionary Notice");
+            ModernMessageBox.Show(LocalizationService.T("Proofing_OpenFileFailed", System.IO.Path.GetFileName(TextProofingService.CustomDictPath), ex.Message),
+                "SmartNotes", ModernMessageButtons.OK, ModernMessageIcon.Warning, LocalizationService.T("Proofing_CustomDictBtn"), this);
         }
     }
 
@@ -553,7 +555,8 @@ public partial class SettingsDialog : Window
         }
         catch (Exception ex)
         {
-            ModernMessageBox.Show($"Could not open custom rules: {ex.Message}", "SmartNotes", ModernMessageButtons.OK, ModernMessageIcon.Warning, "Autocorrect Rules Notice");
+            ModernMessageBox.Show(LocalizationService.T("Proofing_OpenFileFailed", System.IO.Path.GetFileName(TextProofingService.CustomRulesPath), ex.Message),
+                "SmartNotes", ModernMessageButtons.OK, ModernMessageIcon.Warning, LocalizationService.T("Proofing_CustomRulesBtn"), this);
         }
     }
 
@@ -617,14 +620,7 @@ public partial class SettingsDialog : Window
             if (pair.Value.Text.SelectedItem is ComboBoxItem textItem && textItem.Tag is string textKey) s.SkinTextFonts[pair.Key] = textKey;
         }
 
-        s.DefaultFontSize = CmbDefaultFontSize.SelectedIndex switch
-        {
-            0 => 12.0,
-            2 => 16.0,
-            3 => 18.0,
-            4 => 20.0,
-            _ => 14.0
-        };
+        s.DefaultFontSize = SelectedFontSize;
 
         _settingsService.Save();
         _saved = true;

@@ -206,6 +206,12 @@ public partial class StickyNoteWindow : Window
 
         if (TxtLockedBadge != null) TxtLockedBadge.Text = LocalizationService.T("Status_Locked");
 
+        // tooltips of the checklist / copy rows (their templates refer to these resources)
+        Resources["StrDragToReorder"] = LocalizationService.T("Tooltip_DragToReorder");
+        Resources["StrDeleteTask"] = LocalizationService.T("Tooltip_DeleteTask");
+        Resources["StrCopyRow"] = LocalizationService.T("Tooltip_CopySnippet");
+        Resources["StrDeleteItem"] = LocalizationService.T("Tooltip_DeleteSnippet");
+
         UpdatePinModeUI(_note.PinMode);
         UpdateViewMode(_note.ViewMode);
         UpdateLockUI(_note.IsLocked);
@@ -1981,7 +1987,7 @@ public partial class StickyNoteWindow : Window
                     Brush oldBrush = icon.Foreground;
                     icon.IconKey = "check";
                     icon.Foreground = EmeraldBrush;
-                    btn.ToolTip = "Copied! ✓";
+                    btn.ToolTip = LocalizationService.T("Tooltip_Copied");
 
                     var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(1200) };
                     timer.Tick += (s, ev) =>

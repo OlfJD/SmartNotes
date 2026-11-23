@@ -317,7 +317,7 @@ exit
             if (isManualCheck)
             {
                 ModernMessageBox.Show(
-                    $"Update check failed: {ex.Message}",
+                    LocalizationService.T("Update_ErrorCheck", ex.Message),
                     LocalizationService.T("Update_DialogTitle"),
                     ModernMessageButtons.OK,
                     ModernMessageIcon.Warning,

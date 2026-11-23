@@ -69,6 +69,27 @@ public static class LogicTests
     }
 
     [Test]
+    public static void Strings_PluralsAreCorrectInBothLanguages()
+    {
+        var loc = LocalizationService.Instance;
+        string before = loc.CurrentLanguage;
+        try
+        {
+            loc.SetLanguage("de");
+            Assert.Equal("SmartNotes - 1 Notiz auf dem Desktop", LocalizationService.T("Tray_TooltipCount", 1, LocalizationService.PluralSuffix(1)), "one note");
+            Assert.Equal("SmartNotes - 3 Notizen auf dem Desktop", LocalizationService.T("Tray_TooltipCount", 3, LocalizationService.PluralSuffix(3)), "three notes (was 'Notizn')");
+            Assert.Equal("0 Notizen im Papierkorb", LocalizationService.T("Trash_CountFormat", 0, LocalizationService.PluralSuffix(0)), "empty trash (was 'Notizs')");
+            loc.SetLanguage("en");
+            Assert.Equal("SmartNotes - 3 sticky notes on desktop", LocalizationService.T("Tray_TooltipCount", 3, LocalizationService.PluralSuffix(3)), "English plural");
+            Assert.Equal("1 Note in Trash", LocalizationService.T("Trash_CountFormat", 1, LocalizationService.PluralSuffix(1)), "English singular");
+        }
+        finally
+        {
+            loc.SetLanguage(before);
+        }
+    }
+
+    [Test]
     public static void Settings_VersionBadgeShowsTheRealVersion()
     {
         string badge = LocalizationService.T("App_VersionBadge", UpdateService.CurrentVersion.ToString(2));

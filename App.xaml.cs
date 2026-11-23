@@ -715,7 +715,7 @@ public partial class App : Application
         }
         if (restored.Count > 0)
         {
-            string suffix = restored.Count == 1 ? "" : (LocalizationService.Instance.CurrentLanguage == "de" ? "n" : "s");
+            string suffix = LocalizationService.PluralSuffix(restored.Count);
             _trayManager.ShowBalloon("SmartNotes", LocalizationService.T("Balloon_NotesRestoredCount", restored.Count, suffix), ToolTipIcon.Info);
         }
         _trayManager.RebuildContextMenu();
@@ -731,7 +731,7 @@ public partial class App : Application
     private void UpdateTrayTooltip()
     {
         int count = _activeNoteWindows.Count;
-        string suffix = count == 1 ? "" : (LocalizationService.Instance.CurrentLanguage == "de" ? "n" : "s");
+        string suffix = LocalizationService.PluralSuffix(count);
         _trayManager.UpdateTooltip(LocalizationService.T("Tray_TooltipCount", count, suffix));
     }
 

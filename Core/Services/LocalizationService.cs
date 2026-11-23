@@ -60,6 +60,9 @@ public class LocalizationService
 
     public static string T(string key, params object[] args) => Instance.Get(key, args);
 
+    /// <summary>Plural ending for the "{0} note{1}" strings: English "notes", German "Notizen" (was "Notizn").</summary>
+    public static string PluralSuffix(int count) => count == 1 ? "" : (Instance.CurrentLanguage == "de" ? "en" : "s");
+
     private void InitializeStrings()
     {
         // ---------------- ENGLISH (en) ----------------
@@ -67,7 +70,7 @@ public class LocalizationService
         {
             // General App & Settings Header
             ["App_Title"] = "SmartNotes",
-            ["App_VersionBadge"] = "SmartNotes V2.1",
+            ["App_VersionBadge"] = "SmartNotes v{0}",
             ["Settings_Title"] = "Settings & Preferences",
             ["Settings_Subtitle"] = "Customize desktop behavior, themes, typing proofing, and performance",
             ["Settings_PreferencesNav"] = "PREFERENCES",
@@ -209,6 +212,15 @@ public class LocalizationService
             ["Tooltip_CopySnippet"] = "Copy this line to clipboard",
             ["Tooltip_Copied"] = "Copied! ✓",
             ["Tooltip_DeleteSnippet"] = "Delete item",
+            ["Tooltip_DragToReorder"] = "Drag to reorder",
+            ["Update_ErrorCheck"] = "Update check failed: {0}",
+            ["Perf_TrimmedBtn"] = "✓ Trimmed!",
+            ["Proofing_OpenFileFailed"] = "Could not open {0}: {1}",
+            ["FontSize_12"] = "12 pt (Compact)",
+            ["FontSize_14"] = "14 pt (Small)",
+            ["FontSize_16"] = "16 pt (Default)",
+            ["FontSize_18"] = "18 pt (Large)",
+            ["FontSize_20"] = "20 pt (Extra Large)",
             ["Placeholder_Title"] = "Title (optional)...",
             ["Placeholder_Content"] = "Take a note...",
             ["Placeholder_NewChecklist"] = "Add new task (Press Enter)...",
@@ -360,7 +372,7 @@ public class LocalizationService
         {
             // General App & Settings Header
             ["App_Title"] = "SmartNotes",
-            ["App_VersionBadge"] = "SmartNotes V2.1",
+            ["App_VersionBadge"] = "SmartNotes v{0}",
             ["Settings_Title"] = "Einstellungen & Optionen",
             ["Settings_Subtitle"] = "Desktop-Verhalten, Notiz-Designs, Rechtschreibung und Leistung anpassen",
             ["Settings_PreferencesNav"] = "EINSTELLUNGEN",
@@ -502,6 +514,15 @@ public class LocalizationService
             ["Tooltip_CopySnippet"] = "Zeile in Zwischenablage kopieren",
             ["Tooltip_Copied"] = "Kopiert! ✓",
             ["Tooltip_DeleteSnippet"] = "Eintrag löschen",
+            ["Tooltip_DragToReorder"] = "Ziehen zum Sortieren",
+            ["Update_ErrorCheck"] = "Update-Prüfung fehlgeschlagen: {0}",
+            ["Perf_TrimmedBtn"] = "✓ Optimiert!",
+            ["Proofing_OpenFileFailed"] = "{0} konnte nicht geöffnet werden: {1}",
+            ["FontSize_12"] = "12 pt (Kompakt)",
+            ["FontSize_14"] = "14 pt (Klein)",
+            ["FontSize_16"] = "16 pt (Standard)",
+            ["FontSize_18"] = "18 pt (Groß)",
+            ["FontSize_20"] = "20 pt (Sehr groß)",
             ["Placeholder_Title"] = "Titel (optional)...",
             ["Placeholder_Content"] = "Notiz schreiben...",
             ["Placeholder_NewChecklist"] = "Neue Aufgabe (Eingabetaste)...",
