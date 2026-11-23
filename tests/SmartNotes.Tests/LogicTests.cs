@@ -76,6 +76,18 @@ public static class LogicTests
     }
 
     [Test]
+    public static void Export_FileNameIsAlwaysValid()
+    {
+        Assert.Equal("To-do- today.md", NoteExport.SuggestFileName("To-do: today"), "colon");
+        Assert.Equal("a-b-c-d.md", NoteExport.SuggestFileName("a/b\\c?d"), "slashes and question mark");
+        Assert.Equal("SmartNote.md", NoteExport.SuggestFileName("   "), "empty title");
+        Assert.Equal("SmartNote.md", NoteExport.SuggestFileName("..."), "only dots");
+        Assert.Equal("CON-note.md", NoteExport.SuggestFileName("CON"), "reserved device name");
+        Assert.Equal("Plan.md", NoteExport.SuggestFileName("Plan. "), "trailing dot and space");
+        Assert.True(NoteExport.SuggestFileName(new string('x', 300)).Length <= 104, "long titles are shortened");
+    }
+
+    [Test]
     public static void Updates_TagsAreParsedLoosely()
     {
         var parse = typeof(UpdateService).GetMethod("TryParseLooseVersion", BindingFlags.NonPublic | BindingFlags.Static)!;

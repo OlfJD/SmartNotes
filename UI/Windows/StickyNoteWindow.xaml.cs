@@ -1805,17 +1805,19 @@ public partial class StickyNoteWindow : Window
             var sfd = new SaveFileDialog
             {
                 Filter = LocalizationService.T("Export_Filter"),
-                FileName = string.IsNullOrWhiteSpace(_note.Title) ? "SmartNote.md" : $"{_note.Title}.md"
+                FileName = NoteExport.SuggestFileName(TxtTitle.Text)
             };
-            if (sfd.ShowDialog() == true)
+            if (sfd.ShowDialog(this) == true)
             {
+                // What is on screen right now (the saved note can lag up to 400 ms behind typing)
+                string title = TxtTitle.Text ?? "";
                 string text = _note.ViewMode switch
                 {
                     NoteViewMode.Checklist => GetChecklistAsText(),
                     NoteViewMode.CopyCompartments => GetCopyListAsText(),
-                    _ => _note.Content
+                    _ => TxtContent.Text ?? ""
                 };
-                string fullDoc = string.IsNullOrEmpty(_note.Title) ? text : $"# {_note.Title}\n\n{text}";
+                string fullDoc = string.IsNullOrWhiteSpace(title) ? text : $"# {title.Trim()}\n\n{text}";
                 File.WriteAllText(sfd.FileName, fullDoc);
             }
         }
