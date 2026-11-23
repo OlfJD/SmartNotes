@@ -25,7 +25,15 @@ public partial class SettingsDialog : Window
         InitializeComponent();
 
         Loaded += OnWindowLoaded;
+        // Picking a language previews it right away (every open note follows). Closing without saving must undo that.
+        string languageBefore = LocalizationService.Instance.CurrentLanguage;
+        Closed += (s, e) =>
+        {
+            if (!_saved) LocalizationService.Instance.SetLanguage(languageBefore);
+        };
     }
+
+    private bool _saved;
 
     public SettingsDialog(SettingsService settingsService, Action onSettingsSaved)
         : this(settingsService, null, onSettingsSaved)
@@ -619,6 +627,7 @@ public partial class SettingsDialog : Window
         };
 
         _settingsService.Save();
+        _saved = true;
         _onSettingsSaved();
         Close();
     }
