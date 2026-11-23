@@ -545,7 +545,7 @@ public class NoteStorageService
         {
             Id = Guid.NewGuid(),
             Title = "Welcome to SmartNotes ⚡",
-            Content = "📌 **Stuck to your Desktop!**\n\nThis note stays right on your wallpaper beneath all other windows and programs. Open Chrome, games, or work apps — your desktop stays clean and your notes are always there when you need them!\n\n✨ **Quick Features:**\n• Click **+** in top bar to spawn a new note\n• Click 🎨 to switch vibrant neon themes\n• Toggle between Text & Todo Checklist\n• 🔒 Lock note to prevent edits\n• 📌 Switch between Desktop Stuck & Floating",
+            Content = "📌 Stuck to your Desktop!\n\nThis note stays right on your wallpaper beneath all other windows and programs. Open Chrome, games, or work apps — your desktop stays clean and your notes are always there when you need them!\n\n✨ Quick Features:\n• Click + in the top bar to spawn a new note\n• Click 🎨 to switch vibrant neon themes\n• Toggle between Text & Todo Checklist\n• 🔒 Lock note to prevent edits\n• 📌 Switch between Desktop Stuck & Floating",
             X = 80,
             Y = 80,
             Width = 350,
