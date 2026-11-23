@@ -28,18 +28,41 @@ public class SettingsService
                 var loaded = JsonSerializer.Deserialize<AppSettings>(json);
                 if (loaded != null)
                 {
-                    Settings = loaded;
+                    Settings = Repair(loaded);
                 }
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error loading settings: {ex.Message}");
+            AppLog.Error("Loading settings", ex);
             _loadFailed = true; // the defaults are in use; copy the real file aside before the first save replaces it
         }
 
         // Self-heal and sync startup setting with current binary location
         SyncAutoStart();
+    }
+
+    /// <summary>
+    /// A hand-edited or damaged settings.json can hold nulls where the app expects values;
+    /// e.g. null font maps made startup fail half-way and left an invisible process behind.
+    /// </summary>
+    private static AppSettings Repair(AppSettings s)
+    {
+        var d = new AppSettings();
+        s.SkinTitleFonts ??= new();
+        s.SkinTextFonts ??= new();
+        s.DefaultColorKey ??= d.DefaultColorKey;
+        s.DefaultSkinKey ??= d.DefaultSkinKey;
+        s.NewNoteHotKey ??= d.NewNoteHotKey;
+        s.HubHotKey ??= d.HubHotKey;
+        s.ToggleNotesHotKey ??= d.ToggleNotesHotKey;
+        s.AppLanguage ??= d.AppLanguage;
+        s.ProofingLanguage ??= d.ProofingLanguage;
+        if (!Enum.IsDefined(s.DefaultPinMode)) s.DefaultPinMode = d.DefaultPinMode;
+        if (double.IsNaN(s.UnfocusedOpacity) || s.UnfocusedOpacity <= 0) s.UnfocusedOpacity = d.UnfocusedOpacity;
+        if (double.IsNaN(s.DefaultOpacity) || s.DefaultOpacity <= 0) s.DefaultOpacity = d.DefaultOpacity;
+        if (double.IsNaN(s.DefaultFontSize) || s.DefaultFontSize < 8) s.DefaultFontSize = d.DefaultFontSize;
+        return s;
     }
 
     /// <summary>
@@ -70,7 +93,7 @@ public class SettingsService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error saving settings: {ex.Message}");
+            AppLog.Error("Saving settings", ex);
         }
     }
 }

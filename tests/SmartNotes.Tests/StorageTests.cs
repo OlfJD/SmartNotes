@@ -97,6 +97,28 @@ public static class StorageTests
     }
 
     [Test]
+    public static void PendingNotes_FromALockedSession_AreMergedOnTheNextStart()
+    {
+        var onDisk = SampleNote("On disk");
+        WriteNotes("notes.json", onDisk);
+        var edited = SampleNote("On disk");
+        edited.Id = onDisk.Id;
+        edited.Content = "edited while locked";
+        edited.ModifiedAt = DateTime.Now.AddMinutes(5);
+        var created = SampleNote("Created while locked");
+        WriteNotes("notes.pending.json", edited, created);
+
+        var storage = new NoteStorageService();
+
+        Assert.Equal(2, storage.Notes.Count, "notes after merging");
+        Assert.Equal("edited while locked", storage.Notes.Single(n => n.Id == onDisk.Id).Content, "newer edit wins");
+        Assert.True(storage.Notes.Any(n => n.Id == created.Id), "note created while locked is back");
+        Assert.Contains("edited while locked", File.ReadAllText(TestData.PathIn("notes.json")), "merged into notes.json");
+        Assert.False(File.Exists(TestData.PathIn("notes.pending.json")), "side file renamed after merging");
+        Assert.Equal(1, Directory.GetFiles(TestData.UnitDataDir, "notes.pending.merged-*.json").Length, "kept for reference");
+    }
+
+    [Test]
     public static void DeleteNote_GoesToTrash_AndCanBeRestored()
     {
         var storage = new NoteStorageService();

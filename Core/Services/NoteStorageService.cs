@@ -12,6 +12,7 @@ public class NoteStorageService
     private static readonly string AppFolder = AppPaths.DataFolder;
     private static readonly string NotesFilePath = Path.Combine(AppFolder, "notes.json");
     private static readonly string NotesBackupPath = Path.Combine(AppFolder, "notes.json.bak");
+    private static readonly string NotesPendingPath = Path.Combine(AppFolder, "notes.pending.json");
     private static readonly string TrashFolder = Path.Combine(AppFolder, "trash");
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
@@ -47,13 +48,10 @@ public class NoteStorageService
             _loadIncomplete = false;
             bool isFirstRun = false;
             bool recoveredFromBackup = false;
+            bool mergedPending = false;
             try
             {
                 Directory.CreateDirectory(AppFolder);
-                Directory.CreateDirectory(TrashFolder);
-
-                // Auto-purge any deleted files older than 48 hours
-                PurgeExpiredTrash();
 
                 isFirstRun = !File.Exists(NotesFilePath) && !File.Exists(NotesBackupPath);
 
@@ -81,21 +79,35 @@ public class NoteStorageService
                 {
                     foreach (var item in list)
                     {
+                        if (item == null) continue; // one damaged entry must not stop the others from loading
+                        Repair(item);
                         // Migrate legacy inline deleted notes into dedicated 48h trash folder
-                        if (item.IsDeleted)
-                        {
-                            SaveToTrash(item);
-                        }
-                        else
+                        // (if the trash cannot be written, keep the note in the list so it is not lost)
+                        if (!item.IsDeleted || !SaveToTrash(item))
                         {
                             _notes.Add(item);
                         }
                     }
                 }
+
+                mergedPending = !_loadIncomplete && MergePendingNotes();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error loading notes: {ex.Message}");
+                AppLog.Error("Loading notes", ex);
+                // Never let a later save replace notes.json with whatever part of it got loaded
+                if (File.Exists(NotesFilePath)) _loadIncomplete = true;
+            }
+
+            // Housekeeping only: a problem with the trash folder must never stop the notes from loading
+            try
+            {
+                Directory.CreateDirectory(TrashFolder);
+                PurgeExpiredTrash(); // deleted notes older than 48 hours
+            }
+            catch (Exception ex)
+            {
+                AppLog.Error("Preparing the trash folder", ex);
             }
 
             // Welcome notes only on a genuine first run - not when the file failed to load
@@ -105,11 +117,59 @@ public class NoteStorageService
                 CreateDefaultWelcomeNotes();
                 Save();
             }
-            else if (recoveredFromBackup)
+            else if (recoveredFromBackup || mergedPending)
             {
                 Save();
             }
         }
+    }
+
+    /// <summary>Fills in what a damaged or hand-edited notes.json left out (null lists crash the note window).</summary>
+    private static NoteItem Repair(NoteItem note)
+    {
+        if (note.Id == Guid.Empty) note.Id = Guid.NewGuid();
+        note.Title ??= "";
+        note.Content ??= "";
+        note.Checklist ??= new();
+        note.Checklist.RemoveAll(i => i == null);
+        note.CopyList ??= new();
+        note.CopyList.RemoveAll(i => i == null);
+        note.Tags ??= new();
+        note.ColorKey ??= "Amber";
+        note.SkinKey ??= NoteSkin.ClassicKey;
+        note.RuneKey ??= GreatRune.DefaultKey;
+        note.ConstellationKey ??= "";
+        return note;
+    }
+
+    /// <summary>
+    /// Edits made while notes.json stayed locked for a whole session were parked in notes.pending.json.
+    /// Bring them back (newer version of a note wins) and keep the side file renamed for reference.
+    /// </summary>
+    private bool MergePendingNotes()
+    {
+        if (!File.Exists(NotesPendingPath)) return false;
+        var pending = TryReadNotes(NotesPendingPath, out _);
+        if (pending == null) return false;
+
+        foreach (var item in pending)
+        {
+            if (item == null || item.IsDeleted) continue;
+            Repair(item);
+            int index = _notes.FindIndex(n => n.Id == item.Id);
+            if (index < 0) _notes.Add(item);
+            else if (item.ModifiedAt > _notes[index].ModifiedAt) _notes[index] = item;
+        }
+        try
+        {
+            File.Move(NotesPendingPath, Path.Combine(AppFolder, $"notes.pending.merged-{DateTime.Now:yyyyMMdd-HHmmss}.json"), overwrite: true);
+        }
+        catch (Exception ex)
+        {
+            AppLog.Error("Renaming notes.pending.json after merging it", ex);
+        }
+        AppLog.Write($"Merged {pending.Count} note(s) from notes.pending.json.");
+        return true;
     }
 
     /// <summary>
@@ -142,7 +202,7 @@ public class NoteStorageService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Unreadable notes file {path}: {ex.Message}");
+            AppLog.Error($"Unreadable notes file {Path.GetFileName(path)}", ex);
             corrupt = true;
             return null;
         }
@@ -157,11 +217,12 @@ public class NoteStorageService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Could not preserve corrupt notes file: {ex.Message}");
+            AppLog.Error("Keeping the damaged notes file aside", ex);
         }
     }
 
-    public void Save()
+    /// <summary>Writes all notes. Returns false when nothing could be written (the error is logged).</summary>
+    public bool Save()
     {
         lock (_lock)
         {
@@ -174,26 +235,30 @@ public class NoteStorageService
                     if (onDisk == null)
                     {
                         // still unreadable: keep this session's notes in a side file, never over the real one
-                        AtomicFile.WriteAllText(Path.Combine(AppFolder, "notes.pending.json"), JsonSerializer.Serialize(_notes, JsonOptions));
-                        return;
+                        // (merged back on the next start, see MergePendingNotes)
+                        AtomicFile.WriteAllText(NotesPendingPath, JsonSerializer.Serialize(_notes, JsonOptions));
+                        return true;
                     }
                     foreach (var item in onDisk)
                     {
-                        if (!item.IsDeleted && !_notes.Any(n => n.Id == item.Id)) _notes.Add(item);
+                        if (item != null && !item.IsDeleted && !_notes.Any(n => n.Id == item.Id)) _notes.Add(Repair(item));
                     }
                     _loadIncomplete = false;
                 }
                 string json = JsonSerializer.Serialize(_notes, JsonOptions);
                 AtomicFile.WriteAllText(NotesFilePath, json, NotesBackupPath);
+                return true;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error saving notes: {ex.Message}");
+                AppLog.Error("Saving notes", ex);
+                return false;
             }
         }
     }
 
-    public void AddNote(NoteItem note)
+    /// <summary>Adds (or replaces) a note and saves. Returns false if the save failed.</summary>
+    public bool AddNote(NoteItem note)
     {
         lock (_lock)
         {
@@ -207,54 +272,57 @@ public class NoteStorageService
             {
                 _notes.Add(note);
             }
-            Save();
+            return Save();
         }
     }
 
-    public void UpdateNote(NoteItem note)
+    /// <summary>Replaces a known note and saves. Returns false if the save failed.</summary>
+    public bool UpdateNote(NoteItem note)
     {
         lock (_lock)
         {
             var existing = _notes.FirstOrDefault(n => n.Id == note.Id);
-            if (existing != null)
-            {
-                int index = _notes.IndexOf(existing);
-                note.ModifiedAt = DateTime.Now;
-                _notes[index] = note;
-                Save();
-            }
+            if (existing == null) return true; // deleted meanwhile: nothing to write
+            int index = _notes.IndexOf(existing);
+            _notes[index] = note;
+            return Save();
         }
     }
 
-    public void DeleteNote(Guid id, bool permanent = false)
+    /// <summary>
+    /// Moves a note to the 48-hour trash (or deletes it for good). The trash copy is written first: if that fails,
+    /// the note stays a note and false is returned, so a delete can never lose it.
+    /// </summary>
+    public bool DeleteNote(Guid id, bool permanent = false)
     {
         lock (_lock)
         {
             var existing = _notes.FirstOrDefault(n => n.Id == id);
+            if (existing != null && !permanent)
+            {
+                existing.IsDeleted = true;
+                existing.DeletedAt = DateTime.Now;
+                if (!SaveToTrash(existing))
+                {
+                    existing.IsDeleted = false;
+                    existing.DeletedAt = null;
+                    return false;
+                }
+            }
             if (existing != null)
             {
                 _notes.Remove(existing);
                 Save();
-
-                if (permanent)
-                {
-                    DeleteFromTrash(id);
-                }
-                else
-                {
-                    existing.IsDeleted = true;
-                    existing.DeletedAt = DateTime.Now;
-                    SaveToTrash(existing);
-                }
             }
-            else if (permanent)
+            if (permanent)
             {
                 DeleteFromTrash(id);
             }
+            return true;
         }
     }
 
-    private void SaveToTrash(NoteItem note)
+    private static bool SaveToTrash(NoteItem note)
     {
         try
         {
@@ -262,10 +330,12 @@ public class NoteStorageService
             string filePath = Path.Combine(TrashFolder, $"note_{note.Id:N}.json");
             string json = JsonSerializer.Serialize(note, JsonOptions);
             AtomicFile.WriteAllText(filePath, json);
+            return true;
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error saving note to trash: {ex.Message}");
+            AppLog.Error("Moving a note to the trash", ex);
+            return false;
         }
     }
 
@@ -325,6 +395,7 @@ public class NoteStorageService
                     var note = JsonSerializer.Deserialize<NoteItem>(json);
                     if (note != null)
                     {
+                        Repair(note);
                         note.IsDeleted = false;
                         note.DeletedAt = null;
                         note.ModifiedAt = DateTime.Now;
@@ -342,7 +413,7 @@ public class NoteStorageService
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error restoring note: {ex.Message}");
+                AppLog.Error("Restoring a note from the trash", ex);
             }
 
             return null;
