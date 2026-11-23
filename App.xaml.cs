@@ -310,22 +310,28 @@ public partial class App : Application
             _hotKeyManager = new GlobalHotKeyManager(hwnd);
 
             // Win + Alt + N = New Sticky Note
-            _hotKeyManager.Register(
+            if (_hotKeyManager.Register(
                 Win32Api.MOD_WIN | Win32Api.MOD_ALT,
                 Keys.N,
                 () => Dispatcher.Invoke(CreateNewStickyNote)
-            );
+            ) < 0)
+            {
+                LogStartup("[Warning] Win+Alt+N is already taken by another program; the New Note hotkey is not available.");
+            }
 
             // Win + Alt + D = Toggle Show / Hide All Desktop Notes
-            _hotKeyManager.Register(
+            if (_hotKeyManager.Register(
                 Win32Api.MOD_WIN | Win32Api.MOD_ALT,
                 Keys.D,
                 () => Dispatcher.Invoke(ToggleHideAllNotes)
-            );
+            ) < 0)
+            {
+                LogStartup("[Warning] Win+Alt+D is already taken by another program; the Show/Hide hotkey is not available.");
+            }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to register hotkeys: {ex.Message}");
+            AppLog.Error("Registering global hotkeys", ex);
         }
     }
 

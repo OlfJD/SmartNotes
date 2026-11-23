@@ -172,7 +172,7 @@ public class TrayManager : IDisposable
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Tray menu error: {ex.Message}");
+            AppLog.Error("Opening the tray menu", ex);
         }
     }
 

@@ -249,6 +249,18 @@ public static class EndToEndTests
     }
 
     [Test(E2E = true)]
+    public static void TakenHotkey_IsLoggedInsteadOfIgnored()
+    {
+        // Two copies with separate data folders run side by side; only the first can own Win+Alt+N
+        using var first = Start("HotkeyOwner", new[] { Note("A") }, new() { ["EnableGlobalHotkeys"] = true });
+        first.WaitForNoteWindows(1);
+        using var second = Start("HotkeyLate", new[] { Note("B") }, new() { ["EnableGlobalHotkeys"] = true }, alongsideOthers: true);
+        second.WaitForNoteWindows(1);
+        Assert.Eventually(() => File.ReadAllText(second.PathIn("startup.log")).Contains("Win+Alt+N is already taken"),
+            "the second copy logs that the hotkey is taken");
+    }
+
+    [Test(E2E = true)]
     public static void SecondLaunch_HandsOverToTheRunningCopy()
     {
         using var app = Start(nameof(SecondLaunch_HandsOverToTheRunningCopy), new[] { Note("Only") });

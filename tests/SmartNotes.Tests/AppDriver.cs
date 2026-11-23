@@ -52,9 +52,10 @@ public sealed class AppDriver : IDisposable
     }
 
     public static AppDriver Start(string name, IEnumerable<NoteItem>? notes = null,
-        Dictionary<string, object?>? settings = null, string? rawNotesJson = null, string? rawSettingsJson = null)
+        Dictionary<string, object?>? settings = null, string? rawNotesJson = null, string? rawSettingsJson = null,
+        bool alongsideOthers = false)
     {
-        KillLeftovers();
+        if (!alongsideOthers) KillLeftovers();
         string dir = Path.Combine(TestData.Root, "e2e-" + name);
         if (Directory.Exists(dir))
         {
