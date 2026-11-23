@@ -181,34 +181,15 @@ public class TextProofingService
         return installed.Any(l => l.Equals(prefix, StringComparison.OrdinalIgnoreCase) || l.StartsWith(prefix + "-", StringComparison.OrdinalIgnoreCase));
     }
 
-    private static readonly HashSet<string> _registeredLangs = new(StringComparer.OrdinalIgnoreCase);
+    // Spell check only uses dictionaries that are installed in Windows. The app used to add the proofing language
+    // to the user's Windows language list in the background (PowerShell Set-WinUserLanguageList), which also adds
+    // a keyboard layout without asking. Settings > Text Proofing shows whether a dictionary is installed instead.
 
-    public static void EnsureLanguagePackRegistered(string langCode)
-    {
-        if (string.IsNullOrWhiteSpace(langCode) || langCode.Equals("auto", StringComparison.OrdinalIgnoreCase)) return;
-        if (!_registeredLangs.Add(langCode)) return;
-
-        try
-        {
-            System.Threading.Tasks.Task.Run(() =>
-            {
-                try
-                {
-                    using var process = new System.Diagnostics.Process();
-                    process.StartInfo = new System.Diagnostics.ProcessStartInfo
-                    {
-                        FileName = "powershell.exe",
-                        Arguments = $"-NoProfile -NonInteractive -Command \"$l = Get-WinUserLanguageList; if (-not ($l | Where-Object {{ $_.LanguageTag -like '{langCode}*' }})) {{ $l.Add('{langCode}'); Set-WinUserLanguageList $l -Force }}\"",
-                        CreateNoWindow = true,
-                        UseShellExecute = false
-                    };
-                    process.Start();
-                }
-                catch { }
-            });
-        }
-        catch { }
-    }
+    /// <summary>The proofing language to use: "auto" (or nothing) means the Windows display language.</summary>
+    public static string ResolveLanguage(string? langCode) =>
+        string.IsNullOrWhiteSpace(langCode) || langCode.Equals("auto", StringComparison.OrdinalIgnoreCase)
+            ? System.Globalization.CultureInfo.CurrentUICulture.IetfLanguageTag
+            : langCode;
 
     public void ApplyProofingToTextBox(TextBox textBox, AppSettings settings)
     {
@@ -218,14 +199,7 @@ public class TextProofingService
         {
             textBox.SpellCheck.IsEnabled = false;
 
-            string langCode = settings.ProofingLanguage;
-            if (string.IsNullOrWhiteSpace(langCode) || langCode.Equals("auto", StringComparison.OrdinalIgnoreCase))
-            {
-                langCode = System.Globalization.CultureInfo.CurrentUICulture.IetfLanguageTag;
-            }
-
-            EnsureLanguagePackRegistered(langCode);
-
+            string langCode = ResolveLanguage(settings.ProofingLanguage);
             try
             {
                 textBox.Language = XmlLanguage.GetLanguage(langCode);
@@ -235,6 +209,9 @@ public class TextProofingService
                 textBox.Language = XmlLanguage.GetLanguage("en-US");
             }
 
+            // Note: custom_dict.lex is deliberately not attached through SpellCheck.CustomDictionaries. WPF registers a
+            // temporary copy with the Windows spell checker for every text box and never unregisters it on .NET (no
+            // finalizers at exit), so each run would leave registry entries and temp files behind.
             if (settings.EnableSpellCheck)
             {
                 textBox.SpellCheck.IsEnabled = true;
@@ -244,13 +221,17 @@ public class TextProofingService
                 }
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            AppLog.Error("Applying spell check settings", ex);
+        }
     }
 
     public bool TryAutocorrect(TextBox textBox, char delimiter, AppSettings settings, out AutocorrectUndoItem? undoItem)
     {
         undoItem = null;
-        if (textBox == null || string.IsNullOrEmpty(textBox.Text)) return false;
+        // A locked note's text boxes are read-only: autocorrect must not rewrite them either
+        if (textBox == null || textBox.IsReadOnly || string.IsNullOrEmpty(textBox.Text)) return false;
 
         int caret = textBox.SelectionStart;
         if (caret <= 0 || caret > textBox.Text.Length) return false;
@@ -294,8 +275,10 @@ public class TextProofingService
             }
         }
 
-        // 3. Check Built-in Common Typos & Contractions
-        if (replacement == null && settings.EnableAutocorrect)
+        // 3. Check Built-in Common Typos & Contractions - an English list, so only for English text
+        //    (in German it turned the everyday word "im" into "I'm")
+        if (replacement == null && settings.EnableAutocorrect &&
+            ResolveLanguage(settings.ProofingLanguage).StartsWith("en", StringComparison.OrdinalIgnoreCase))
         {
             if (_builtInTypos.TryGetValue(token, out var typoFix))
             {
@@ -324,15 +307,23 @@ public class TextProofingService
         // If a valid replacement was determined
         if (!string.IsNullOrEmpty(replacement) && replacement != token)
         {
-            string newText = fullText.Substring(0, tokenStart) + replacement + fullText.Substring(tokenEnd);
-            textBox.Text = newText;
-            textBox.SelectionStart = tokenStart + replacement.Length;
-
+            ReplaceRange(textBox, tokenStart, token.Length, replacement);
             undoItem = new AutocorrectUndoItem(tokenStart, token, replacement);
             return true;
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Replaces just that word through the selection, which keeps the text box's undo history
+    /// (assigning Text wiped Ctrl+Z after every correction) and leaves the caret right after it.
+    /// </summary>
+    private static void ReplaceRange(TextBox textBox, int start, int length, string replacement)
+    {
+        textBox.Select(start, length);
+        textBox.SelectedText = replacement;
+        textBox.Select(start + replacement.Length, 0);
     }
 
     private static bool IsSentenceStart(string text, int tokenStart)
@@ -369,11 +360,9 @@ public class TextProofingService
         if (start >= 0 && start + repLen <= textBox.Text.Length)
         {
             string currentSegment = textBox.Text.Substring(start, repLen);
-            if (currentSegment == lastUndo.Replacement)
+            if (currentSegment == lastUndo.Replacement && !textBox.IsReadOnly)
             {
-                string revertedText = textBox.Text.Substring(0, start) + lastUndo.OriginalWord + textBox.Text.Substring(start + repLen);
-                textBox.Text = revertedText;
-                textBox.SelectionStart = start + lastUndo.OriginalWord.Length;
+                ReplaceRange(textBox, start, repLen, lastUndo.OriginalWord);
                 return true;
             }
         }

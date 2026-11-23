@@ -25,6 +25,18 @@ public static class ProofingTests
         return (tb, changed, undo);
     }
 
+    /// <summary>Text boxes only spell-check (and record undo steps) inside a window: host one off-screen.</summary>
+    private static System.Windows.Window HostOffscreen(TextBox tb)
+    {
+        var host = new System.Windows.Window
+        {
+            Content = tb, Width = 300, Height = 80, Left = -30000, Top = -30000,
+            WindowStyle = System.Windows.WindowStyle.None, ShowInTaskbar = false, ShowActivated = false
+        };
+        host.Show();
+        return host;
+    }
+
     [Test]
     public static void English_FixesCommonTypos()
     {
@@ -99,12 +111,7 @@ public static class ProofingTests
         // Replacing the whole Text wipes Ctrl+Z; only the corrected word should change.
         // A text box only records undo steps once it is part of a window, so host it off-screen.
         var tb = new TextBox { Text = "first" };
-        var host = new System.Windows.Window
-        {
-            Content = tb, Width = 200, Height = 80, Left = -30000, Top = -30000,
-            WindowStyle = System.Windows.WindowStyle.None, ShowInTaskbar = false, ShowActivated = false
-        };
-        host.Show();
+        var host = HostOffscreen(tb);
         try
         {
             tb.SelectionStart = 5;
