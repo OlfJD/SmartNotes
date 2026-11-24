@@ -14,6 +14,23 @@ public static class AutoStartManager
         string? procPath = Environment.ProcessPath;
         if (!string.IsNullOrEmpty(procPath) && Path.GetExtension(procPath).Equals(".exe", StringComparison.OrdinalIgnoreCase) && !Path.GetFileName(procPath).Equals("dotnet.exe", StringComparison.OrdinalIgnoreCase))
         {
+            // If running from a debug/intermediate folder, prefer the published/release binary if available
+            if (procPath.Contains(@"\bin\Debug\", StringComparison.OrdinalIgnoreCase) ||
+                procPath.Contains(@"/bin/Debug/", StringComparison.OrdinalIgnoreCase))
+            {
+                DirectoryInfo? dir = Directory.GetParent(procPath);
+                while (dir != null)
+                {
+                    string releaseExe = Path.Combine(dir.FullName, "release", "SmartNotes.exe");
+                    if (File.Exists(releaseExe)) return releaseExe;
+
+                    string publishExe = Path.Combine(dir.FullName, "bin", "Release", "net10.0-windows", "win-x64", "publish", "SmartNotes.exe");
+                    if (File.Exists(publishExe)) return publishExe;
+
+                    dir = dir.Parent;
+                }
+            }
+
             return procPath;
         }
 
@@ -24,8 +41,12 @@ public static class AutoStartManager
         DirectoryInfo? parent = Directory.GetParent(baseDir);
         while (parent != null)
         {
-            string candidate = Path.Combine(parent.FullName, "SmartNotes.exe");
+            string candidate = Path.Combine(parent.FullName, "release", "SmartNotes.exe");
             if (File.Exists(candidate)) return candidate;
+
+            candidate = Path.Combine(parent.FullName, "SmartNotes.exe");
+            if (File.Exists(candidate)) return candidate;
+
             parent = parent.Parent;
         }
 
@@ -59,10 +80,16 @@ public static class AutoStartManager
             if (shouldEnable)
             {
                 var currentVal = key.GetValue(AppName)?.ToString();
-                if (!string.Equals(currentVal?.Trim('\"'), currentExe, StringComparison.OrdinalIgnoreCase))
+                string? currentClean = currentVal?.Trim('\"');
+
+                // Update if missing, changed, or pointing to a non-existent path
+                if (!string.Equals(currentClean, currentExe, StringComparison.OrdinalIgnoreCase) ||
+                    (!string.IsNullOrEmpty(currentClean) && !File.Exists(currentClean)))
                 {
                     key.SetValue(AppName, expectedVal);
                 }
+
+                // A "Disabled" set in Task Manager (StartupApproved\Run) is the user's choice: never switch it back on
             }
             else
             {
