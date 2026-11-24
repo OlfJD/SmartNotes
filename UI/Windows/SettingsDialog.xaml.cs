@@ -56,7 +56,7 @@ public partial class SettingsDialog : Window
     {
         var s = _settingsService.Settings;
         ChkStartup.IsChecked = s.LaunchOnStartup;
-        ChkDesktopStuck.IsChecked = s.KeepBehindAllWindows;
+        ChkDesktopStuck.IsChecked = s.DefaultPinMode == NotePinMode.DesktopStuck;
         ChkUnfocusedTransparency.IsChecked = s.EnableUnfocusedTransparency;
         ChkHotkeys.IsChecked = s.EnableGlobalHotkeys;
         ChkAutoTrimMemory.IsChecked = s.AutoOptimizeMemory;
@@ -572,7 +572,8 @@ public partial class SettingsDialog : Window
     {
         var s = _settingsService.Settings;
         s.LaunchOnStartup = ChkStartup.IsChecked == true;
-        s.KeepBehindAllWindows = ChkDesktopStuck.IsChecked == true;
+        // On: new notes start stuck to the desktop (behind your apps). Off: they start on top of other windows.
+        s.DefaultPinMode = ChkDesktopStuck.IsChecked == true ? NotePinMode.DesktopStuck : NotePinMode.AlwaysOnTop;
         s.EnableUnfocusedTransparency = ChkUnfocusedTransparency.IsChecked == true;
         s.UnfocusedOpacity = Math.Clamp(SliderUnfocusedOpacity.Value / 100.0, 0.15, 0.90);
         s.EnableGlobalHotkeys = ChkHotkeys.IsChecked == true;

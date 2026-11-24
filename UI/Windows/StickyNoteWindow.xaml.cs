@@ -823,6 +823,13 @@ public partial class StickyNoteWindow : Window
         {
             LockBadge.Visibility = isLocked ? Visibility.Visible : Visibility.Collapsed;
         }
+        // A locked note cannot be deleted; the tooltip says why (shown although the button is disabled)
+        if (BtnClose != null)
+        {
+            BtnClose.IsEnabled = !isLocked;
+            ToolTipService.SetShowOnDisabled(BtnClose, true);
+            BtnClose.ToolTip = LocalizationService.T(isLocked ? "Tooltip_UnlockToDelete" : "Tooltip_DeleteNote");
+        }
         if (BtnLock != null)
         {
             BtnLock.ToolTip = isLocked ? LocalizationService.T("Tooltip_UnlockNote") : LocalizationService.T("Tooltip_LockNote");
@@ -1586,7 +1593,7 @@ public partial class StickyNoteWindow : Window
         }));
 
         menu.Items.Add(AppMenu.Separator());
-        menu.Items.Add(AppMenu.Item(LocalizationService.T("Menu_DeleteNote"), "trash-2", DeleteNote, MenuTone.Danger));
+        menu.Items.Add(AppMenu.Item(LocalizationService.T("Menu_DeleteNote"), "trash-2", DeleteNote, MenuTone.Danger, isEnabled: !_note.IsLocked));
 
         SkinMenus.Apply(menu, _currentSkin);
         menu.PlacementTarget = BtnMore;
@@ -1861,6 +1868,7 @@ public partial class StickyNoteWindow : Window
 
     private void DeleteNote()
     {
+        if (_note.IsLocked) return; // locked notes are protected from deletion
         SaveNoteState();
         if (!_storageService.DeleteNote(_note.Id, permanent: false))
         {

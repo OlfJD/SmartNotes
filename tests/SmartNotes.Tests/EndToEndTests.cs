@@ -101,6 +101,29 @@ public static class EndToEndTests
         Assert.True(taskBoxes.All(IsReadOnly), "task text of a locked note must be read-only");
         var deleteButtons = list.FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Button)).Cast<AutomationElement>().ToList();
         Assert.True(deleteButtons.Count == 2 && deleteButtons.All(b => !b.Current.IsEnabled), "delete-task buttons of a locked note must be disabled");
+        Assert.False(Find(w, "BtnClose").Current.IsEnabled, "a locked note cannot be deleted with its × button");
+        Assert.Equal("Locked: unlock the note to delete it", Find(w, "BtnClose").Current.HelpText, "the × button explains why");
+
+        // unlocking makes it deletable again
+        Invoke(Find(w, "BtnLock"));
+        Assert.Eventually(() => Find(w, "BtnClose").Current.IsEnabled, "× enabled after unlocking");
+    }
+
+    [Test(E2E = true)]
+    public static void DesktopStickingSwitch_DecidesHowNewNotesStart()
+    {
+        using var app = Start(nameof(DesktopStickingSwitch_DecidesHowNewNotesStart), new[] { Note("Only") });
+        var w = app.WaitForNoteWindows(1)[0];
+        Invoke(Find(w, "BtnMore"));
+        app.InvokeMenuItem("Settings & Preferences...");
+        AutomationElement? settings = null;
+        Assert.Eventually(() => (settings = app.WindowContaining("BtnSave")) != null, "settings window");
+        var stuck = (TogglePattern)Find(settings!, "ChkDesktopStuck").GetCurrentPattern(TogglePattern.Pattern);
+        Assert.Equal(ToggleState.On, stuck.Current.ToggleState, "on by default: new notes stick to the desktop");
+        stuck.Toggle();
+        Invoke(Find(settings!, "BtnSave"));
+        Assert.Eventually(() => app.WindowContaining("BtnSave") == null, "settings closed");
+        Assert.Eventually(() => File.ReadAllText(app.PathIn("settings.json")).Contains("\"DefaultPinMode\": 1"), "saved as 'always on top' for new notes");
     }
 
     [Test(E2E = true)]
