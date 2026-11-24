@@ -32,6 +32,23 @@ Notes, to-do lists and checklists right on your desktop. No account, no cloud, e
 - **Safe saving**: every change is saved right away. If a save fails, the note says so and tries again. Notes are backed up before every update.
 - **Quiet updates** in the background, **English and German**, and it **starts with Windows** (turn that off in the tray menu or Task Manager).
 
+## Runes and constellations
+
+In the Elden Ring theme the colour picker offers nine Great Runes instead of colours:
+
+![The nine Great Runes](docs/images/great-runes.png)
+
+In the Astral theme every note gets its own constellation, picked automatically or chosen by you:
+
+![The five constellations](docs/images/constellations.png)
+
+<details>
+<summary>Themed menus</summary>
+
+![Themed menus](docs/images/themed-menus.png)
+
+</details>
+
 ## Shortcuts
 
 | Keys | Action |
