@@ -190,7 +190,7 @@ public static class StorageTests
     {
         var id = Guid.NewGuid();
         File.WriteAllText(TestData.PathIn("notes.json"),
-            $$"""[null, {"Id":"{{id}}","Title":"Survivor","Checklist":null,"CopyList":null,"Tags":null}]""");
+            $$"""[null, {"Id":"{{id}}","Title":"Survivor","Content":null,"Checklist":null,"CopyList":null}]""");
 
         var storage = new NoteStorageService();
 
@@ -198,7 +198,7 @@ public static class StorageTests
         Assert.NotNull(note, "valid note next to a null entry is loaded");
         Assert.NotNull(note!.Checklist, "null checklist replaced with an empty list");
         Assert.NotNull(note.CopyList, "null copy list replaced with an empty list");
-        Assert.NotNull(note.Tags, "null tags replaced with an empty list");
+        Assert.NotNull(note.Content, "null text replaced with an empty string");
     }
 
     [Test]

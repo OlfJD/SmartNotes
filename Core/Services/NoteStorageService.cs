@@ -134,7 +134,6 @@ public class NoteStorageService
         note.Checklist.RemoveAll(i => i == null);
         note.CopyList ??= new();
         note.CopyList.RemoveAll(i => i == null);
-        note.Tags ??= new();
         note.ColorKey ??= "Amber";
         note.SkinKey ??= NoteSkin.ClassicKey;
         note.RuneKey ??= GreatRune.DefaultKey;
@@ -505,38 +504,6 @@ public class NoteStorageService
         catch { }
     }
 
-    public string ExportAllToJson()
-    {
-        lock (_lock)
-        {
-            return JsonSerializer.Serialize(_notes, JsonOptions);
-        }
-    }
-
-    public bool ImportFromJson(string json)
-    {
-        try
-        {
-            var imported = JsonSerializer.Deserialize<List<NoteItem>>(json);
-            if (imported != null)
-            {
-                lock (_lock)
-                {
-                    foreach (var item in imported)
-                    {
-                        if (!_notes.Any(n => n.Id == item.Id))
-                        {
-                            _notes.Add(item);
-                        }
-                    }
-                    Save();
-                }
-                return true;
-            }
-        }
-        catch { }
-        return false;
-    }
 
     private void CreateDefaultWelcomeNotes()
     {

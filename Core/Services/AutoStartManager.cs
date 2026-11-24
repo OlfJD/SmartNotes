@@ -53,20 +53,6 @@ public static class AutoStartManager
         return directExe;
     }
 
-    public static bool IsStartupEnabled()
-    {
-        try
-        {
-            using var key = Registry.CurrentUser.OpenSubKey(StartupRegistryKey, false);
-            var val = key?.GetValue(AppName)?.ToString();
-            return !string.IsNullOrWhiteSpace(val);
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
     public static void SyncStartupRegistration(bool shouldEnable)
     {
         try
@@ -101,12 +87,7 @@ public static class AutoStartManager
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error configuring startup: {ex.Message}");
+            AppLog.Error("Updating the autostart entry", ex);
         }
-    }
-
-    public static void SetStartup(bool enable)
-    {
-        SyncStartupRegistration(enable);
     }
 }

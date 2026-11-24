@@ -453,23 +453,6 @@
                                     </Border>
 
                                     <!-- Shortcut 2 -->
-                                    <Border Background="#101522" BorderBrush="#202A3D" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="12,10" Margin="0,0,0,8">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                                <TextBlock x:Name="TxtShortcut2Title" Text="Open Notes Hub / Manager" FontSize="{StaticResource FontSizeBody}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                                                <TextBlock x:Name="TxtShortcut2Desc" Text="Search, sort, filter, and organize all your desktop notes in one place" FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" Margin="0,2,0,0"/>
-                                            </StackPanel>
-                                            <Border Grid.Column="1" Background="#1E273C" BorderBrush="#3B4C6F" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="10,5" VerticalAlignment="Center">
-                                                <TextBlock Text="Win + Alt + H" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold" Foreground="#93C5FD"/>
-                                            </Border>
-                                        </Grid>
-                                    </Border>
-
-                                    <!-- Shortcut 3 -->
                                     <Border Background="#101522" BorderBrush="#202A3D" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="12,10">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -596,30 +579,10 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- Custom Lexicon & Rules Action Buttons -->
+                            <!-- Custom Autocorrect Rules -->
                             <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <!-- Custom Dict Button -->
-                                <Button x:Name="BtnOpenCustomDict" Grid.Column="0" Style="{StaticResource GlowButton}" Padding="12,10" Margin="0,0,6,0" Click="BtnOpenCustomDict_Click" HorizontalContentAlignment="Left">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <controls:LucideIcon IconKey="book-open" Size="18" StrokeThickness="2.4" Foreground="{StaticResource AccentBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                            <TextBlock x:Name="TxtCustomDictBtnTitle" Text="Custom Dictionary (.lex)" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold" Foreground="#FFFFFF"/>
-                                            <TextBlock x:Name="TxtCustomDictBtnDesc" Text="Add custom learned words" FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4"/>
-                                        </StackPanel>
-                                    </Grid>
-                                </Button>
-
                                 <!-- Custom Rules Button -->
-                                <Button x:Name="BtnOpenCustomRules" Grid.Column="1" Style="{StaticResource GlowButton}" Padding="12,10" Margin="6,0,0,0" Click="BtnOpenCustomRules_Click" HorizontalContentAlignment="Left">
+                                <Button x:Name="BtnOpenCustomRules" Style="{StaticResource GlowButton}" Padding="12,10" Click="BtnOpenCustomRules_Click" HorizontalContentAlignment="Left">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>

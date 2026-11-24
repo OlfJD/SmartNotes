@@ -37,7 +37,6 @@ public class NoteItem
     public string ConstellationKey { get; set; } = "";
     public NotePinMode PinMode { get; set; } = NotePinMode.DesktopStuck;
     public bool IsLocked { get; set; } = false;
-    public bool IsCollapsed { get; set; } = false;
     public double Opacity { get; set; } = 1.0;
     public double FontSize { get; set; } = 16.0;
 
@@ -46,7 +45,6 @@ public class NoteItem
     public DateTime ModifiedAt { get; set; } = DateTime.Now;
     public bool IsDeleted { get; set; } = false;
     public DateTime? DeletedAt { get; set; }
-    public List<string> Tags { get; set; } = new();
 
     public string SnippetPreview
     {
@@ -84,13 +82,11 @@ public class NoteItem
             RuneKey = RuneKey,
             PinMode = PinMode,
             IsLocked = false,
-            IsCollapsed = IsCollapsed,
             Opacity = Opacity,
             FontSize = FontSize,
             CreatedAt = DateTime.Now,
             ModifiedAt = DateTime.Now,
-            IsDeleted = false,
-            Tags = new List<string>(Tags)
+            IsDeleted = false
         };
     }
 }

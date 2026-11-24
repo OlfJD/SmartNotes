@@ -2279,9 +2279,6 @@ public partial class StickyNoteWindow : Window
             menu.Items.Add(headerItem);
             
             var suggestions = error.Suggestions.Take(5).ToList();
-            int errStart = tb.GetSpellingErrorStart(targetIndex);
-            int errLen = tb.GetSpellingErrorLength(targetIndex);
-            string misspelled = (errStart >= 0 && errStart + errLen <= tb.Text.Length) ? tb.Text.Substring(errStart, errLen) : "";
 
             if (suggestions.Count > 0)
             {
@@ -2315,21 +2312,6 @@ public partial class StickyNoteWindow : Window
             }
 
             menu.Items.Add(new Separator());
-
-            if (!string.IsNullOrEmpty(misspelled))
-            {
-                var addDictItem = new MenuItem
-                {
-                    Header = LocalizationService.T("Menu_AddToDict", misspelled),
-                    Icon = new LucideIcon { IconKey = "book-plus", Size = 14, StrokeThickness = 1.8, Foreground = AccentChromeBrush }
-                };
-                addDictItem.Click += (s, ev) =>
-                {
-                    TextProofingService.Instance.AddWordToCustomDictionary(misspelled);
-                    ApplyProofingSettings();
-                };
-                menu.Items.Add(addDictItem);
-            }
 
             var ignoreItem = new MenuItem
             {

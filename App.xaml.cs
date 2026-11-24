@@ -411,7 +411,6 @@ public partial class App : Application
             {
                 _activeNoteWindows.Remove(w.Note.Id);
                 UpdateTrayTooltip();
-                _trayManager?.RebuildContextMenu();
                 MemoryOptimizer.TrimMemory();
             }),
             startInForeground: bringToFront
@@ -518,25 +517,6 @@ public partial class App : Application
         focused.DesktopWindowManager.RaiseWithoutActivating();
     }
 
-    public void LocateNote(Guid id)
-    {
-        if (_activeNoteWindows.TryGetValue(id, out var win))
-        {
-            win.Show();
-            win.Activate();
-            win.DesktopWindowManager.BringToFront();
-            win.TxtContent.Focus();
-        }
-        else
-        {
-            var note = _storageService.Notes.FirstOrDefault(n => n.Id == id && !n.IsDeleted);
-            if (note != null)
-            {
-                SpawnStickyNoteWindow(note, bringToFront: true);
-            }
-        }
-    }
-
     public void ToggleHideAllNotes()
     {
         bool hide = !_settingsService.Settings.HideAllNotes;
@@ -555,7 +535,6 @@ public partial class App : Application
             }
         }
 
-        _trayManager.RebuildContextMenu();
     }
 
     public void ArrangeNotesOnDesktop()
@@ -623,7 +602,6 @@ public partial class App : Application
         var dlg = new SettingsDialog(_settingsService, _storageService, () =>
         {
             UpdateAppLanguage(_settingsService.Settings.AppLanguage);
-            _trayManager.RebuildContextMenu();
             _hotKeyManager?.Dispose();
             InitGlobalHotkeys();
             NotifyTransparencySettingsChanged();
@@ -683,7 +661,6 @@ public partial class App : Application
     public void UpdateAppLanguage(string langCode)
     {
         LocalizationService.Instance.SetLanguage(langCode);
-        _trayManager?.RebuildContextMenu();
         UpdateTrayTooltip();
         foreach (var win in _activeNoteWindows.Values)
         {
@@ -701,7 +678,6 @@ public partial class App : Application
             string title = string.IsNullOrWhiteSpace(restored.Title) ? restored.SnippetPreview : restored.Title;
             if (title.Length > 25) title = title.Substring(0, 22) + "...";
             _trayManager.ShowBalloon("SmartNotes", LocalizationService.T("Balloon_NoteRestored", title), ToolTipIcon.Info);
-            _trayManager.RebuildContextMenu();
         }
     }
 
@@ -718,14 +694,12 @@ public partial class App : Application
             string suffix = LocalizationService.PluralSuffix(restored.Count);
             _trayManager.ShowBalloon("SmartNotes", LocalizationService.T("Balloon_NotesRestoredCount", restored.Count, suffix), ToolTipIcon.Info);
         }
-        _trayManager.RebuildContextMenu();
     }
 
     public void EmptyTrash()
     {
         _storageService.ClearTrash();
         _trayManager.ShowBalloon("SmartNotes", LocalizationService.T("Balloon_TrashEmptied"), ToolTipIcon.Info);
-        _trayManager.RebuildContextMenu();
     }
 
     private void UpdateTrayTooltip()

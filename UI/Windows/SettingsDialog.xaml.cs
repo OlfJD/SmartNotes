@@ -193,8 +193,6 @@ public partial class SettingsDialog : Window
         TxtActiveShortcutsTitle.Text = LocalizationService.T("Hotkeys_ActiveShortcuts");
         TxtShortcut1Title.Text = LocalizationService.T("Hotkeys_NewNote");
         TxtShortcut1Desc.Text = LocalizationService.T("Hotkeys_NewNoteDesc");
-        TxtShortcut2Title.Text = LocalizationService.T("Hotkeys_NotesHub");
-        TxtShortcut2Desc.Text = LocalizationService.T("Hotkeys_NotesHubDesc");
         TxtShortcut3Title.Text = LocalizationService.T("Hotkeys_ToggleNotes");
         TxtShortcut3Desc.Text = LocalizationService.T("Hotkeys_ToggleNotesDesc");
 
@@ -212,8 +210,6 @@ public partial class SettingsDialog : Window
         TxtAutoCapDesc.Text = LocalizationService.T("Proofing_AutoCapDesc");
         TxtSmartSymbolsTitle.Text = LocalizationService.T("Proofing_SmartSymbolsTitle");
         TxtSmartSymbolsDesc.Text = LocalizationService.T("Proofing_SmartSymbolsDesc");
-        TxtCustomDictBtnTitle.Text = LocalizationService.T("Proofing_CustomDictBtn");
-        TxtCustomDictBtnDesc.Text = LocalizationService.T("Proofing_CustomDictDesc");
         TxtCustomRulesBtnTitle.Text = LocalizationService.T("Proofing_CustomRulesBtn");
         TxtCustomRulesBtnDesc.Text = LocalizationService.T("Proofing_CustomRulesDesc");
 
@@ -514,24 +510,6 @@ public partial class SettingsDialog : Window
         if (BtnOptimizeRam.Content is StackPanel sp && sp.Children.OfType<TextBlock>().FirstOrDefault() is TextBlock tb)
         {
             tb.Text = LocalizationService.T("Perf_TrimmedBtn");
-        }
-    }
-
-    private void BtnOpenCustomDict_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            if (!System.IO.File.Exists(TextProofingService.CustomDictPath))
-            {
-                System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(TextProofingService.CustomDictPath)!);
-                System.IO.File.WriteAllText(TextProofingService.CustomDictPath, "#LID 1033\r\n");
-            }
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("notepad.exe", TextProofingService.CustomDictPath) { UseShellExecute = true });
-        }
-        catch (Exception ex)
-        {
-            ModernMessageBox.Show(LocalizationService.T("Proofing_OpenFileFailed", System.IO.Path.GetFileName(TextProofingService.CustomDictPath), ex.Message),
-                "SmartNotes", ModernMessageButtons.OK, ModernMessageIcon.Warning, LocalizationService.T("Proofing_CustomDictBtn"), this);
         }
     }
 

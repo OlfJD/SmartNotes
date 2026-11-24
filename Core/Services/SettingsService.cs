@@ -53,9 +53,6 @@ public class SettingsService
         s.SkinTextFonts ??= new();
         s.DefaultColorKey ??= d.DefaultColorKey;
         s.DefaultSkinKey ??= d.DefaultSkinKey;
-        s.NewNoteHotKey ??= d.NewNoteHotKey;
-        s.HubHotKey ??= d.HubHotKey;
-        s.ToggleNotesHotKey ??= d.ToggleNotesHotKey;
         s.AppLanguage ??= d.AppLanguage;
         s.ProofingLanguage ??= d.ProofingLanguage;
         if (!Enum.IsDefined(s.DefaultPinMode)) s.DefaultPinMode = d.DefaultPinMode;

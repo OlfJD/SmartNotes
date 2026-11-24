@@ -121,14 +121,6 @@ public class TrayManager : IDisposable
         };
     }
 
-    /// <summary>
-    /// Kept for callers that change state shown in the menu. The menu is built fresh every time it
-    /// opens, so there is nothing to do here.
-    /// </summary>
-    public void RebuildContextMenu()
-    {
-    }
-
     private void ShowMenu()
     {
         try

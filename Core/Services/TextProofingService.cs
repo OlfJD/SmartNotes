@@ -18,7 +18,6 @@ public class TextProofingService
 
     private static readonly string AppFolder = AppPaths.DataFolder;
 
-    public static readonly string CustomDictPath = Path.Combine(AppFolder, "custom_dict.lex");
     public static readonly string CustomRulesPath = Path.Combine(AppFolder, "autocorrect_rules.json");
 
     public static readonly IReadOnlyList<ProofingLanguageOption> SupportedLanguages = new List<ProofingLanguageOption>
@@ -45,21 +44,7 @@ public class TextProofingService
     public TextProofingService()
     {
         InitializeBuiltInDictionaries();
-        EnsureCustomDictionaryFile();
         LoadCustomRules();
-    }
-
-    private void EnsureCustomDictionaryFile()
-    {
-        try
-        {
-            Directory.CreateDirectory(AppFolder);
-            if (!File.Exists(CustomDictPath))
-            {
-                File.WriteAllText(CustomDictPath, "");
-            }
-        }
-        catch { }
     }
 
     private void LoadCustomRules()
@@ -94,39 +79,6 @@ public class TextProofingService
     }
 
     public IReadOnlyList<AutocorrectRule> GetCustomRules() => _customRules.AsReadOnly();
-
-    public void AddWordToCustomDictionary(string word)
-    {
-        if (string.IsNullOrWhiteSpace(word)) return;
-        word = word.Trim();
-
-        try
-        {
-            EnsureCustomDictionaryFile();
-            var existing = File.Exists(CustomDictPath) ? File.ReadAllLines(CustomDictPath) : Array.Empty<string>();
-            if (!existing.Any(l => string.Equals(l.Trim(), word, StringComparison.OrdinalIgnoreCase)))
-            {
-                File.AppendAllLines(CustomDictPath, new[] { word });
-            }
-        }
-        catch { }
-    }
-
-    public List<string> GetCustomDictionaryWords()
-    {
-        try
-        {
-            if (File.Exists(CustomDictPath))
-            {
-                return File.ReadAllLines(CustomDictPath)
-                    .Where(l => !string.IsNullOrWhiteSpace(l) && !l.StartsWith("#"))
-                    .Select(l => l.Trim())
-                    .ToList();
-            }
-        }
-        catch { }
-        return new List<string>();
-    }
 
     private static HashSet<string>? _cachedSupportedLangs;
 
@@ -209,9 +161,9 @@ public class TextProofingService
                 textBox.Language = XmlLanguage.GetLanguage("en-US");
             }
 
-            // Note: custom_dict.lex is deliberately not attached through SpellCheck.CustomDictionaries. WPF registers a
-            // temporary copy with the Windows spell checker for every text box and never unregisters it on .NET (no
-            // finalizers at exit), so each run would leave registry entries and temp files behind.
+            // No SpellCheck.CustomDictionaries (that is why "Add to Dictionary" was removed): WPF registers a temporary
+            // copy with the Windows spell checker for every text box and never unregisters it on .NET (no finalizers
+            // at exit), so each run would leave registry entries and temp files behind.
             if (settings.EnableSpellCheck)
             {
                 textBox.SpellCheck.IsEnabled = true;

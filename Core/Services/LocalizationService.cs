@@ -131,8 +131,6 @@ public class LocalizationService
             ["Hotkeys_ActiveShortcuts"] = "ACTIVE KEYBOARD SHORTCUTS",
             ["Hotkeys_NewNote"] = "Create New Sticky Note",
             ["Hotkeys_NewNoteDesc"] = "Instantly spawns a new note at your cursor location",
-            ["Hotkeys_NotesHub"] = "Open Notes Hub / Manager",
-            ["Hotkeys_NotesHubDesc"] = "Search, sort, filter, and organize all your desktop notes in one place",
             ["Hotkeys_ToggleNotes"] = "Show / Hide All Desktop Notes",
             ["Hotkeys_ToggleNotesDesc"] = "Quickly toggle visibility for clean desktop presentations",
 
@@ -150,8 +148,6 @@ public class LocalizationService
             ["Proofing_AutoCapDesc"] = "Capitalize the first letter of sentences and standalone 'i'.",
             ["Proofing_SmartSymbolsTitle"] = "Smart Symbol Replacements",
             ["Proofing_SmartSymbolsDesc"] = "Convert typing shortcuts like '->' to '→', '--' to '—', '!=' to '≠', '(c)' to '©'.",
-            ["Proofing_CustomDictBtn"] = "Custom Dictionary (.lex)",
-            ["Proofing_CustomDictDesc"] = "Add custom learned words",
             ["Proofing_CustomRulesBtn"] = "Autocorrect Rules (.json)",
             ["Proofing_CustomRulesDesc"] = "Define custom text expansions",
             ["Proofing_StatusSupported"] = "✓ Windows spell check dictionary is ready for {0}",
@@ -230,7 +226,6 @@ public class LocalizationService
             // Context Menu & More Options Menu
             ["Menu_SpellingSuggestions"] = "SPELLING SUGGESTIONS",
             ["Menu_NoSuggestions"] = "(No spelling suggestions)",
-            ["Menu_AddToDict"] = "Add \"{0}\" to Dictionary",
             ["Menu_IgnoreAll"] = "Ignore All Occurrences",
             ["Menu_Cut"] = "Cut",
             ["Menu_Copy"] = "Copy",
@@ -434,8 +429,6 @@ public class LocalizationService
             ["Hotkeys_ActiveShortcuts"] = "AKTIVE TASTENKÜRZEL",
             ["Hotkeys_NewNote"] = "Neue Notiz erstellen",
             ["Hotkeys_NewNoteDesc"] = "Erstellt sofort eine neue Notiz an der aktuellen Mausposition",
-            ["Hotkeys_NotesHub"] = "Notizen-Übersicht / Manager öffnen",
-            ["Hotkeys_NotesHubDesc"] = "Alle Notizen an einem zentralen Ort suchen, filtern und verwalten",
             ["Hotkeys_ToggleNotes"] = "Alle Desktop-Notizen ein-/ausblenden",
             ["Hotkeys_ToggleNotesDesc"] = "Schnelles Umschalten der Notizensichtbarkeit für Präsentationen",
 
@@ -453,8 +446,6 @@ public class LocalizationService
             ["Proofing_AutoCapDesc"] = "Den ersten Buchstaben jedes neuen Satzes automatisch kapitalisieren.",
             ["Proofing_SmartSymbolsTitle"] = "Sonderzeichen-Kürzel (Smart Symbols)",
             ["Proofing_SmartSymbolsDesc"] = "Tastaturkürzel wie '->' zu '→', '--' zu '—', '!=' zu '≠', '(c)' zu '©' umwandeln.",
-            ["Proofing_CustomDictBtn"] = "Eigenes Wörterbuch (.lex)",
-            ["Proofing_CustomDictDesc"] = "Eigene Wörter hinzufügen",
             ["Proofing_CustomRulesBtn"] = "Autokorrektur-Regeln (.json)",
             ["Proofing_CustomRulesDesc"] = "Eigene Texterweiterungen definieren",
             ["Proofing_StatusSupported"] = "✓ Windows-Wörterbuch ist einsatzbereit für {0}",
@@ -533,7 +524,6 @@ public class LocalizationService
             // Context Menu & More Options Menu
             ["Menu_SpellingSuggestions"] = "VORSCHLÄGE ZUR RECHTSCHREIBUNG",
             ["Menu_NoSuggestions"] = "(Keine Korrekturvorschläge)",
-            ["Menu_AddToDict"] = "\"{0}\" zum Wörterbuch hinzufügen",
             ["Menu_IgnoreAll"] = "Alle Vorkommnisse ignorieren",
             ["Menu_Cut"] = "Ausschneiden",
             ["Menu_Copy"] = "Kopieren",
