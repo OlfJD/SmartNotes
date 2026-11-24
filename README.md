@@ -13,10 +13,14 @@ Put notes, to-do lists and checklists right on your desktop. Open source, no acc
 - **Stays on the desktop**: notes sit behind your apps, even after `Win + D`, or float on top if you prefer.
 - **Three modes**: text, checklist (drag tasks to reorder) and copy snippets.
 - **Magnetic docking**: notes snap together and move as a stack.
-- **Spell check and autocorrect** in 12 languages.
+- **Lock a note** so it can't be edited, moved or deleted by accident, including its tasks.
+- **Export** a note as a Markdown file, or copy all of it with `Ctrl + Shift + C`.
+- **Spell check** in 12 languages, plus autocorrect and your own text shortcuts.
 - **English and German** interface.
+- **Safe saving**: every change is saved right away. If a save fails, the note tells you and tries again. Your notes are also backed up before every update.
 - **48-hour trash** for deleted notes.
 - **Quiet updates** that install in the background while you're away.
+- **Starts with Windows**: turn it off in the tray menu or in Task Manager.
 
 In the Elden Ring theme the colour picker offers nine Great Runes instead of colours:
 
