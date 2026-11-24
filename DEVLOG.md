@@ -70,6 +70,11 @@ Skins change the whole look of a note (silhouette, surface, fonts, icon colours)
   - `AppMenu` leaves Normal-tone icons uncoloured so they inherit the row's icon colour (and its hover colour); Danger uses `MenuDangerBrush`.
   - Cut corners (Cyberpunk) come from `CutBorder` with `MenuPanelCut` / `MenuChoiceCut`; Paper's glue strip is `MenuTopStripHeight`.
   - Define tokens as real brushes/styles, not `<StaticResource>` alias entries: those resolved to the wrong value in testing.
+- **v2.5.1** (2026-11-24), decisions after the bug hunt:
+  - Locked notes cannot be deleted (× and "Delete Note" disabled, tooltip says to unlock first).
+  - The Settings switch "New notes stick to the desktop" (was "Desktop Sticking", never read) sets `DefaultPinMode` for new notes; on by default.
+  - Removed: "Add to Dictionary" and the custom dictionary button (never worked; WPF custom dictionaries leak spell-checker registrations), the Win+Alt+H "Notes Hub" row (never built), and unused settings/fields (ConfirmDelete, EnableSoundCues, hotkey strings, KeepBehindAllWindows, IsCollapsed, Tags, JSON import/export, LocateNote, IsStartupEnabled/SetStartup, RebuildContextMenu).
+  - README lists lock, export, safe saving and autostart. 51 tests pass.
 - **v2.5.0** (2026-11-24), bug hunt with a new test suite:
   - **Tests**: `tests/SmartNotes.Tests`, a dependency-free console runner (see `tests/README.md`). 35 unit tests (storage, trash, damaged/locked files, backups, settings, autocorrect, snapping, strings, export names, updates) and 15 end-to-end tests that start the real exe with a temp `SMARTNOTES_DATA_DIR` and drive it through UI Automation. Before the fixes 15 of 43 failed; now 50/50 pass.
   - **No note loss**: `DeleteNote` writes the trash copy first and keeps the note if that fails; `Load` skips null entries, repairs null lists, survives a broken trash folder and never lets a later save overwrite `notes.json` after a failed load; `notes.pending.json` (edits from a session where `notes.json` stayed locked) is merged on the next start; `Save` returns false and the note shows "Not saved, retrying..." and retries.
