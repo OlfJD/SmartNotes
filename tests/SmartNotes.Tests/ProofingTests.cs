@@ -57,6 +57,21 @@ public static class ProofingTests
     }
 
     [Test]
+    public static void German_FixesCommonGermanTypos()
+    {
+        Assert.Equal("Das ist nicht", TypeThenSpace("Das ist nciht", Settings("de-DE")).Box.Text, "nciht");
+        Assert.Equal("Ich bin der Standard", TypeThenSpace("Ich bin der standart", Settings("de-DE")).Box.Text, "nouns come back capitalised");
+        Assert.Equal("Das geht gar nicht", TypeThenSpace("Das geht garnicht", Settings("de-DE")).Box.Text, "two words");
+        Assert.Equal("Und", TypeThenSpace("Udn", Settings("de-DE")).Box.Text, "a capitalised typo keeps its capital");
+    }
+
+    [Test]
+    public static void GermanList_IsNotUsedForEnglishText()
+    {
+        Assert.Equal("This is nciht", TypeThenSpace("This is nciht", Settings("en-US")).Box.Text, "German fixes stay out of English text");
+    }
+
+    [Test]
     public static void ReadOnlyText_IsNeverChanged()
     {
         // A locked note's text boxes are read-only; autocorrect used to rewrite them anyway

@@ -38,6 +38,7 @@ public class TextProofingService
     };
 
     private readonly Dictionary<string, string> _builtInTypos = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, string> _builtInTyposDe = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> _smartSymbols = new(StringComparer.Ordinal);
     private readonly List<AutocorrectRule> _customRules = new();
 
@@ -227,12 +228,15 @@ public class TextProofingService
             }
         }
 
-        // 3. Check Built-in Common Typos & Contractions - an English list, so only for English text
-        //    (in German it turned the everyday word "im" into "I'm")
-        if (replacement == null && settings.EnableAutocorrect &&
-            ResolveLanguage(settings.ProofingLanguage).StartsWith("en", StringComparison.OrdinalIgnoreCase))
+        // 3. Check Built-in Common Typos: one list per language, only for text in that language
+        //    (the English list turned the everyday German word "im" into "I'm")
+        if (replacement == null && settings.EnableAutocorrect)
         {
-            if (_builtInTypos.TryGetValue(token, out var typoFix))
+            string lang = ResolveLanguage(settings.ProofingLanguage);
+            var typos = lang.StartsWith("en", StringComparison.OrdinalIgnoreCase) ? _builtInTypos
+                : lang.StartsWith("de", StringComparison.OrdinalIgnoreCase) ? _builtInTyposDe
+                : null;
+            if (typos != null && typos.TryGetValue(token, out var typoFix))
             {
                 replacement = MatchCasing(token, typoFix);
             }
@@ -509,6 +513,59 @@ public class TextProofingService
         foreach (var kvp in typos)
         {
             _builtInTypos[kvp.Key] = kvp.Value;
+        }
+
+        // 3. Common German typos. Only words that are not real German or English words, so mixed text stays
+        //    untouched. Nouns are written capitalised: MatchCasing never lower-cases a replacement.
+        var typosDe = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["nciht"] = "nicht",
+            ["nicth"] = "nicht",
+            ["ncith"] = "nicht",
+            ["udn"] = "und",
+            ["ihc"] = "ich",
+            ["cih"] = "ich",
+            ["dsa"] = "das",
+            ["dei"] = "die",
+            ["uach"] = "auch",
+            ["acuh"] = "auch",
+            ["wiel"] = "weil",
+            ["wnen"] = "wenn",
+            ["eien"] = "eine",
+            ["enie"] = "eine",
+            ["eienn"] = "einen",
+            ["hbae"] = "habe",
+            ["ahbe"] = "habe",
+            ["hbaen"] = "haben",
+            ["vieleicht"] = "vielleicht",
+            ["vielelicht"] = "vielleicht",
+            ["warscheinlich"] = "wahrscheinlich",
+            ["nähmlich"] = "nämlich",
+            ["seperat"] = "separat",
+            ["garnicht"] = "gar nicht",
+            ["vorraus"] = "voraus",
+            ["dannach"] = "danach",
+            ["zumindestens"] = "zumindest",
+            ["gegebenfalls"] = "gegebenenfalls",
+            ["entgültig"] = "endgültig",
+            ["agressiv"] = "aggressiv",
+            ["interressant"] = "interessant",
+            ["intressant"] = "interessant",
+            ["reperieren"] = "reparieren",
+            ["standart"] = "Standard",
+            ["rythmus"] = "Rhythmus",
+            ["addresse"] = "Adresse",
+            ["maschiene"] = "Maschine",
+            ["ergebniss"] = "Ergebnis",
+            ["reperatur"] = "Reparatur",
+            ["vorraussetzung"] = "Voraussetzung",
+            ["rückgrad"] = "Rückgrat",
+            ["interresse"] = "Interesse",
+            ["fahrad"] = "Fahrrad",
+        };
+        foreach (var kvp in typosDe)
+        {
+            _builtInTyposDe[kvp.Key] = kvp.Value;
         }
     }
 }
