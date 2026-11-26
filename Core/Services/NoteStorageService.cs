@@ -316,9 +316,28 @@ public class NoteStorageService
             if (permanent)
             {
                 DeleteFromTrash(id);
+                ForgetHistory(id);
             }
             return true;
         }
+    }
+
+    /// <summary>A note left the trash for good: its earlier versions go too (never for a note that is still active).</summary>
+    private void ForgetHistory(Guid id)
+    {
+        bool stillActive;
+        lock (_lock)
+        {
+            stillActive = _notes.Any(n => n.Id == id);
+        }
+        if (!stillActive) NoteHistoryService.DeleteHistory(id);
+    }
+
+    /// <summary>The note id in a trash file name (note_&lt;id&gt;.json).</summary>
+    private static bool TryIdFromTrashFile(string file, out Guid id)
+    {
+        string name = Path.GetFileNameWithoutExtension(file);
+        return Guid.TryParseExact(name.StartsWith("note_", StringComparison.Ordinal) ? name.Substring(5) : "", "N", out id);
     }
 
     private static bool SaveToTrash(NoteItem note)
@@ -455,18 +474,25 @@ public class NoteStorageService
                         if (now - deletedAt > TrashRetentionPeriod)
                         {
                             File.Delete(file);
+                            ForgetHistory(item.Id);
                         }
                     }
                     else if (now - File.GetLastWriteTime(file) > TrashRetentionPeriod)
                     {
                         File.Delete(file);
+                        if (TryIdFromTrashFile(file, out var id)) ForgetHistory(id);
                     }
                 }
                 catch
                 {
                     if (now - File.GetLastWriteTime(file) > TrashRetentionPeriod)
                     {
-                        try { File.Delete(file); } catch { }
+                        try
+                        {
+                            File.Delete(file);
+                            if (TryIdFromTrashFile(file, out var id)) ForgetHistory(id);
+                        }
+                        catch { }
                     }
                 }
             }
@@ -483,7 +509,12 @@ public class NoteStorageService
                 var files = Directory.GetFiles(TrashFolder, "note_*.json");
                 foreach (var file in files)
                 {
-                    try { File.Delete(file); } catch { }
+                    try
+                    {
+                        File.Delete(file);
+                        if (TryIdFromTrashFile(file, out var id)) ForgetHistory(id);
+                    }
+                    catch { }
                 }
             }
         }

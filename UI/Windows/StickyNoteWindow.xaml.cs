@@ -259,10 +259,25 @@ public partial class StickyNoteWindow : Window
         UpdateLockUI(_note.IsLocked);
         UpdateModifiedTime();
         _savedContent = ContentFingerprint();
+        _lastSavedVersion = TakeVersion();
     }
 
     /// <summary>What counts as an edit for "modified ... ago": text, tasks and copy rows (not moving, resizing or focus).</summary>
     private string? _savedContent;
+
+    /// <summary>The note's content as last saved: becomes an earlier version when editing starts again after a pause.</summary>
+    private NoteVersion? _lastSavedVersion;
+
+    /// <summary>The note's content right now, as an independent copy (task and copy rows are edited in place).</summary>
+    private NoteVersion TakeVersion() => new()
+    {
+        SavedAt = _note.ModifiedAt,
+        Title = TxtTitle.Text ?? "",
+        Content = TxtContent.Text ?? "",
+        ViewMode = _note.ViewMode,
+        Checklist = _checklistItems.Select(i => new TodoCheckItem { Text = i.Text, IsDone = i.IsDone }).ToList(),
+        CopyList = _copyItems.Select(i => new CopySnippetItem { Text = i.Text }).ToList(),
+    };
 
     private string ContentFingerprint()
     {
@@ -989,7 +1004,8 @@ public partial class StickyNoteWindow : Window
         );
     }
 
-    public void SaveNoteState()
+    /// <summary>Writes the note. Returns false when the save failed (the note then says so and retries).</summary>
+    public bool SaveNoteState()
     {
         _note.Title = TxtTitle.Text;
         _note.Content = TxtContent.Text;
@@ -1006,20 +1022,124 @@ public partial class StickyNoteWindow : Window
         string content = ContentFingerprint();
         if (content != _savedContent)
         {
+            // The first edit after a pause: keep the note as it was before this round of edits ("Earlier Versions")
+            if (_lastSavedVersion != null && DateTime.Now - _note.ModifiedAt >= NoteHistoryService.EditPause)
+            {
+                NoteHistoryService.AddVersion(_note.Id, _lastSavedVersion);
+            }
             _note.ModifiedAt = DateTime.Now;
             _savedContent = content;
+            _lastSavedVersion = TakeVersion();
         }
 
         if (_storageService.UpdateNote(_note))
         {
             _saveRetryTimer?.Stop();
             ShowSavedIndicator();
+            return true;
         }
-        else
+        ShowSaveFailedIndicator();
+        ScheduleSaveRetry();
+        return false;
+    }
+
+    /// <summary>
+    /// Brings back an earlier version. The note as it is right now is kept as a version first, so the restore itself
+    /// can be undone from the same list.
+    /// </summary>
+    private void RestoreVersion(NoteVersion version)
+    {
+        if (_note.IsLocked) return;
+        SaveNoteState(); // edits still waiting for the save debounce belong to the current version
+        NoteHistoryService.AddVersion(_note.Id, TakeVersion());
+
+        TxtTitle.Text = version.Title;
+        TxtContent.Text = version.Content;
+        _checklistItems.Clear();
+        foreach (var item in version.Checklist) _checklistItems.Add(new TodoCheckItem { Text = item.Text, IsDone = item.IsDone });
+        _copyItems.Clear();
+        foreach (var item in version.CopyList) _copyItems.Add(new CopySnippetItem { Text = item.Text });
+        UpdateViewMode(version.ViewMode);
+
+        if (SaveNoteState())
         {
-            ShowSaveFailedIndicator();
-            ScheduleSaveRetry();
+            ShowStatus("undo-2", LocalizationService.T("Status_VersionRestored"), _inkEmerald);
         }
+    }
+
+    /// <summary>"Earlier Versions" in the ⋯ menu: when, the start of the text, the whole version as a tooltip; click restores.</summary>
+    private MenuItem BuildHistoryMenu()
+    {
+        var sub = AppMenu.Sub(LocalizationService.T("Menu_EarlierVersions"), "undo-2");
+        if (_note.IsLocked)
+        {
+            // restoring changes the text, which a locked note does not allow
+            sub.IsEnabled = false;
+            ToolTipService.SetShowOnDisabled(sub, true);
+            sub.ToolTip = LocalizationService.T("History_Locked");
+            return sub;
+        }
+
+        var versions = NoteHistoryService.GetVersions(_note.Id);
+        if (versions.Count == 0)
+        {
+            sub.Items.Add(AppMenu.Item(LocalizationService.T("Menu_NoEarlierVersions"), null, null, MenuTone.Muted, isEnabled: false));
+            return sub;
+        }
+        foreach (var version in versions)
+        {
+            var item = AppMenu.Item($"{VersionTime(version.SavedAt)}   {VersionPreview(version)}", null, () => RestoreVersion(version));
+            item.ToolTip = VersionText(version);
+            sub.Items.Add(item);
+        }
+        return sub;
+    }
+
+    private static string VersionTime(DateTime at)
+    {
+        var culture = System.Globalization.CultureInfo.GetCultureInfo(LocalizationService.Instance.CurrentLanguage == "de" ? "de-DE" : "en-US");
+        string time = at.ToString("t", culture);
+        if (at.Date == DateTime.Today) return LocalizationService.T("History_Today", time);
+        if (at.Date == DateTime.Today.AddDays(-1)) return LocalizationService.T("History_Yesterday", time);
+        return at.ToString("d MMM", culture) + " " + time;
+    }
+
+    /// <summary>The start of the version's text, on one line (underscores doubled: a single one would be read as an access key).</summary>
+    private static string VersionPreview(NoteVersion v)
+    {
+        string text = v.ViewMode switch
+        {
+            NoteViewMode.Checklist => string.Join(", ", v.Checklist.Select(i => i.Text)),
+            NoteViewMode.CopyCompartments => string.Join(" | ", v.CopyList.Select(i => i.Text)),
+            _ => v.Content,
+        };
+        if (string.IsNullOrWhiteSpace(text)) text = v.Title;
+        text = string.Join(" ", (text ?? "").Split(new[] { '\r', '\n', '\t' }, StringSplitOptions.RemoveEmptyEntries)).Trim();
+        if (text.Length == 0) return LocalizationService.T("History_Empty");
+        if (text.Length > 40) text = text.Substring(0, 39).TrimEnd() + "…";
+        return text.Replace("_", "__");
+    }
+
+    /// <summary>The whole version for the tooltip (title, then text, tasks or copy rows).</summary>
+    private static string VersionText(NoteVersion v)
+    {
+        var sb = new StringBuilder();
+        if (!string.IsNullOrWhiteSpace(v.Title)) sb.AppendLine(v.Title.Trim()).AppendLine();
+        switch (v.ViewMode)
+        {
+            case NoteViewMode.Checklist:
+                foreach (var item in v.Checklist) sb.AppendLine((item.IsDone ? "☑ " : "☐ ") + item.Text);
+                break;
+            case NoteViewMode.CopyCompartments:
+                foreach (var item in v.CopyList) sb.AppendLine(item.Text);
+                break;
+            default:
+                sb.Append(v.Content);
+                break;
+        }
+        string text = sb.ToString().TrimEnd();
+        if (text.Length == 0) return LocalizationService.T("History_Empty");
+        return text.Length <= 700 ? text : text.Substring(0, 700) + "…";
     }
 
     // Window Dragging
@@ -1592,6 +1712,7 @@ public partial class StickyNoteWindow : Window
             _storageService.AddNote(clone);
             _onSpawnNewNote(clone);
         }));
+        menu.Items.Add(BuildHistoryMenu());
 
         menu.Items.Add(AppMenu.Separator());
 

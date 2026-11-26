@@ -30,7 +30,7 @@ Notes, to-do lists and checklists right on your desktop. No account, no cloud, e
 - **Export** a note as Markdown, copy all of it with `Ctrl + Shift + C`, or **copy it as a picture** to share it in a chat.
 - **Several screens**: a note left on an unplugged monitor comes back onto a visible one, and *Arrange notes* keeps your sizes and docked stacks.
 - **Spell check** in 12 languages, plus autocorrect and your own text shortcuts.
-- **Safe saving**: every change is saved right away. If a save fails, the note says so and tries again. Notes are backed up before every update.
+- **Safe saving**: every change is saved right away. If a save fails, the note says so and tries again. Notes are backed up before every update, and **earlier versions** of each note can be brought back from its **···** menu.
 - **Quiet updates** in the background, **English and German**, and it **starts with Windows** (turn that off in the tray menu or Task Manager).
 
 ## Runes and constellations

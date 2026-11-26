@@ -49,6 +49,50 @@ public static class EndToEndTests
     }
 
     [Test(E2E = true)]
+    public static void History_EditAfterAPause_KeepsTheOldText_AndRestoreCanBeUndone()
+    {
+        var note = Note("Draft", "first draft");
+        note.ModifiedAt = DateTime.Now.AddDays(-3); // last edited three days ago
+        using var app = Start(nameof(History_EditAfterAPause_KeepsTheOldText_AndRestoreCanBeUndone), new[] { note });
+        var w = app.WaitForNoteWindows(1)[0];
+
+        SetText(Find(w, "TxtContent"), "second draft");
+        Assert.Eventually(() => app.ReadNotes().Single().Content == "second draft", "the edit is saved");
+        Assert.Eventually(() => app.ReadHistory(note.Id).FirstOrDefault()?.Content == "first draft", "the text before the edit is kept as a version");
+
+        Invoke(Find(w, "BtnMore"));
+        app.ExpandMenuItem("Earlier Versions");
+        var entry = app.FindMenuItem("first draft");
+        string day = note.ModifiedAt.ToString("d MMM", System.Globalization.CultureInfo.GetCultureInfo("en-US"));
+        Assert.True(entry.Current.Name.StartsWith(day + " ", StringComparison.Ordinal), $"labelled with when the note looked like that: '{entry.Current.Name}'");
+        Assert.Contains("first draft", entry.Current.HelpText, "hovering shows the whole version");
+        Invoke(entry);
+
+        Assert.Eventually(() => GetText(Find(w, "TxtContent")) == "first draft", "the old text is back in the note");
+        Assert.Eventually(() => app.ReadNotes().Single().Content == "first draft", "and saved");
+        Assert.Equal("second draft", app.ReadHistory(note.Id).First().Content, "the replaced text became a version, so the restore can be undone");
+    }
+
+    [Test(E2E = true)]
+    public static void History_EditsInTheSameRound_DoNotPileUpVersions()
+    {
+        var note = Note("Busy", "a");
+        note.ModifiedAt = DateTime.Now.AddMinutes(-1); // still the same round of editing
+        using var app = Start(nameof(History_EditsInTheSameRound_DoNotPileUpVersions), new[] { note });
+        var w = app.WaitForNoteWindows(1)[0];
+
+        SetText(Find(w, "TxtContent"), "ab");
+        Assert.Eventually(() => app.ReadNotes().Single().Content == "ab", "saved");
+        SetText(Find(w, "TxtContent"), "abc");
+        Assert.Eventually(() => app.ReadNotes().Single().Content == "abc", "saved again");
+        Assert.Equal(0, app.ReadHistory(note.Id).Count, "no versions within one round of editing");
+
+        Invoke(Find(w, "BtnMore"));
+        app.ExpandMenuItem("Earlier Versions");
+        Assert.False(app.FindMenuItem("No earlier versions yet").Current.IsEnabled, "the empty list says so");
+    }
+
+    [Test(E2E = true)]
     public static void NewNoteButton_CreatesASavedNote()
     {
         using var app = Start(nameof(NewNoteButton_CreatesASavedNote), new[] { Note("Only") });
@@ -160,6 +204,10 @@ public static class EndToEndTests
         Assert.True(deleteButtons.Count == 2 && deleteButtons.All(b => !b.Current.IsEnabled), "delete-task buttons of a locked note must be disabled");
         Assert.False(Find(w, "BtnClose").Current.IsEnabled, "a locked note cannot be deleted with its × button");
         Assert.Equal("Locked: unlock the note to delete it", Find(w, "BtnClose").Current.HelpText, "the × button explains why");
+
+        Invoke(Find(w, "BtnMore"));
+        Assert.False(app.FindMenuItem("Earlier Versions").Current.IsEnabled, "earlier versions can't be restored into a locked note");
+        Assert.False(app.FindMenuItem("Delete Note").Current.IsEnabled, "and it can't be deleted from the menu either");
 
         // unlocking makes it deletable again
         Invoke(Find(w, "BtnLock"));

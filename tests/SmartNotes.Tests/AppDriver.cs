@@ -186,6 +186,31 @@ public sealed class AppDriver : IDisposable
 
     public static bool IsReadOnly(AutomationElement e) => ((ValuePattern)e.GetCurrentPattern(ValuePattern.Pattern)).Current.IsReadOnly;
 
+    /// <summary>A menu item of an open menu whose name contains <paramref name="part"/> (menus are separate popup windows).</summary>
+    public AutomationElement FindMenuItem(string part)
+    {
+        AutomationElement? item = null;
+        Assert.Eventually(() =>
+        {
+            item = TopWindows()
+                .SelectMany(w => w.FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.MenuItem)).Cast<AutomationElement>())
+                .FirstOrDefault(e => e.Current.Name.Contains(part, StringComparison.Ordinal));
+            return item != null;
+        }, $"menu item containing '{part}'");
+        return item!;
+    }
+
+    /// <summary>Opens a submenu of an open menu.</summary>
+    public void ExpandMenuItem(string header) =>
+        ((ExpandCollapsePattern)FindMenuItem(header).GetCurrentPattern(ExpandCollapsePattern.Pattern)).Expand();
+
+    /// <summary>The saved earlier versions of a note, newest first (the app's history file).</summary>
+    public List<NoteVersion> ReadHistory(Guid noteId)
+    {
+        string file = PathIn($"history\\note_{noteId:N}.json");
+        return File.Exists(file) ? JsonSerializer.Deserialize<List<NoteVersion>>(File.ReadAllText(file)) ?? new() : new();
+    }
+
     /// <summary>Clicks a menu item of an open context menu (menus are separate popup windows).</summary>
     public void InvokeMenuItem(string header)
     {
