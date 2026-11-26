@@ -5,6 +5,29 @@ SmartNotes is a high-performance, lightweight Windows desktop sticky notes appli
 
 ---
 
+## Ideas backlog (suggested 2026-11-26, not started)
+
+The quick wins from the same list are done (see the changelog entry "Unreleased, quick wins"). These are the bigger ones. Top picks: **note history** and **app-linked notes** (the third pick, a bring-to-front hotkey, is done: `Win+Alt+A`).
+
+**Bigger features (a few days each)**
+- **Note history.** "Earlier versions…" in the ⋯ menu. Autosave writes within 400 ms and `notes.json.bak` only keeps the previous save, so select-all plus a few seconds of typing over a note is effectively permanent. Keep a snapshot per note after a pause in editing (e.g. the last 20 versions or 30 days) and let the user restore one.
+- **Reminders.** "Remind me…" on a note (time, optional repeat). At that time the note comes forward over the open apps and glows. Fits stuck-to-desktop notes, which are out of sight exactly when they are needed.
+- **Daily checklists.** "Repeat daily" on a checklist: the ticks reset each morning, with a small streak count. Fits the "Today's Priorities" welcome note.
+- **Finish the Westeros theme.** Planned below ("Skins"); the reference board `docs/references/westeros-board.html` is waiting for picks (surface, house colours, title font). Sigils drawn in code, no show logo or artwork.
+- **A sync folder of your choice.** Settings option to keep the data in OneDrive / Dropbox / a NAS, watching it for changes made on another PC. The merge already exists (`MergePendingNotes`: by note id, newest `ModifiedAt` wins) and `ModifiedAt` only changes on real edits since 2.5.0. Keeps "no account, no cloud": it is the user's own folder.
+
+**Bold ideas and new themes**
+- **App-linked notes.** A note can be linked to a program: it shows on top only while that program is in front and hides otherwise (key bindings over a game, snippets over an editor, a checklist over tax software). The foreground tracking exists (`ShowDesktopWatcher`, `EVENT_SYSTEM_FOREGROUND`).
+- **Living themes.** Opt-in, animating only while a note is focused or hovered so idle CPU stays at zero: a shooting star over Astral, the Elden Ring rune slowly glowing, a Cyberpunk glitch when a note saves, a wax seal pressed onto a Medieval note when it is locked.
+- **Sketch mode.** A fourth note mode for pen / mouse drawing: WPF's `InkCanvas` brings pressure, eraser and highlighter; the strokes are saved with the note.
+- **New original themes**, each with its own per-note emblem like the runes and constellations:
+  - **Deep Sea**: a bioluminescent abyss, a different glowing creature per note (jellyfish, anglerfish lure, nautilus).
+  - **Blueprint**: cyan grid paper and white technical lettering; the title sits in a drawing title block with the note's ID as the drawing number.
+  - **Ink & Washi**: rice paper and brush strokes, a red name seal (hanko) per note with its first letter.
+  - **Terminal**: green or amber phosphor, faint scanlines, `[x]` checkboxes and a blinking block cursor.
+
+---
+
 ## Architecture & Subsystems
 
 1. **Desktop Sticking & Native Win32 Subsystem (`Core/Native/`)**:
@@ -14,7 +37,7 @@ SmartNotes is a high-performance, lightweight Windows desktop sticky notes appli
      - Traps `WM_WINDOWPOSCHANGING` so when foreground programs receive focus, note windows stay pinned below them.
      - Applies `WS_EX_TOOLWINDOW` via `GWL_EXSTYLE` to prevent taskbar and Alt+Tab clutter while remaining 100% interactive on the desktop surface.
    - `WindowBlurHelper.cs`: Configures DWM attributes (`DWMWA_USE_IMMERSIVE_DARK_MODE` and `DWMWCP_DONOTROUND`) so WPF handles crisp per-pixel transparency and antialiased corner rounding without OS window artifact halos.
-   - `GlobalHotKeyManager.cs`: System-wide hotkey engine using `RegisterHotKey` for instant shortcuts (`Win+Alt+N`, `Win+Alt+H`, `Win+Alt+D`).
+   - `GlobalHotKeyManager.cs`: System-wide hotkey engine using `RegisterHotKey` for instant shortcuts (`Win+Alt+N` new note, `Win+Alt+A` all notes to the front, `Win+Alt+S` show / hide). Windows itself owns `Win+Alt+B D G K M R T` (date and time, HDR, Game Bar, microphone).
    - `TrayManager.cs`: Windows Notification Area (System Tray) icon manager with custom right-click context menu, tooltip updates, balloon tips, and lifecycle management.
 
 2. **Persistence & Service Layer (`Core/Services/` & `Core/Models/`)**:
@@ -70,6 +93,15 @@ Skins change the whole look of a note (silhouette, surface, fonts, icon colours)
   - `AppMenu` leaves Normal-tone icons uncoloured so they inherit the row's icon colour (and its hover colour); Danger uses `MenuDangerBrush`.
   - Cut corners (Cyberpunk) come from `CutBorder` with `MenuPanelCut` / `MenuChoiceCut`; Paper's glue strip is `MenuTopStripHeight`.
   - Define tokens as real brushes/styles, not `<StaticResource>` alias entries: those resolved to the wrong value in testing.
+- **Unreleased, quick wins** (2026-11-26):
+  - **Hotkeys**: `Win+Alt+A` brings all notes to the front (and un-hides them). Show / hide moved from `Win+Alt+D` to `Win+Alt+S`: Windows owns `Win+Alt+D` (date and time), so `RegisterHotKey` always failed for it. A probe on Windows 11 24H2 found `B D F G K M R T W Y` taken. A shortcut that is taken is now reported once in a tray message (`ReportedHotkeyConflicts` remembers what was reported).
+  - **Lost notes come back** (`ScreenPlacement`): a note whose 40 px title strip has less than 80×20 px on any monitor's work area is moved onto the nearest one, at startup, when notes are shown again and 1.5 s after `WM_DISPLAYCHANGE`.
+  - **Arrange** (`NoteArranger`): keeps sizes, moves docked stacks as one (`NoteClusterEngine`), leaves locked notes, rows with a 30 px cascade when the screen is full.
+  - **Checklist**: done tasks struck through and dimmed; "3/7" in the footer; ticks via `Checked`/`Unchecked` (a keyboard or accessibility tick was not saved with `Click`).
+  - **Copy as Picture** (⋯ menu): `RenderTargetBitmap` of `RootGrid` at ≥2×, PNG plus a bitmap on white; retries for 3 s when the clipboard is held (Windows clipboard history needs a moment for large pictures).
+  - **Updates**: the zip is checked against GitHub's published SHA-256 (`digest` of the release asset); a read-only app folder is detected before downloading.
+  - **German autocorrect list** (nciht, udn, garnicht, standart, …).
+  - **Autostart**: `SettingsService.MayChangeAutoStart` now has a test. Cleanup on the development PC: a test program from 2026-11-19 (`dragtest.exe`, built before the 2.3.1 rule) had registered itself as "SmartNotes" in `HKCU\…\Run`; the entry and the old test programs were removed. Never part of a release.
 - **v2.5.1** (2026-11-24), decisions after the bug hunt:
   - Locked notes cannot be deleted (× and "Delete Note" disabled, tooltip says to unlock first).
   - The Settings switch "New notes stick to the desktop" (was "Desktop Sticking", never read) sets `DefaultPinMode` for new notes; on by default.

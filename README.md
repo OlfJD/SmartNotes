@@ -19,15 +19,16 @@ Notes, to-do lists and checklists right on your desktop. No account, no cloud, e
 
 - **Extract the zip and run `SmartNotes.exe`**. Your notes stick to the desktop, behind your apps, and stay visible after `Win + D`.
 - **Top of a note**: **+** for a new note, the pin to keep it on top, text / checklist / copy-snippet mode, colours and themes, the lock, and **···** for font size, transparency, spell check, export and settings.
-- **Tray icon**: click it to bring all notes to the front, right-click for new note, show / hide all, the 48-hour trash, settings and exit.
+- **Tray icon**: click it (or press `Win + Alt + A`) to bring all notes to the front, right-click for new note, show / hide all, arrange, the 48-hour trash, settings and exit.
 
 ## Features
 
 - **Six themes**: Classic, Paper Sticky, Cyberpunk, Medieval, Elden Ring (nine Great Runes instead of colours) and Astral (a constellation on every note), each with its own fonts, icons and menus.
-- **Three modes**: text, checklist (drag tasks to reorder) and copy snippets.
+- **Three modes**: text, checklist (drag tasks to reorder, done tasks are struck through, "3/7" shows your progress) and copy snippets.
 - **Magnetic docking**: notes snap together and move as a stack.
 - **Lock a note** so it can't be edited, moved or deleted by accident.
-- **Export** a note as Markdown, or copy all of it with `Ctrl + Shift + C`.
+- **Export** a note as Markdown, copy all of it with `Ctrl + Shift + C`, or **copy it as a picture** to share it in a chat.
+- **Several screens**: a note left on an unplugged monitor comes back onto a visible one, and *Arrange notes* keeps your sizes and docked stacks.
 - **Spell check** in 12 languages, plus autocorrect and your own text shortcuts.
 - **Safe saving**: every change is saved right away. If a save fails, the note says so and tries again. Notes are backed up before every update.
 - **Quiet updates** in the background, **English and German**, and it **starts with Windows** (turn that off in the tray menu or Task Manager).
