@@ -220,6 +220,8 @@ public partial class App : Application
 
         // Restore active notes on the desktop at their exact saved coordinates
         RunStartupStep("Desktop notes restore", RestoreAllDesktopNotes);
+        // A note saved on a screen that is gone, or in a gap between screens, would be out of reach
+        RunStartupStep("Notes onto screens", BringNotesOntoScreens);
 
         // Keep "Desktop Stuck" notes visible through Show Desktop / Win+D (GitHub issue #1)
         RunStartupStep("ShowDesktopWatcher", () => _showDesktopWatcher = new ShowDesktopWatcher(() => _activeNoteWindows.Values.ToList()));
@@ -554,39 +556,80 @@ public partial class App : Application
             }
         }
 
+        if (!hide) BringNotesOntoScreens(); // the screens may have changed while they were hidden
     }
 
+    /// <summary>
+    /// Puts the notes in neat rows on the main screen. Every note keeps its size (it used to make them all 340x360),
+    /// docked stacks stay together and move as one, and locked notes stay where they are (they can't be moved).
+    /// </summary>
     public void ArrangeNotesOnDesktop()
     {
-        double screenWidth = SystemParameters.WorkArea.Width;
-        double screenHeight = SystemParameters.WorkArea.Height;
+        ShowNotesIfHidden();
+        var movable = _activeNoteWindows.Values.Where(w => w.IsVisible && !w.Note.IsLocked).ToList();
 
-        double curX = 40;
-        double curY = 40;
-        double cardW = 340;
-        double cardH = 360;
-        double gap = 20;
-
-        foreach (var win in _activeNoteWindows.Values)
+        // docked stacks, found the same way dragging finds them, in reading order
+        var groups = new List<List<StickyNoteWindow>>();
+        var grouped = new HashSet<StickyNoteWindow>();
+        foreach (var win in movable.OrderBy(w => w.Top).ThenBy(w => w.Left))
         {
-            win.Left = curX;
-            win.Top = curY;
-            win.Width = cardW;
-            win.Height = cardH;
+            if (grouped.Contains(win)) continue;
+            var stack = NoteClusterEngine.GetConnectedCluster(win, movable);
+            foreach (var member in stack) grouped.Add(member);
+            groups.Add(stack);
+        }
 
-            curX += cardW + gap;
-            if (curX + cardW > screenWidth - 40)
+        var bounds = groups.Select(g =>
+        {
+            double left = g.Min(w => w.Left), top = g.Min(w => w.Top);
+            return new Rect(left, top, g.Max(w => w.Left + w.Width) - left, g.Max(w => w.Top + w.Height) - top);
+        }).ToList();
+        var positions = NoteArranger.Layout(bounds.Select(b => b.Size).ToList(), SystemParameters.WorkArea);
+
+        for (int i = 0; i < groups.Count; i++)
+        {
+            double dx = positions[i].X - bounds[i].Left, dy = positions[i].Y - bounds[i].Top;
+            foreach (var win in groups[i])
             {
-                curX = 40;
-                curY += cardH + gap;
-                if (curY + cardH > screenHeight - 40)
-                {
-                    curY = 40;
-                }
+                win.Left += dx;
+                win.Top += dy;
             }
         }
 
         _trayManager.ShowBalloon("SmartNotes", LocalizationService.T("Balloon_NotesArranged"), ToolTipIcon.Info);
+    }
+
+    /// <summary>Notes whose title strip is on no screen are moved onto the nearest one (see ScreenPlacement).</summary>
+    public void BringNotesOntoScreens()
+    {
+        var areas = ScreenPlacement.WorkAreas();
+        foreach (var win in _activeNoteWindows.Values.ToList())
+        {
+            if (!win.IsVisible) continue;
+            if (ScreenPlacement.Rescue(win.GetWindowScreenRect(), areas) is { } target)
+            {
+                win.MoveToScreenPosition(target.left, target.top);
+                LogStartup($"Moved note {win.Note.Id} back onto a screen.");
+            }
+        }
+    }
+
+    private System.Windows.Threading.DispatcherTimer? _screenCheckTimer;
+
+    /// <summary>Screens were added, removed or rearranged: check the notes once Windows has settled.</summary>
+    public void ScheduleNotesOntoScreens()
+    {
+        if (_screenCheckTimer == null)
+        {
+            _screenCheckTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) };
+            _screenCheckTimer.Tick += (s, e) =>
+            {
+                _screenCheckTimer.Stop();
+                BringNotesOntoScreens();
+            };
+        }
+        _screenCheckTimer.Stop();
+        _screenCheckTimer.Start();
     }
 
     public void NotifyTransparencySettingsChanged()

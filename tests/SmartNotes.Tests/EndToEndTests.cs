@@ -376,6 +376,50 @@ public static class EndToEndTests
     }
 
     [Test(E2E = true)]
+    public static void NoteLeftOffScreen_ComesBackWhenTheScreensChange()
+    {
+        var note = Note("Lost");
+        using var app = Start(nameof(NoteLeftOffScreen_ComesBackWhenTheScreensChange), new[] { note });
+        IntPtr hwnd = Handle(app.WaitForNoteWindows(1)[0]);
+
+        MoveWindow(hwnd, 30000, 200); // as if its monitor had been unplugged
+        Assert.Eventually(() => !TitleOnAScreen(hwnd), "precondition: the note is off-screen");
+
+        SendDisplayChange(hwnd);
+        Assert.Eventually(() => TitleOnAScreen(hwnd), "the note is back on a screen after the display change");
+        Assert.Eventually(() => app.ReadNotes().Single().X < 10000, "its new position is saved");
+    }
+
+    [Test(E2E = true)]
+    public static void ArrangeNotes_KeepsSizesStacksAndLockedNotes()
+    {
+        var a = Note("A", x: 100);
+        var b = Note("B", x: 440);            // docked to the right of A (100 + 340)
+        var big = Note("Big", x: 900);
+        big.Y = 600; big.Width = 500; big.Height = 420;
+        var locked = Note("Locked", x: 1300);
+        locked.Y = 100; locked.IsLocked = true;
+        using var app = Start(nameof(ArrangeNotes_KeepsSizesStacksAndLockedNotes), new[] { a, b, big, locked });
+        app.WaitForNoteWindows(4);
+
+        app.OpenTrayMenu();
+        app.InvokeMenuItem("Arrange Notes on Desktop");
+
+        var work = System.Windows.SystemParameters.WorkArea;
+        Assert.Eventually(() =>
+        {
+            var n = app.ReadNotes().ToDictionary(x => x.Title);
+            return Math.Abs(n["A"].X - (work.Left + 40)) < 2 && Math.Abs(n["Big"].Y - (work.Top + 40)) < 2;
+        }, "notes moved into rows");
+        var notes = app.ReadNotes().ToDictionary(x => x.Title);
+        Assert.Equal(500.0, notes["Big"].Width, "the big note keeps its width (arrange used to make every note 340 wide)");
+        Assert.Equal(420.0, notes["Big"].Height, "and its height");
+        Assert.True(Math.Abs(notes["B"].X - (notes["A"].X + notes["A"].Width)) < 2 && Math.Abs(notes["B"].Y - notes["A"].Y) < 2,
+            "the docked stack A+B stays together");
+        Assert.Equal(1300.0, notes["Locked"].X, "the locked note stays where it is");
+    }
+
+    [Test(E2E = true)]
     public static void ShowHideHotkey_HidesAndShowsAllNotes()
     {
         using var app = Start(nameof(ShowHideHotkey_HidesAndShowsAllNotes), new[] { Note("One"), Note("Two", x: 520) },

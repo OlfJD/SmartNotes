@@ -956,6 +956,14 @@ public partial class StickyNoteWindow : Window
         _saveDebounceTimer?.Start();
     }
 
+    /// <summary>Moves the window to a position in physical pixels (the saved position follows via LocationChanged).</summary>
+    public void MoveToScreenPosition(int x, int y)
+    {
+        var hwnd = new WindowInteropHelper(this).Handle;
+        if (hwnd == IntPtr.Zero) return;
+        Win32Api.SetWindowPos(hwnd, IntPtr.Zero, x, y, 0, 0, Win32Api.SWP_NOSIZE | Win32Api.SWP_NOZORDER | Win32Api.SWP_NOACTIVATE);
+    }
+
     public Win32Api.RECT GetWindowScreenRect()
     {
         var hwnd = new WindowInteropHelper(this).Handle;

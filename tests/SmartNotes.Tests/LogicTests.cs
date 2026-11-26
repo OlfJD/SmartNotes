@@ -41,6 +41,65 @@ public static class LogicTests
     }
 
     [Test]
+    public static void Screens_NotesOnAScreenStayWhereTheyAre()
+    {
+        var main = Rect(0, 0, 1920, 1040);
+        Assert.True(ScreenPlacement.Rescue(Rect(100, 100, 340, 320), new[] { main }) == null, "fully on screen");
+        Assert.True(ScreenPlacement.Rescue(Rect(1800, 100, 340, 320), new[] { main }) == null, "120 px of the title strip still on screen");
+    }
+
+    [Test]
+    public static void Screens_LostNotesComeBackToTheNearestScreen()
+    {
+        var main = Rect(0, 0, 1920, 1040);
+        var right = Rect(1920, 0, 1280, 700); // a smaller second screen: there is a gap below it
+
+        var inGap = ScreenPlacement.Rescue(Rect(2000, 800, 340, 320), new[] { main, right });
+        Assert.NotNull(inGap, "a note in the gap below the smaller screen is moved");
+        Assert.True(inGap!.Value.left >= main.left && inGap.Value.right <= main.right && inGap.Value.bottom <= main.bottom, "onto the main screen");
+        Assert.Equal(340, inGap.Value.Width, "width kept");
+
+        var unplugged = ScreenPlacement.Rescue(Rect(-2500, 300, 340, 320), new[] { main });
+        Assert.Equal(0, unplugged!.Value.left, "a note from an unplugged left screen comes in at the left edge");
+        Assert.Equal(300, unplugged.Value.top, "and keeps its height on screen");
+
+        var titleAbove = ScreenPlacement.Rescue(Rect(400, -30, 340, 320), new[] { main });
+        Assert.Equal(0, titleAbove!.Value.top, "a title bar above the screen is brought down");
+
+        var huge = ScreenPlacement.Rescue(Rect(5000, 50, 2500, 300), new[] { main });
+        Assert.Equal(0, huge!.Value.left, "a note wider than the screen starts at its left edge");
+    }
+
+    [Test]
+    public static void Arrange_KeepsSizesAndFillsRows()
+    {
+        var area = new System.Windows.Rect(0, 0, 1000, 800);
+        var sizes = new[] { new System.Windows.Size(340, 320), new System.Windows.Size(500, 300), new System.Windows.Size(300, 200) };
+        var spots = NoteArranger.Layout(sizes, area);
+
+        Assert.Equal(new System.Windows.Point(40, 40), spots[0], "first group at the margin");
+        Assert.Equal(new System.Windows.Point(400, 40), spots[1], "second next to it");
+        Assert.Equal(new System.Windows.Point(40, 380), spots[2], "third on the next row (the first row is full)");
+        for (int i = 0; i < spots.Count; i++)
+        for (int j = i + 1; j < spots.Count; j++)
+        {
+            var shared = System.Windows.Rect.Intersect(new System.Windows.Rect(spots[i], sizes[i]), new System.Windows.Rect(spots[j], sizes[j]));
+            Assert.True(shared.IsEmpty || shared.Width * shared.Height == 0, $"groups {i} and {j} must not overlap");
+        }
+    }
+
+    [Test]
+    public static void Arrange_StartsAgainOffsetWhenTheScreenIsFull()
+    {
+        var area = new System.Windows.Rect(0, 0, 800, 500);
+        var sizes = Enumerable.Repeat(new System.Windows.Size(340, 320), 3).ToArray();
+        var spots = NoteArranger.Layout(sizes, area);
+        Assert.Equal(new System.Windows.Point(400, 40), spots[1], "two fit side by side");
+        Assert.Equal(new System.Windows.Point(40 + NoteArranger.Cascade, 40 + NoteArranger.Cascade), spots[2],
+            "the third would go below the screen, so it starts again on top, shifted");
+    }
+
+    [Test]
     public static void Colors_UnknownOrBrokenKeysFallBackSafely()
     {
         Assert.Equal("Violet", NoteColorTheme.Get("Violet").Key, "named theme");

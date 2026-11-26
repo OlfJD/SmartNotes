@@ -247,6 +247,51 @@ public sealed class AppDriver : IDisposable
         }
     }
 
+    // ---------------------------------------------------------------- window position, display changes, tray menu
+
+    [StructLayout(LayoutKind.Sequential)] public struct RECT { public int Left, Top, Right, Bottom; }
+    [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr hWnd, out RECT rect);
+    [DllImport("user32.dll")] private static extern bool SetWindowPos(IntPtr hWnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
+    [DllImport("user32.dll")] private static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr w, IntPtr l);
+    [DllImport("user32.dll")] private static extern bool PostMessage(IntPtr hWnd, uint msg, IntPtr w, IntPtr l);
+    [DllImport("user32.dll")] private static extern IntPtr MonitorFromRect(ref RECT rect, uint flags);
+    private delegate bool EnumProc(IntPtr hWnd, IntPtr l);
+    [DllImport("user32.dll")] private static extern bool EnumWindows(EnumProc callback, IntPtr l);
+    [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint pid);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern int GetClassName(IntPtr hWnd, System.Text.StringBuilder name, int max);
+
+    /// <summary>Moves a window the way a vanished monitor leaves it (no activation, no z-order change).</summary>
+    public static void MoveWindow(IntPtr hWnd, int x, int y) => SetWindowPos(hWnd, IntPtr.Zero, x, y, 0, 0, 0x0001 | 0x0004 | 0x0010);
+
+    /// <summary>What Windows sends every top-level window when screens are added, removed or rearranged.</summary>
+    public static void SendDisplayChange(IntPtr hWnd) => SendMessage(hWnd, 0x007E /* WM_DISPLAYCHANGE */, (IntPtr)32, IntPtr.Zero);
+
+    /// <summary>True when the window's title strip (top 40 px) is on some monitor.</summary>
+    public static bool TitleOnAScreen(IntPtr hWnd)
+    {
+        GetWindowRect(hWnd, out var r);
+        var strip = new RECT { Left = r.Left, Top = r.Top, Right = r.Right, Bottom = r.Top + 40 };
+        return MonitorFromRect(ref strip, 0 /* MONITOR_DEFAULTTONULL */) != IntPtr.Zero;
+    }
+
+    /// <summary>
+    /// Right-clicks the app's tray icon without the mouse: sends the icon's own callback message (WinForms NotifyIcon,
+    /// WM_USER + 1024 with WM_RBUTTONUP) to the app's hidden WinForms windows. The menu then opens as usual.
+    /// </summary>
+    public void OpenTrayMenu()
+    {
+        var candidates = new List<IntPtr>();
+        EnumWindows((h, _) =>
+        {
+            GetWindowThreadProcessId(h, out uint pid);
+            var cls = new System.Text.StringBuilder(256);
+            GetClassName(h, cls, cls.Capacity);
+            if (pid == Process.Id && cls.ToString().StartsWith("WindowsForms10.Window", StringComparison.Ordinal)) candidates.Add(h);
+            return true;
+        }, IntPtr.Zero);
+        foreach (var h in candidates) PostMessage(h, 0x0400 + 1024, IntPtr.Zero, (IntPtr)0x0205);
+    }
+
     // ---------------------------------------------------------------- keyboard (global hotkeys only)
 
     [DllImport("user32.dll")] private static extern void keybd_event(byte vk, byte scan, uint flags, IntPtr extra);

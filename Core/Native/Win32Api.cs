@@ -42,6 +42,25 @@ public static class Win32Api
     public const int WM_HOTKEY = 0x0312;
     public const int WM_NCHITTEST = 0x0084;
     public const int WM_SYSCOMMAND = 0x0112;
+    public const int WM_DISPLAYCHANGE = 0x007E; // screens added, removed or rearranged
+
+    // --- Monitors (bringing off-screen notes back, see ScreenPlacement) ---
+    [StructLayout(LayoutKind.Sequential)]
+    public struct MONITORINFO
+    {
+        public int cbSize;
+        public RECT rcMonitor;
+        public RECT rcWork;
+        public uint dwFlags;
+    }
+
+    public delegate bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData);
+
+    [DllImport("user32.dll")]
+    public static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, MonitorEnumProc lpfnEnum, IntPtr dwData);
+
+    [DllImport("user32.dll")]
+    public static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
 
     // SysCommand Size Subcommands
     public const int SC_SIZE = 0xF000;

@@ -296,6 +296,12 @@ public class DesktopWindowManager
         const int WM_SYSCOMMAND = 0x0112;
         const int SC_KEYMENU = 0xF100;
 
+        // A monitor was plugged in or out, or the screens were rearranged: make sure no note is left off-screen
+        if (msg == Win32Api.WM_DISPLAYCHANGE)
+        {
+            App.Instance?.ScheduleNotesOntoScreens();
+        }
+
         // Suppress Alt+Space system menu
         if (msg == WM_SYSCOMMAND && ((int)wParam & 0xFFF0) == SC_KEYMENU)
         {
