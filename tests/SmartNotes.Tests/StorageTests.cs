@@ -229,6 +229,28 @@ public static class StorageTests
     }
 
     [Test]
+    public static void AutoStart_OnlyTheRealAppMayChangeIt()
+    {
+        Assert.False(SettingsService.MayChangeAutoStart(@"C:\Temp\scratchpad\dragtest\bin\dragtest.exe", false), "a test program");
+        Assert.False(SettingsService.MayChangeAutoStart(@"C:\Program Files\dotnet\dotnet.exe", false), "dotnet host");
+        Assert.False(SettingsService.MayChangeAutoStart(@"C:\Apps\SmartNotes\SmartNotes.exe", true), "SmartNotes with a test data folder");
+        Assert.True(SettingsService.MayChangeAutoStart(@"C:\Apps\SmartNotes\SmartNotes.exe", false), "the installed app");
+
+        // And for real: this test process saves settings with autostart on, and the Windows entry must not change
+        const string runKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
+        static object? Entry()
+        {
+            using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(runKey);
+            return key?.GetValue("SmartNotes");
+        }
+        var before = Entry();
+        var settings = new SettingsService();
+        settings.Settings.LaunchOnStartup = true;
+        settings.Save();
+        Assert.Equal(before?.ToString(), Entry()?.ToString(), "Windows autostart entry after a test process saved settings");
+    }
+
+    [Test]
     public static void AtomicFile_ReplacesContent_AndKeepsOneBackup()
     {
         string path = TestData.PathIn("atomic.txt");

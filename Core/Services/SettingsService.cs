@@ -68,11 +68,17 @@ public class SettingsService
     /// </summary>
     private void SyncAutoStart()
     {
-        if (AppPaths.IsOverridden) return;
-        string exe = Path.GetFileName(Environment.ProcessPath ?? "");
-        if (!exe.Equals("SmartNotes.exe", StringComparison.OrdinalIgnoreCase)) return;
+        if (!MayChangeAutoStart(Environment.ProcessPath, AppPaths.IsOverridden)) return;
         AutoStartManager.SyncStartupRegistration(Settings.LaunchOnStartup);
     }
+
+    /// <summary>
+    /// Only SmartNotes.exe itself, running on the real data folder, may write the autostart entry. A test program
+    /// built before this rule (2.3.1) once registered itself as "SmartNotes" on a development PC.
+    /// </summary>
+    public static bool MayChangeAutoStart(string? processPath, bool dataFolderOverridden) =>
+        !dataFolderOverridden &&
+        string.Equals(Path.GetFileName(processPath ?? ""), "SmartNotes.exe", StringComparison.OrdinalIgnoreCase);
 
     public void Save()
     {
