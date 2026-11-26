@@ -54,7 +54,8 @@ In the Astral theme every note gets its own constellation, picked automatically 
 | Keys | Action |
 | --- | --- |
 | `Win + Alt + N` | New note |
-| `Win + Alt + D` | Show / hide all notes |
+| `Win + Alt + A` | Bring all notes to the front |
+| `Win + Alt + S` | Show / hide all notes |
 | `Ctrl + Shift + C` | Copy the note's content |
 | `Alt` / `Ctrl` + drag | Move one note out of a stack |
 

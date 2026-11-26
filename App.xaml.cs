@@ -308,30 +308,48 @@ public partial class App : Application
         {
             IntPtr hwnd = new WindowInteropHelper(_dummyHwndHost).EnsureHandle();
             _hotKeyManager = new GlobalHotKeyManager(hwnd);
+            var taken = new List<string>();
 
-            // Win + Alt + N = New Sticky Note
-            if (_hotKeyManager.Register(
-                Win32Api.MOD_WIN | Win32Api.MOD_ALT,
-                Keys.N,
-                () => Dispatcher.Invoke(CreateNewStickyNote)
-            ) < 0)
+            void Register(Keys key, Action action)
             {
-                LogStartup("[Warning] Win+Alt+N is already taken by another program; the New Note hotkey is not available.");
+                if (_hotKeyManager.Register(Win32Api.MOD_WIN | Win32Api.MOD_ALT, key, () => Dispatcher.Invoke(action)) < 0)
+                {
+                    taken.Add($"Win+Alt+{key}");
+                }
             }
 
-            // Win + Alt + D = Toggle Show / Hide All Desktop Notes
-            if (_hotKeyManager.Register(
-                Win32Api.MOD_WIN | Win32Api.MOD_ALT,
-                Keys.D,
-                () => Dispatcher.Invoke(ToggleHideAllNotes)
-            ) < 0)
-            {
-                LogStartup("[Warning] Win+Alt+D is already taken by another program; the Show/Hide hotkey is not available.");
-            }
+            // Windows itself owns Win+Alt+D (date and time), B, G, K, M, R and T (HDR, Game Bar, microphone), so the
+            // show/hide shortcut moved from D, which could never be registered, to S.
+            Register(Keys.N, CreateNewStickyNote);   // new note
+            Register(Keys.S, ToggleHideAllNotes);    // show / hide all notes
+            Register(Keys.A, BringAllNotesToFront);  // all notes in front of the open windows (they sit behind them otherwise)
+
+            ReportTakenHotkeys(taken);
         }
         catch (Exception ex)
         {
             AppLog.Error("Registering global hotkeys", ex);
+        }
+    }
+
+    /// <summary>
+    /// A shortcut another program already uses can't be ours. Say so once in a tray message (it used to be only in
+    /// the log, so the shortcut just seemed broken); the same taken keys are not reported again on every start.
+    /// </summary>
+    private void ReportTakenHotkeys(List<string> taken)
+    {
+        foreach (var key in taken) LogStartup($"[Warning] {key} is already taken by another program; that shortcut is not available.");
+
+        string current = string.Join(", ", taken);
+        var settings = _settingsService.Settings;
+        if (current == settings.ReportedHotkeyConflicts) return;
+        settings.ReportedHotkeyConflicts = current;
+        _settingsService.Save();
+
+        if (taken.Count > 0)
+        {
+            _trayManager?.ShowBalloon("SmartNotes", LocalizationService.T("Hotkeys_TakenBalloon", current), ToolTipIcon.Warning);
+            LogStartup($"Told the user that {current} is taken.");
         }
     }
 
@@ -436,7 +454,7 @@ public partial class App : Application
     }
 
     /// <summary>
-    /// A new or restored note must be seen: while all notes are hidden (Win+Alt+D) it would otherwise be created
+    /// A new or restored note must be seen: while all notes are hidden (Win+Alt+S) it would otherwise be created
     /// invisible, and the hotkey or tray item looked like it did nothing.
     /// </summary>
     private void ShowNotesIfHidden()
@@ -487,6 +505,7 @@ public partial class App : Application
 
     public void BringAllNotesToFront()
     {
+        ShowNotesIfHidden(); // the windows alone would appear while the "hidden" setting stayed on
         var activeNotes = _storageService.Notes.Where(n => !n.IsDeleted).ToList();
         if (activeNotes.Count == 0)
         {

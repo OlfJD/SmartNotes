@@ -18,6 +18,8 @@ public class AppSettings
     public double DefaultFontSize { get; set; } = 16.0;
     public double DefaultOpacity { get; set; } = 1.0;
     public bool EnableGlobalHotkeys { get; set; } = true;
+    /// <summary>Hotkeys last reported to the user as taken by another program ("Win+Alt+N, ..."), so it is said once.</summary>
+    public string ReportedHotkeyConflicts { get; set; } = "";
     public bool HideAllNotes { get; set; } = false;
     public bool EnableUnfocusedTransparency { get; set; } = false;
     public double UnfocusedOpacity { get; set; } = 0.55;

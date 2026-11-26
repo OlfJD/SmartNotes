@@ -453,6 +453,23 @@
                                     </Border>
 
                                     <!-- Shortcut 2 -->
+                                    <Border Background="#101522" BorderBrush="#202A3D" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="12,10" Margin="0,0,0,8">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                <TextBlock x:Name="TxtShortcutFrontTitle" Text="Bring All Notes to the Front" FontSize="{StaticResource FontSizeBody}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                                <TextBlock x:Name="TxtShortcutFrontDesc" Text="Shows every note above your open windows" FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                            <Border Grid.Column="1" Background="#1E273C" BorderBrush="#3B4C6F" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="10,5" VerticalAlignment="Center">
+                                                <TextBlock Text="Win + Alt + A" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold" Foreground="#93C5FD"/>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Shortcut 3 -->
                                     <Border Background="#101522" BorderBrush="#202A3D" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="12,10">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -464,7 +481,7 @@
                                                 <TextBlock x:Name="TxtShortcut3Desc" Text="Quickly toggle visibility for clean desktop presentations" FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" Margin="0,2,0,0"/>
                                             </StackPanel>
                                             <Border Grid.Column="1" Background="#1E273C" BorderBrush="#3B4C6F" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="10,5" VerticalAlignment="Center">
-                                                <TextBlock Text="Win + Alt + D" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold" Foreground="#93C5FD"/>
+                                                <TextBlock Text="Win + Alt + S" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold" Foreground="#93C5FD"/>
                                             </Border>
                                         </Grid>
                                     </Border>

@@ -304,6 +304,51 @@ public static class EndToEndTests
         second.WaitForNoteWindows(1);
         Assert.Eventually(() => File.ReadAllText(second.PathIn("startup.log")).Contains("Win+Alt+N is already taken"),
             "the second copy logs that the hotkey is taken");
+        Assert.Eventually(() => File.ReadAllText(second.PathIn("startup.log")).Contains("Told the user that Win+Alt+N"),
+            "the second copy tells the user (tray message)");
+        Assert.Eventually(() => ReportedConflicts(second).Contains("Win+Alt+N"),
+            "it remembers what it reported, so it is not repeated on every start");
+        Assert.False(File.ReadAllText(first.PathIn("startup.log")).Contains("Told the user"), "the copy that owns the shortcuts says nothing");
+        Assert.Equal("", ReportedConflicts(first), "nothing taken for the first copy: all three shortcuts are free on Windows");
+    }
+
+    private static string ReportedConflicts(AppDriver app)
+    {
+        using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(app.PathIn("settings.json")));
+        return doc.RootElement.TryGetProperty("ReportedHotkeyConflicts", out var v) ? v.GetString() ?? "" : "";
+    }
+
+    [Test(E2E = true)]
+    public static void ShowHideHotkey_HidesAndShowsAllNotes()
+    {
+        using var app = Start(nameof(ShowHideHotkey_HidesAndShowsAllNotes), new[] { Note("One"), Note("Two", x: 520) },
+            new() { ["EnableGlobalHotkeys"] = true });
+        app.WaitForNoteWindows(2);
+        PressWinAlt('S');
+        app.WaitForNoteWindows(0);
+        PressWinAlt('S');
+        app.WaitForNoteWindows(2);
+    }
+
+    [Test(E2E = true)]
+    public static void BringForwardHotkey_PutsNotesAboveOpenWindows()
+    {
+        using var app = Start(nameof(BringForwardHotkey_PutsNotesAboveOpenWindows), new[] { Note("Behind") },
+            new() { ["EnableGlobalHotkeys"] = true });
+        IntPtr note = Handle(app.WaitForNoteWindows(1)[0]);
+        var cover = OpenCoverWindow();
+        try
+        {
+            IntPtr coverHandle = new System.Windows.Interop.WindowInteropHelper(cover).Handle;
+            Assert.True(IsAbove(coverHandle, note), "precondition: the other window covers the stuck-to-desktop note");
+
+            PressWinAlt('A');
+            Assert.Eventually(() => { PumpUi(50); return IsAbove(note, coverHandle); }, "Win+Alt+A puts the note above the other window");
+        }
+        finally
+        {
+            cover.Close();
+        }
     }
 
     [Test(E2E = true)]

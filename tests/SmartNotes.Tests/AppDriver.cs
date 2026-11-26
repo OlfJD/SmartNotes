@@ -202,6 +202,51 @@ public sealed class AppDriver : IDisposable
         Invoke(item!);
     }
 
+    // ---------------------------------------------------------------- window order
+
+    [DllImport("user32.dll")] private static extern IntPtr GetWindow(IntPtr hWnd, uint cmd);
+
+    public static IntPtr Handle(AutomationElement window) => new(window.Current.NativeWindowHandle);
+
+    /// <summary>True when <paramref name="upper"/> is above <paramref name="lower"/> in the Windows z-order.</summary>
+    public static bool IsAbove(IntPtr upper, IntPtr lower)
+    {
+        const uint GW_HWNDPREV = 3;
+        for (IntPtr h = GetWindow(lower, GW_HWNDPREV); h != IntPtr.Zero; h = GetWindow(h, GW_HWNDPREV))
+        {
+            if (h == upper) return true;
+        }
+        return false;
+    }
+
+    /// <summary>An ordinary window of another program (this test process), maximized over the notes.</summary>
+    public static System.Windows.Window OpenCoverWindow()
+    {
+        var cover = new System.Windows.Window
+        {
+            Title = "SmartNotes test cover",
+            WindowStyle = System.Windows.WindowStyle.None,
+            WindowState = System.Windows.WindowState.Maximized,
+            Background = System.Windows.Media.Brushes.DarkSlateGray,
+            ShowInTaskbar = false
+        };
+        cover.Show();
+        cover.Activate();
+        PumpUi(300);
+        return cover;
+    }
+
+    /// <summary>Lets this test process's own windows draw and react for a moment.</summary>
+    public static void PumpUi(int ms)
+    {
+        var until = DateTime.Now.AddMilliseconds(ms);
+        while (DateTime.Now < until)
+        {
+            System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() => { }));
+            Thread.Sleep(20);
+        }
+    }
+
     // ---------------------------------------------------------------- keyboard (global hotkeys only)
 
     [DllImport("user32.dll")] private static extern void keybd_event(byte vk, byte scan, uint flags, IntPtr extra);

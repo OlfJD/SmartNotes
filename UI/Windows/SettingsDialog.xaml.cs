@@ -193,6 +193,8 @@ public partial class SettingsDialog : Window
         TxtActiveShortcutsTitle.Text = LocalizationService.T("Hotkeys_ActiveShortcuts");
         TxtShortcut1Title.Text = LocalizationService.T("Hotkeys_NewNote");
         TxtShortcut1Desc.Text = LocalizationService.T("Hotkeys_NewNoteDesc");
+        TxtShortcutFrontTitle.Text = LocalizationService.T("Hotkeys_BringFront");
+        TxtShortcutFrontDesc.Text = LocalizationService.T("Hotkeys_BringFrontDesc");
         TxtShortcut3Title.Text = LocalizationService.T("Hotkeys_ToggleNotes");
         TxtShortcut3Desc.Text = LocalizationService.T("Hotkeys_ToggleNotesDesc");
 

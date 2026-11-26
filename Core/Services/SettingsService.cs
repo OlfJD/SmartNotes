@@ -55,6 +55,7 @@ public class SettingsService
         s.DefaultSkinKey ??= d.DefaultSkinKey;
         s.AppLanguage ??= d.AppLanguage;
         s.ProofingLanguage ??= d.ProofingLanguage;
+        s.ReportedHotkeyConflicts ??= d.ReportedHotkeyConflicts;
         if (!Enum.IsDefined(s.DefaultPinMode)) s.DefaultPinMode = d.DefaultPinMode;
         if (double.IsNaN(s.UnfocusedOpacity) || s.UnfocusedOpacity <= 0) s.UnfocusedOpacity = d.UnfocusedOpacity;
         if (double.IsNaN(s.DefaultOpacity) || s.DefaultOpacity <= 0) s.DefaultOpacity = d.DefaultOpacity;
