@@ -100,7 +100,16 @@ public static class UpdateService
         try
         {
             var latest = await GetLatestReleaseAsync();
-            if (latest == null || latest.Value.version <= CurrentVersion || string.IsNullOrEmpty(latest.Value.zipUrl)) return;
+            if (latest == null || latest.Value.version <= CurrentVersion || latest.Value.zip == null) return;
+
+            // A folder Windows doesn't let us write to (e.g. Program Files) can't be updated in place: don't
+            // download the new version every few hours only to fail at the copy step
+            if (!IsFolderWritable(AppFolder))
+            {
+                if (!_reportedReadOnlyFolder) AppLog.Write($"[Update] v{latest.Value.version} is available, but the app folder is read-only; update by hand.");
+                _reportedReadOnlyFolder = true;
+                return;
+            }
 
             string dir = Path.Combine(Path.GetTempPath(), "SmartNotes_Update");
             string zipPath = Path.Combine(dir, "update.zip");
@@ -108,7 +117,12 @@ public static class UpdateService
             if (Directory.Exists(dir)) Directory.Delete(dir, true);
             Directory.CreateDirectory(dir);
 
-            var bytes = await DownloadClient.GetByteArrayAsync(latest.Value.zipUrl);
+            var bytes = await DownloadClient.GetByteArrayAsync(latest.Value.zip.Url);
+            if (!MatchesDigest(bytes, latest.Value.zip.Digest))
+            {
+                AppLog.Write($"[Update] v{latest.Value.version}: the download does not match GitHub's checksum; not installing it.");
+                return;
+            }
             await File.WriteAllBytesAsync(zipPath, bytes);
             ZipFile.ExtractToDirectory(zipPath, extractPath, true);
 
@@ -133,7 +147,7 @@ public static class UpdateService
         }
     }
 
-    private static async Task<(Version version, string? zipUrl)?> GetLatestReleaseAsync()
+    private static async Task<(Version version, ReleaseAsset? zip)?> GetLatestReleaseAsync()
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, GitHubApiUrl);
         request.Headers.Add("Accept", "application/vnd.github.v3+json");
@@ -148,16 +162,59 @@ public static class UpdateService
         return (ver, FindZipAsset(root));
     }
 
-    private static string? FindZipAsset(JsonElement root)
+    /// <summary>The release zip and the checksum GitHub publishes for it ("sha256:…"; null for old releases).</summary>
+    private sealed record ReleaseAsset(string Url, string? Digest);
+
+    private static ReleaseAsset? FindZipAsset(JsonElement root)
     {
         if (!root.TryGetProperty("assets", out var assets) || assets.ValueKind != JsonValueKind.Array) return null;
         foreach (var asset in assets.EnumerateArray())
         {
             string name = asset.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "";
             string url = asset.TryGetProperty("browser_download_url", out var u) ? u.GetString() ?? "" : "";
-            if (name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)) return url;
+            string? digest = asset.TryGetProperty("digest", out var d) && d.ValueKind == JsonValueKind.String ? d.GetString() : null;
+            if (name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) && url.Length > 0) return new ReleaseAsset(url, digest);
         }
         return null;
+    }
+
+    private static string AppFolder => AppDomain.CurrentDomain.BaseDirectory;
+    private static bool _reportedReadOnlyFolder;
+
+    /// <summary>
+    /// True when the downloaded file matches the checksum GitHub published for it. Releases without a published
+    /// checksum (or with an algorithm this version doesn't know) are accepted, so updates keep working.
+    /// </summary>
+    public static bool MatchesDigest(byte[] data, string? digest)
+    {
+        if (string.IsNullOrWhiteSpace(digest)) return true;
+        int colon = digest.IndexOf(':');
+        if (colon < 0) return true;
+        string algorithm = digest.Substring(0, colon).Trim().ToLowerInvariant();
+        string expected = digest.Substring(colon + 1).Trim();
+        byte[]? actual = algorithm switch
+        {
+            "sha256" => System.Security.Cryptography.SHA256.HashData(data),
+            "sha512" => System.Security.Cryptography.SHA512.HashData(data),
+            _ => null
+        };
+        return actual == null || string.Equals(Convert.ToHexString(actual), expected, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>Whether this folder can be written to (the in-place update copies the new files into it).</summary>
+    public static bool IsFolderWritable(string folder)
+    {
+        try
+        {
+            string probe = Path.Combine(folder, $".smartnotes-write-test-{Guid.NewGuid():N}");
+            File.WriteAllText(probe, "");
+            File.Delete(probe);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     /// <summary>Restarts into the staged release: the app exits normally (pending note saves are flushed in OnExit),
@@ -255,21 +312,7 @@ exit
             {
                 if (latestVer > CurrentVersion)
                 {
-                    // Find release zip asset
-                    string? downloadUrl = null;
-                    if (root.TryGetProperty("assets", out var assets) && assets.ValueKind == JsonValueKind.Array)
-                    {
-                        foreach (var asset in assets.EnumerateArray())
-                        {
-                            string name = asset.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "";
-                            string url = asset.TryGetProperty("browser_download_url", out var u) ? u.GetString() ?? "" : "";
-                            if (name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-                            {
-                                downloadUrl = url;
-                                break;
-                            }
-                        }
-                    }
+                    var zip = FindZipAsset(root);
 
                     notifyCallback?.Invoke(
                         LocalizationService.T("Update_ToastTitle"),
@@ -286,9 +329,21 @@ exit
 
                     if (result == MessageBoxResult.Yes)
                     {
-                        if (!string.IsNullOrEmpty(downloadUrl))
+                        if (zip != null && !IsFolderWritable(AppFolder))
                         {
-                            await DownloadAndApplyUpdateAsync(downloadUrl);
+                            // e.g. installed under Program Files: the files can't be replaced, so send the user to the download
+                            ModernMessageBox.Show(
+                                LocalizationService.T("Update_FolderReadOnly"),
+                                LocalizationService.T("Update_DialogTitle"),
+                                ModernMessageButtons.OK,
+                                ModernMessageIcon.Warning,
+                                LocalizationService.T("Update_ManualRequired")
+                            );
+                            Process.Start(new ProcessStartInfo { FileName = htmlUrl, UseShellExecute = true });
+                        }
+                        else if (zip != null)
+                        {
+                            await DownloadAndApplyUpdateAsync(zip);
                         }
                         else
                         {
@@ -327,7 +382,7 @@ exit
         }
     }
 
-    private static async Task DownloadAndApplyUpdateAsync(string downloadUrl)
+    private static async Task DownloadAndApplyUpdateAsync(ReleaseAsset zip)
     {
         if (_busy || _applying) return; // a silent download / restart is already under way
         try
@@ -340,7 +395,12 @@ exit
             string zipPath = Path.Combine(tempDir, "update.zip");
             string extractPath = Path.Combine(tempDir, "extracted");
 
-            var zipBytes = await DownloadClient.GetByteArrayAsync(downloadUrl);
+            var zipBytes = await DownloadClient.GetByteArrayAsync(zip.Url);
+            if (!MatchesDigest(zipBytes, zip.Digest))
+            {
+                AppLog.Write("[Update] Manual update: the download does not match GitHub's checksum; not installing it.");
+                throw new InvalidDataException(LocalizationService.T("Update_ChecksumMismatch"));
+            }
             await File.WriteAllBytesAsync(zipPath, zipBytes);
 
             ZipFile.ExtractToDirectory(zipPath, extractPath, true);

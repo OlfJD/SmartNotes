@@ -131,6 +131,30 @@ public static class LogicTests
     }
 
     [Test]
+    public static void Updates_DownloadMustMatchGitHubsChecksum()
+    {
+        byte[] data = System.Text.Encoding.UTF8.GetBytes("SmartNotes release zip");
+        string digest = "sha256:" + Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(data)).ToLowerInvariant();
+        Assert.True(UpdateService.MatchesDigest(data, digest), "matching checksum");
+        Assert.False(UpdateService.MatchesDigest(data.Concat(new byte[] { 1 }).ToArray(), digest), "a changed download is refused");
+        Assert.True(UpdateService.MatchesDigest(data, null), "older releases without a checksum still update");
+        Assert.True(UpdateService.MatchesDigest(data, "md5:abc"), "an unknown algorithm does not block updates");
+    }
+
+    [Test]
+    public static void Updates_ReadOnlyFoldersAreDetected()
+    {
+        Assert.True(UpdateService.IsFolderWritable(TestData.UnitDataDir), "a normal folder");
+        Assert.False(UpdateService.IsFolderWritable(Path.Combine(TestData.UnitDataDir, "missing")), "a missing folder");
+        bool elevated = new System.Security.Principal.WindowsPrincipal(System.Security.Principal.WindowsIdentity.GetCurrent())
+            .IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+        if (!elevated)
+        {
+            Assert.False(UpdateService.IsFolderWritable(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)), "Program Files");
+        }
+    }
+
+    [Test]
     public static void NoteClone_CopiesContentWithNewIds()
     {
         var note = new NoteItem { Title = "T", Content = "C", Checklist = new() { new TodoCheckItem { Text = "x" } } };
