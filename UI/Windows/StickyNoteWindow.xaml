@@ -274,7 +274,7 @@
                                             </Border>
 
                                             <!-- Checkbox with 2.5px thick border -->
-                                            <CheckBox Grid.Column="1" IsChecked="{Binding IsDone}" Click="CheckItem_Click" VerticalAlignment="Center" Cursor="Hand" Margin="0,0,10,0">
+                                            <CheckBox x:Name="TaskCheck" Grid.Column="1" IsChecked="{Binding IsDone}" Checked="CheckItem_Changed" Unchecked="CheckItem_Changed" VerticalAlignment="Center" Cursor="Hand" Margin="0,0,10,0">
                                                 <CheckBox.Template>
                                                     <ControlTemplate TargetType="{x:Type CheckBox}">
                                                         <Grid Width="20" Height="20">
@@ -293,7 +293,19 @@
                                             </CheckBox>
 
                                             <!-- Task Text -->
-                                            <TextBox Grid.Column="2" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="TaskText_Changed" IsReadOnly="{DynamicResource NoteItemsReadOnly}" Loaded="ItemTextBox_Loaded" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SkinItemTextBrush}" FontFamily="{DynamicResource SkinFont}" FontWeight="{DynamicResource SkinBodyWeight}" FontSize="{DynamicResource SkinItemFontSize}" CaretBrush="{DynamicResource SkinCaretBrush}" VerticalAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" PreviewKeyDown="TextBox_PreviewKeyDown" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus"/>
+                                            <TextBox Grid.Column="2" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" TextChanged="TaskText_Changed" IsReadOnly="{DynamicResource NoteItemsReadOnly}" Loaded="ItemTextBox_Loaded" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource SkinItemTextBrush}" FontFamily="{DynamicResource SkinFont}" FontWeight="{DynamicResource SkinBodyWeight}" FontSize="{DynamicResource SkinItemFontSize}" CaretBrush="{DynamicResource SkinCaretBrush}" VerticalAlignment="Center" SpellCheck.IsEnabled="True" PreviewMouseRightButtonDown="TextBox_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="TextBox_PreviewMouseRightButtonUp" ContextMenuOpening="TextBox_ContextMenuOpening" PreviewTextInput="TextBox_PreviewTextInput" PreviewKeyDown="TextBox_PreviewKeyDown" GotFocus="Input_GotFocus" LostFocus="Input_LostFocus">
+                                                <!-- Done tasks: struck through and dimmed -->
+                                                <TextBox.Style>
+                                                    <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsChecked, ElementName=TaskCheck}" Value="True">
+                                                                <Setter Property="Opacity" Value="0.5"/>
+                                                                <Setter Property="TextDecorations" Value="Strikethrough"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBox.Style>
+                                            </TextBox>
 
                                             <!-- Delete Task Item Button -->
                                             <Button Grid.Column="3" Style="{StaticResource IconButton}" Width="24" Height="24" Click="BtnDeleteTask_Click" ToolTip="{DynamicResource StrDeleteTask}" Padding="3" IsEnabled="{DynamicResource NoteItemsEditable}">
@@ -409,10 +421,18 @@
                         </StackPanel>
                     </StackPanel>
 
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,18,0">
+                    <!-- Checklist progress ("3/7"), checklist mode only -->
+                    <StackPanel x:Name="ChecklistProgress" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0" Visibility="Collapsed" Background="Transparent">
+                        <controls:LucideIcon IconKey="check-check" Size="13" StrokeThickness="2.4" Foreground="{DynamicResource SkinMutedBrush}" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtChecklistProgress" Text="0/0" FontFamily="{DynamicResource SkinMetaFont}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource SkinMutedBrush}" VerticalAlignment="Center"/>
+                    </StackPanel>
+
                     <!-- Lock Badge if locked -->
-                    <StackPanel x:Name="LockBadge" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,18,0" Visibility="Collapsed">
+                    <StackPanel x:Name="LockBadge" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
                         <controls:LucideIcon IconKey="lock" Size="13" StrokeThickness="2.4" Foreground="{DynamicResource SkinAmberBrush}" Margin="0,0,4,0"/>
                         <TextBlock x:Name="TxtLockedBadge" Text="LOCKED" FontFamily="{DynamicResource SkinMetaFont}" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource SkinAmberBrush}"/>
+                    </StackPanel>
                     </StackPanel>
                 </Grid>
             </Border>

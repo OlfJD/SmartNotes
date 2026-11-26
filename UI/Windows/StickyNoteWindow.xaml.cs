@@ -239,6 +239,7 @@ public partial class StickyNoteWindow : Window
 
         // Checklist setup
         _checklistItems = new ObservableCollection<TodoCheckItem>(_note.Checklist);
+        _checklistItems.CollectionChanged += (s, e) => UpdateChecklistProgress(); // add, delete, clear done, reorder
         ChecklistItemsControl.ItemsSource = _checklistItems;
 
         // Copy list setup
@@ -763,6 +764,7 @@ public partial class StickyNoteWindow : Window
         if (BtnChecklistMode != null) BtnChecklistMode.ToolTip = (mode == NoteViewMode.Checklist) ? LocalizationService.T("Tooltip_ActiveChecklistMode") : LocalizationService.T("Tooltip_ChecklistMode");
         if (BtnCopyMode != null) BtnCopyMode.ToolTip = (mode == NoteViewMode.CopyCompartments) ? LocalizationService.T("Tooltip_ActiveCopyMode") : LocalizationService.T("Tooltip_CopyMode");
 
+        UpdateChecklistProgress();
         RefreshSkinArtAfterLayout(); // the rune moves above the "Add new..." row in list modes
     }
 
@@ -1941,9 +1943,26 @@ public partial class StickyNoteWindow : Window
         }
     }
 
-    private void CheckItem_Click(object sender, RoutedEventArgs e)
+    /// <summary>
+    /// A task was ticked or unticked. Checked/Unchecked instead of Click: they also fire for keyboard and
+    /// accessibility tools. Rows being created (not loaded yet) are skipped, that is no change.
+    /// </summary>
+    private void CheckItem_Changed(object sender, RoutedEventArgs e)
     {
+        if (sender is not FrameworkElement { IsLoaded: true }) return;
+        UpdateChecklistProgress();
         RequestSave(isTyping: false);
+    }
+
+    /// <summary>"3/7" in the footer of a checklist note (hidden in the other modes and for an empty list).</summary>
+    private void UpdateChecklistProgress()
+    {
+        if (ChecklistProgress == null || TxtChecklistProgress == null) return;
+        int total = _checklistItems.Count;
+        int done = _checklistItems.Count(i => i.IsDone);
+        ChecklistProgress.Visibility = _note.ViewMode == NoteViewMode.Checklist && total > 0 ? Visibility.Visible : Visibility.Collapsed;
+        TxtChecklistProgress.Text = $"{done}/{total}";
+        ChecklistProgress.ToolTip = LocalizationService.T("Checklist_ProgressTooltip", done, total);
     }
 
     private void TaskText_Changed(object sender, TextChangedEventArgs e)

@@ -73,6 +73,26 @@ public static class EndToEndTests
     }
 
     [Test(E2E = true)]
+    public static void Checklist_ShowsProgress_AndSavesTicks()
+    {
+        var note = Note("Tasks");
+        note.ViewMode = NoteViewMode.Checklist;
+        note.Checklist = new() { new TodoCheckItem { Text = "done already", IsDone = true }, new TodoCheckItem { Text = "still open" } };
+        using var app = Start(nameof(Checklist_ShowsProgress_AndSavesTicks), new[] { note });
+        var w = app.WaitForNoteWindows(1)[0];
+
+        Assert.Eventually(() => TryFind(w, "TxtChecklistProgress")?.Current.Name == "1/2", "footer shows 1/2");
+        var boxes = Find(w, "ChecklistItemsControl").FindAll(TreeScope.Descendants,
+            new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.CheckBox)).Cast<AutomationElement>().ToList();
+        Assert.Equal(2, boxes.Count, "task checkboxes");
+
+        // ticked without a mouse click (keyboard / accessibility tools): must still count and be saved
+        ((TogglePattern)boxes[1].GetCurrentPattern(TogglePattern.Pattern)).Toggle();
+        Assert.Eventually(() => Find(w, "TxtChecklistProgress").Current.Name == "2/2", "footer shows 2/2 after ticking");
+        Assert.Eventually(() => app.ReadNotes().Single().Checklist.All(c => c.IsDone), "the tick is saved");
+    }
+
+    [Test(E2E = true)]
     public static void DeleteButton_MovesTheNoteToTheTrash()
     {
         var doomed = Note("Doomed");
