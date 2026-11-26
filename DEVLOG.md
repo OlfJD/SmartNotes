@@ -7,7 +7,7 @@ SmartNotes is a high-performance, lightweight Windows desktop sticky notes appli
 
 ## Ideas backlog (suggested 2026-11-26, not started)
 
-The quick wins from the same list and **note history** are done (see the changelog entries "Unreleased"). These are the remaining bigger ones. Top pick left: **app-linked notes** (the other two picks, note history and a bring-to-front hotkey, are done).
+The quick wins from the same list and **note history** are done (see the changelog entries for v2.6.0). These are the remaining bigger ones. Top pick left: **app-linked notes** (the other two picks, note history and a bring-to-front hotkey, are done).
 
 **Bigger features (a few days each)**
 - **Reminders.** "Remind me…" on a note (time, optional repeat). At that time the note comes forward over the open apps and glows. Fits stuck-to-desktop notes, which are out of sight exactly when they are needed.
@@ -92,12 +92,12 @@ Skins change the whole look of a note (silhouette, surface, fonts, icon colours)
   - `AppMenu` leaves Normal-tone icons uncoloured so they inherit the row's icon colour (and its hover colour); Danger uses `MenuDangerBrush`.
   - Cut corners (Cyberpunk) come from `CutBorder` with `MenuPanelCut` / `MenuChoiceCut`; Paper's glue strip is `MenuTopStripHeight`.
   - Define tokens as real brushes/styles, not `<StaticResource>` alias entries: those resolved to the wrong value in testing.
-- **Unreleased, note history** (2026-11-26): "Earlier Versions" submenu in the note's ⋯ menu, below Duplicate Note. Autosave writes within 400 ms and `notes.json.bak` only keeps the previous save, so typing over a note could not be undone after a restart.
+- **v2.6.0** (2026-11-26), note history: "Earlier Versions" submenu in the note's ⋯ menu, below Duplicate Note. Autosave writes within 400 ms and `notes.json.bak` only keeps the previous save, so typing over a note could not be undone after a restart.
   - **When a version is kept** (`StickyNoteWindow.SaveNoteState`): on the first content change after `NoteHistoryService.EditPause` (10 min) without edits, the content as last saved (`_lastSavedVersion`, an independent copy because task and copy rows are edited in place) becomes a version. Content = title, text, mode, tasks, copy rows (the same fingerprint as "modified"); moving, resizing and colours don't count. Before every restore, the current content is kept too, so a restore can be undone from the same list.
   - **Storage** (`NoteHistoryService`): `<data>\history\note_<id>.json`, newest first, at most 20 versions, none older than 30 days, an identical newest version is not stored twice, atomic writes. The history is deleted when the note leaves the trash for good (emptied, expired after 48 h, permanent delete), never for a note that is still active.
   - **Menu**: entries read "Today 14:32   start of the text…" (yesterday / date otherwise); the tooltip shows the whole version; click restores and shows "Version restored". Greyed out for locked notes.
   - Tests: 6 unit tests (order, duplicates, limits, tasks and copy rows, trash rules) and 2 end-to-end tests (edit after a pause → restore from the real menu → undo entry; edits in one round add no versions).
-- **Unreleased, quick wins** (2026-11-26):
+- **v2.6.0** (2026-11-26), quick wins:
   - **Hotkeys**: `Win+Alt+A` brings all notes to the front (and un-hides them). Show / hide moved from `Win+Alt+D` to `Win+Alt+S`: Windows owns `Win+Alt+D` (date and time), so `RegisterHotKey` always failed for it. A probe on Windows 11 24H2 found `B D F G K M R T W Y` taken. A shortcut that is taken is now reported once in a tray message (`ReportedHotkeyConflicts` remembers what was reported).
   - **Lost notes come back** (`ScreenPlacement`): a note whose 40 px title strip has less than 80×20 px on any monitor's work area is moved onto the nearest one, at startup, when notes are shown again and 1.5 s after `WM_DISPLAYCHANGE`.
   - **Arrange** (`NoteArranger`): keeps sizes, moves docked stacks as one (`NoteClusterEngine`), leaves locked notes, rows with a 30 px cascade when the screen is full.
