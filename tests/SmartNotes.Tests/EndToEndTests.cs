@@ -93,6 +93,43 @@ public static class EndToEndTests
     }
 
     [Test(E2E = true)]
+    public static void CopyAsPicture_PutsTheNoteOnTheClipboard()
+    {
+        var note = Note("Groceries");
+        note.SkinKey = "Paper";
+        note.ViewMode = NoteViewMode.Checklist;
+        note.Checklist = new() { new TodoCheckItem { Text = "Milk", IsDone = true }, new TodoCheckItem { Text = "Bread" } };
+        using var app = Start(nameof(CopyAsPicture_PutsTheNoteOnTheClipboard), new[] { note });
+        var w = app.WaitForNoteWindows(1)[0];
+
+        string? usersText = System.Windows.Clipboard.ContainsText() ? System.Windows.Clipboard.GetText() : null;
+        try
+        {
+            // the confirmation below only appears after a successful copy, so an older picture can't pass the test
+            Invoke(Find(w, "BtnMore"));
+            app.InvokeMenuItem("Copy as Picture");
+            Assert.Eventually(() => TryFind(w, "TxtTypingStatus")?.Current.Name == "Picture copied", "the note confirms the copy");
+
+            MemoryStream? png = null;
+            Assert.Eventually(() => System.Windows.Clipboard.ContainsData("PNG") &&
+                (png = System.Windows.Clipboard.GetData("PNG") as MemoryStream) != null, "a PNG on the clipboard");
+            var frame = new System.Windows.Media.Imaging.PngBitmapDecoder(png!,
+                System.Windows.Media.Imaging.BitmapCreateOptions.PreservePixelFormat,
+                System.Windows.Media.Imaging.BitmapCacheOption.OnLoad).Frames[0];
+            Assert.True(frame.PixelWidth >= 2 * 340 - 4, $"rendered at least at 2x: {frame.PixelWidth} px wide");
+            Assert.True(Math.Abs(frame.PixelWidth / (double)frame.PixelHeight - 340.0 / 320.0) < 0.05,
+                $"same shape as the note: {frame.PixelWidth}x{frame.PixelHeight}");
+            Assert.True(System.Windows.Clipboard.ContainsImage(), "a plain image as well, for older programs");
+            File.WriteAllBytes(Path.Combine(TestData.Root, "copied-note.png"), png!.ToArray()); // for a look by eye
+        }
+        finally
+        {
+            Thread.Sleep(500); // let Windows' clipboard history finish reading the picture
+            try { if (usersText != null) System.Windows.Clipboard.SetText(usersText); } catch { /* best effort */ }
+        }
+    }
+
+    [Test(E2E = true)]
     public static void DeleteButton_MovesTheNoteToTheTrash()
     {
         var doomed = Note("Doomed");

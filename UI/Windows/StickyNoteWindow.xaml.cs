@@ -9,6 +9,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using SmartNotes.Core.Models;
@@ -872,17 +873,20 @@ public partial class StickyNoteWindow : Window
         TxtTypingStatus.Foreground = _currentGlowBrush;
     }
 
-    private void ShowSavedIndicator()
+    private void ShowSavedIndicator() => ShowStatus("check", LocalizationService.T("Status_Saved"), _inkEmerald);
+
+    /// <summary>A short message in the footer (e.g. "Saved"), replaced by the modified time again after a moment.</summary>
+    private void ShowStatus(string iconKey, string text, Brush brush)
     {
         if (!_isLoaded) return;
         _savedStatusResetTimer?.Stop();
 
         TxtModifiedTime.Visibility = Visibility.Collapsed;
         TypingIndicatorContainer.Visibility = Visibility.Visible;
-        IconTypingStatus.IconKey = "check";
-        IconTypingStatus.Foreground = _inkEmerald;
-        TxtTypingStatus.Text = LocalizationService.T("Status_Saved");
-        TxtTypingStatus.Foreground = _inkEmerald;
+        IconTypingStatus.IconKey = iconKey;
+        IconTypingStatus.Foreground = brush;
+        TxtTypingStatus.Text = text;
+        TxtTypingStatus.Foreground = brush;
 
         _savedStatusResetTimer = new DispatcherTimer
         {
@@ -1572,6 +1576,7 @@ public partial class StickyNoteWindow : Window
         menu.Items.Add(AppMenu.Separator());
 
         menu.Items.Add(AppMenu.Item(LocalizationService.T("Menu_CopyAllContent"), "copy", CopyAllContent));
+        menu.Items.Add(AppMenu.Item(LocalizationService.T("Menu_CopyAsPicture"), "clipboard", CopyAsPicture));
         menu.Items.Add(AppMenu.Item(LocalizationService.T("Menu_ExportMarkdown"), "download", ExportNoteAsMarkdown));
         menu.Items.Add(AppMenu.Item(LocalizationService.T("Menu_DuplicateNote"), "layers", () =>
         {
@@ -1793,6 +1798,97 @@ public partial class StickyNoteWindow : Window
             }
             catch { }
         }
+    }
+
+    /// <summary>
+    /// Puts a picture of the note, in its theme, on the clipboard (for chats, mails, documents): PNG, which keeps the
+    /// transparent edges of shaped themes and is what most current apps paste, plus a plain bitmap on white for older
+    /// programs. Rendered at least at 2x so it stays sharp.
+    /// </summary>
+    private void CopyAsPicture()
+    {
+        // after the menu has closed, so no hover highlight ends up in the picture
+        Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+        {
+            try
+            {
+                double w = RootGrid.ActualWidth, h = RootGrid.ActualHeight;
+                if (w < 1 || h < 1) return;
+
+                // Show the note at rest: the "..." button can still look pressed from opening the menu (toggling
+                // IsEnabled releases that), and a passing "Saved" message gives way to the modified time.
+                BtnMore.IsEnabled = false;
+                BtnMore.IsEnabled = true;
+                _savedStatusResetTimer?.Stop();
+                TypingIndicatorContainer.Visibility = Visibility.Collapsed;
+                TxtModifiedTime.Visibility = Visibility.Visible;
+                UpdateModifiedTime();
+                RootGrid.UpdateLayout();
+
+                double scale = Math.Max(2.0, VisualTreeHelper.GetDpi(this).DpiScaleX);
+                var picture = new RenderTargetBitmap((int)Math.Ceiling(w * scale), (int)Math.Ceiling(h * scale),
+                    96 * scale, 96 * scale, PixelFormats.Pbgra32);
+                picture.Render(RootGrid);
+                picture.Freeze();
+
+                var png = new MemoryStream();
+                var encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(picture));
+                encoder.Save(png);
+
+                var data = new DataObject();
+                data.SetData("PNG", png);
+                data.SetImage(OnWhite(picture));
+                SetClipboardWhenFree(data, attemptsLeft: 20);
+            }
+            catch (Exception ex)
+            {
+                AppLog.Error("Copying a note as a picture", ex);
+            }
+        }));
+    }
+
+    /// <summary>
+    /// Windows' clipboard history or a clipboard manager can hold the clipboard for a moment, especially while it
+    /// reads a large picture: try again every 150 ms (up to 3 s) without freezing the note.
+    /// </summary>
+    private void SetClipboardWhenFree(DataObject data, int attemptsLeft)
+    {
+        try
+        {
+            Clipboard.SetDataObject(data, true);
+            ShowStatus("check", LocalizationService.T("Status_PictureCopied"), _inkEmerald);
+        }
+        catch (System.Runtime.InteropServices.COMException) when (attemptsLeft > 1)
+        {
+            var retry = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
+            retry.Tick += (s, e) =>
+            {
+                retry.Stop();
+                SetClipboardWhenFree(data, attemptsLeft - 1);
+            };
+            retry.Start();
+        }
+        catch (Exception ex)
+        {
+            AppLog.Error("Copying a note as a picture", ex);
+            ShowStatus("x", LocalizationService.T("Status_ClipboardBusy"), TryFindResource("SkinDangerBrush") as Brush ?? Brushes.OrangeRed);
+        }
+    }
+
+    private static BitmapSource OnWhite(BitmapSource source)
+    {
+        var visual = new DrawingVisual();
+        using (var dc = visual.RenderOpen())
+        {
+            var area = new Rect(0, 0, source.Width, source.Height);
+            dc.DrawRectangle(Brushes.White, null, area);
+            dc.DrawImage(source, area);
+        }
+        var flat = new RenderTargetBitmap(source.PixelWidth, source.PixelHeight, source.DpiX, source.DpiY, PixelFormats.Pbgra32);
+        flat.Render(visual);
+        flat.Freeze();
+        return flat;
     }
 
     private string GetChecklistAsText()
