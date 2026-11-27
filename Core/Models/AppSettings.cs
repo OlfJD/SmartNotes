@@ -23,6 +23,12 @@ public class AppSettings
     public bool HideAllNotes { get; set; } = false;
     /// <summary>Hour at which a new day starts for "Repeat daily" checklists (4 = ticks made before 4 am count for the day before).</summary>
     public int DayStartHour { get; set; } = 4;
+    /// <summary>Sync folder chosen by the user (OneDrive, Dropbox, a NAS...); "" = off. See SyncService.</summary>
+    public string SyncFolder { get; set; } = "";
+    /// <summary>This PC's id in the sync folder (part of its file name), made on first use.</summary>
+    public string SyncDeviceId { get; set; } = "";
+    /// <summary>The sync folder the notes were last backed up before syncing with (a new folder gets a backup first).</summary>
+    public string SyncBackedUpFor { get; set; } = "";
     /// <summary>Minutes a reminder is snoozed for.</summary>
     public int SnoozeMinutes { get; set; } = 10;
     public bool EnableUnfocusedTransparency { get; set; } = false;

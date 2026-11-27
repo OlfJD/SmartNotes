@@ -56,6 +56,18 @@ public static class AppLinkTests
     private static string ThisExe => Path.GetFileName(Environment.ProcessPath!);
 
     [DllImport("user32.dll")] private static extern IntPtr GetForegroundWindow();
+    [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint pid);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern int GetClassName(IntPtr hWnd, System.Text.StringBuilder name, int max);
+
+    private static string DescribeWindow(IntPtr hwnd)
+    {
+        GetWindowThreadProcessId(hwnd, out uint pid);
+        var cls = new System.Text.StringBuilder(128);
+        GetClassName(hwnd, cls, cls.Capacity);
+        string process;
+        try { process = Process.GetProcessById((int)pid).ProcessName; } catch { process = "?"; }
+        return $"{process} / {cls}";
+    }
 
     [Test(E2E = true)]
     public static void AppLinkedNote_ShowsOnlyWhileItsProgramIsInFront()
@@ -80,7 +92,8 @@ public static class AppLinkTests
             var note = app.NoteWithTitle("Linked");
             Assert.True(IsAbove(Handle(note), coverHandle), "the linked note is on top of its program");
             PumpUi(300);
-            Assert.Equal(coverHandle, GetForegroundWindow(), "and its program keeps the focus");
+            var fg = GetForegroundWindow();
+            Assert.True(fg == coverHandle, $"and its program keeps the focus (in front: {DescribeWindow(fg)})");
 
             // another program comes to the front: the linked note goes away, the plain one stays
             other = OpenOtherProgramWindow();

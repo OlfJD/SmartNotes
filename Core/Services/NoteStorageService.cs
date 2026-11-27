@@ -24,6 +24,13 @@ public class NoteStorageService
 
     public string TrashDirectoryPath => TrashFolder;
 
+    /// <summary>notes.json was written (the sync folder copy follows a moment later, see SyncService).</summary>
+    public event Action? Saved;
+    /// <summary>A note left the notes (to the trash or for good): sync remembers it as deleted.</summary>
+    public event Action<Guid, DateTime>? NoteDeleted;
+    /// <summary>A note came back from the trash: sync forgets that it was deleted.</summary>
+    public event Action<Guid>? NoteRestored;
+
     public IReadOnlyList<NoteItem> Notes
     {
         get
@@ -249,6 +256,7 @@ public class NoteStorageService
                 }
                 string json = JsonSerializer.Serialize(_notes, JsonOptions);
                 AtomicFile.WriteAllText(NotesFilePath, json, NotesBackupPath);
+                RaiseQuietly(() => Saved?.Invoke());
                 return true;
             }
             catch (Exception ex)
@@ -256,6 +264,19 @@ public class NoteStorageService
                 AppLog.Error("Saving notes", ex);
                 return false;
             }
+        }
+    }
+
+    /// <summary>A listener's problem must never turn a successful save into a failed one.</summary>
+    private static void RaiseQuietly(Action raise)
+    {
+        try
+        {
+            raise();
+        }
+        catch (Exception ex)
+        {
+            AppLog.Error("Notes storage listener", ex);
         }
     }
 
@@ -315,6 +336,7 @@ public class NoteStorageService
             {
                 _notes.Remove(existing);
                 Save();
+                RaiseQuietly(() => NoteDeleted?.Invoke(id, DateTime.Now));
             }
             if (permanent)
             {
@@ -428,6 +450,7 @@ public class NoteStorageService
                         }
 
                         File.Delete(filePath);
+                        RaiseQuietly(() => NoteRestored?.Invoke(note.Id));
                         return note;
                     }
                 }
@@ -554,6 +577,7 @@ public class NoteStorageService
             FontSize = 16.0,
             ColorKey = "Amber",
             PinMode = NotePinMode.DesktopStuck,
+            IsSample = true,
             CreatedAt = DateTime.Now,
             ModifiedAt = DateTime.Now
         });
@@ -578,6 +602,7 @@ public class NoteStorageService
             FontSize = 16.0,
             ColorKey = "Emerald",
             PinMode = NotePinMode.DesktopStuck,
+            IsSample = true,
             CreatedAt = DateTime.Now,
             ModifiedAt = DateTime.Now
         };

@@ -58,6 +58,8 @@ public partial class SettingsDialog : Window
         ChkStartup.IsChecked = s.LaunchOnStartup;
         ChkDesktopStuck.IsChecked = s.DefaultPinMode == NotePinMode.DesktopStuck;
         ChkLivingThemes.IsChecked = s.LivingThemes;
+        _pendingSyncFolder = s.SyncFolder ?? "";
+        UpdateSyncCard();
         ChkUnfocusedTransparency.IsChecked = s.EnableUnfocusedTransparency;
         ChkHotkeys.IsChecked = s.EnableGlobalHotkeys;
         ChkAutoTrimMemory.IsChecked = s.AutoOptimizeMemory;
@@ -148,6 +150,11 @@ public partial class SettingsDialog : Window
         TxtStartupDesc.Text = LocalizationService.T("General_StartupDesc");
         TxtDesktopStuckTitle.Text = LocalizationService.T("General_DesktopStuckTitle");
         TxtDesktopStuckDesc.Text = LocalizationService.T("General_DesktopStuckDesc");
+        TxtSyncTitle.Text = LocalizationService.T("Sync_Title");
+        TxtSyncDesc.Text = LocalizationService.T("Sync_Desc");
+        TxtChooseSyncFolder.Text = LocalizationService.T("Sync_Choose");
+        TxtSyncOff.Text = LocalizationService.T("Sync_TurnOff");
+        UpdateSyncCard();
         TxtLivingThemesTitle.Text = LocalizationService.T("Appearance_LivingTitle");
         TxtLivingThemesDesc.Text = LocalizationService.T("Appearance_LivingDesc");
         TxtTransparencyTitle.Text = LocalizationService.T("General_TransparencyTitle");
@@ -504,6 +511,65 @@ public partial class SettingsDialog : Window
         PreviewNoteBody.FontSize = SelectedFontSize * (previewTextFont?.Scale ?? 1.0);
     }
 
+    // ---------------------------------------------------------------- sync folder
+
+    /// <summary>The folder chosen in this dialog; applied with Save, like every other setting here.</summary>
+    private string _pendingSyncFolder = "";
+
+    private void BtnChooseSyncFolder_Click(object sender, RoutedEventArgs e)
+    {
+        using var picker = new System.Windows.Forms.FolderBrowserDialog
+        {
+            Description = LocalizationService.T("Sync_PickerTitle"),
+            UseDescriptionForTitle = true,
+            ShowNewFolderButton = true,
+            InitialDirectory = _pendingSyncFolder.Length > 0 ? _pendingSyncFolder : DefaultSyncStart(),
+        };
+        if (picker.ShowDialog() != System.Windows.Forms.DialogResult.OK || string.IsNullOrWhiteSpace(picker.SelectedPath)) return;
+        string folder = picker.SelectedPath;
+        // the app's own data folder would sync with itself
+        if (folder.StartsWith(Core.AppPaths.DataFolder, StringComparison.OrdinalIgnoreCase))
+        {
+            ModernMessageBox.Show(LocalizationService.T("Sync_NotDataFolder"), "SmartNotes", ModernMessageButtons.OK, ModernMessageIcon.Warning, owner: this);
+            return;
+        }
+        _pendingSyncFolder = folder;
+        UpdateSyncCard();
+    }
+
+    private void BtnSyncOff_Click(object sender, RoutedEventArgs e)
+    {
+        _pendingSyncFolder = "";
+        UpdateSyncCard();
+    }
+
+    /// <summary>OneDrive if it is set up, else Documents.</summary>
+    private static string DefaultSyncStart()
+    {
+        string? oneDrive = Environment.GetEnvironmentVariable("OneDrive");
+        return !string.IsNullOrWhiteSpace(oneDrive) && System.IO.Directory.Exists(oneDrive)
+            ? oneDrive
+            : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+    }
+
+    private void UpdateSyncCard()
+    {
+        if (TxtSyncPath == null) return;
+        bool on = _pendingSyncFolder.Length > 0;
+        TxtSyncPath.Text = on ? System.IO.Path.Combine(_pendingSyncFolder, Core.Services.SyncService.SubfolderName) : LocalizationService.T("Sync_Off");
+        TxtSyncPath.ToolTip = on ? TxtSyncPath.Text : null;
+        BtnSyncOff.IsEnabled = on;
+
+        var sync = App.Instance?.Sync;
+        string status;
+        if (!on) status = LocalizationService.T("Sync_OffDesc");
+        else if (!string.Equals(_pendingSyncFolder, _settingsService.Settings.SyncFolder, StringComparison.OrdinalIgnoreCase)) status = LocalizationService.T("Sync_AfterSave");
+        else if (sync?.LastError is { } error) status = LocalizationService.T("Sync_Problem", error);
+        else if (sync?.LastSync is { } last) status = LocalizationService.T("Sync_Status", last.ToString("t"), sync.OtherDevices);
+        else status = "";
+        TxtSyncStatus.Text = status;
+    }
+
     private NoteSkin? _previewSkin;
     private NoteColorTheme? _previewTheme;
 
@@ -600,6 +666,7 @@ public partial class SettingsDialog : Window
         // On: new notes start stuck to the desktop (behind your apps). Off: they start on top of other windows.
         s.DefaultPinMode = ChkDesktopStuck.IsChecked == true ? NotePinMode.DesktopStuck : NotePinMode.AlwaysOnTop;
         s.LivingThemes = ChkLivingThemes.IsChecked == true;
+        s.SyncFolder = _pendingSyncFolder;
         s.EnableUnfocusedTransparency = ChkUnfocusedTransparency.IsChecked == true;
         s.UnfocusedOpacity = Math.Clamp(SliderUnfocusedOpacity.Value / 100.0, 0.15, 0.90);
         s.EnableGlobalHotkeys = ChkHotkeys.IsChecked == true;

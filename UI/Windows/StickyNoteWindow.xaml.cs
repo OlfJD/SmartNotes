@@ -277,6 +277,7 @@ public partial class StickyNoteWindow : Window
         UpdateModifiedTime();
         _savedContent = ContentFingerprint();
         _lastSavedVersion = TakeVersion();
+        _savedStyle = StyleFingerprint();
     }
 
     /// <summary>What counts as an edit for "modified ... ago": text, tasks and copy rows (not moving, resizing or focus).</summary>
@@ -1383,6 +1384,7 @@ public partial class StickyNoteWindow : Window
             _savedContent = content;
             _lastSavedVersion = TakeVersion();
         }
+        StampStyleChange(); // colour, theme, lock, reminder... changed: ChangedAt (sync)
 
         if (_storageService.UpdateNote(_note))
         {

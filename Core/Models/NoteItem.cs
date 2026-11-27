@@ -83,7 +83,18 @@ public class NoteItem
     // Metadata
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime ModifiedAt { get; set; } = DateTime.Now;
+    /// <summary>Last change to anything but the content, position and size: colour, theme, font size, lock, pin, link,
+    /// reminder... ("modified" stays about the text). Null for notes saved before 2.7.</summary>
+    public DateTime? ChangedAt { get; set; }
+    /// <summary>The newest change of any kind (sync: the newer note wins).</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public DateTime SyncStamp => ChangedAt is { } changed && changed > ModifiedAt ? changed : ModifiedAt;
     public bool IsDeleted { get; set; } = false;
+    /// <summary>A welcome note made on first run. Not synced until it is edited, so a new PC doesn't hand its
+    /// welcome notes to every other PC.</summary>
+    public bool IsSample { get; set; } = false;
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool IsUntouchedSample => IsSample && ChangedAt == null && (ModifiedAt - CreatedAt).Duration() < TimeSpan.FromSeconds(5);
     public DateTime? DeletedAt { get; set; }
 
     public string SnippetPreview

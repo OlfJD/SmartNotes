@@ -34,6 +34,7 @@ Notes, to-do lists and checklists right on your desktop. No account, no cloud, e
 - **Several screens**: a note left on an unplugged monitor comes back onto a visible one, and *Arrange notes* keeps your sizes and docked stacks.
 - **Spell check** in 12 languages, plus autocorrect and your own text shortcuts.
 - **Safe saving**: every change is saved right away. If a save fails, the note says so and tries again. Notes are backed up before every update, and **earlier versions** of each note can be brought back from its **···** menu.
+- **Your notes on several PCs**: pick a folder you already sync (OneDrive, Dropbox, a NAS) under Settings > Sync Folder. Each PC keeps its notes and writes its own file there; edits, new notes and deletions come over within seconds. No account.
 - **Quiet updates** in the background, **English and German**, and it **starts with Windows** (turn that off in the tray menu or Task Manager).
 
 ## Runes and constellations

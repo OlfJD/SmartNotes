@@ -232,6 +232,9 @@ public partial class App : Application
         // Reminders and "repeat daily" checklists (anything missed while the PC was off happens now)
         RunStartupStep("Note clock", StartNoteClock);
 
+        // Sync folder (off unless the user chose one in Settings)
+        RunStartupStep("Sync folder", StartSync);
+
         // Keep "Desktop Stuck" notes visible through Show Desktop / Win+D (GitHub issue #1)
         RunStartupStep("ShowDesktopWatcher", () => _showDesktopWatcher = new ShowDesktopWatcher(
             () => _activeNoteWindows.Values.ToList(), _foregroundWatcher ??= new ForegroundWatcher()));
@@ -402,6 +405,43 @@ public partial class App : Application
         ApplyAppLinks();
     }
 
+    // ---------------------------------------------------------------- sync folder
+
+    private SyncService? _sync;
+
+    /// <summary>The sync folder service (null if it could not start); Settings shows its status.</summary>
+    public SyncService? Sync => _sync;
+
+    private void StartSync()
+    {
+        _sync = new SyncService(_storageService, _settingsService, Dispatcher);
+        _sync.PlanReady += ApplySyncPlan;
+        _sync.Restart();
+    }
+
+    /// <summary>Changes made on another PC: new notes appear (without taking the focus), changed ones update, deleted ones go to the trash.</summary>
+    private void ApplySyncPlan(SyncPlan plan)
+    {
+        foreach (var note in plan.Added)
+        {
+            if (_activeNoteWindows.ContainsKey(note.Id)) continue;
+            _storageService.AddNote(note);
+            SpawnStickyNoteWindow(note, bringToFront: false, quiet: true);
+        }
+        foreach (var note in plan.Updated)
+        {
+            if (_activeNoteWindows.TryGetValue(note.Id, out var win)) win.ApplyRemote(note);
+            else _storageService.UpdateNote(note);
+        }
+        foreach (var id in plan.Deleted)
+        {
+            if (_activeNoteWindows.TryGetValue(id, out var win)) win.RemoveBySync();
+            else _storageService.DeleteNote(id);
+        }
+        if (plan.Added.Count > 0) BringNotesOntoScreens(); // another PC's screens may be laid out differently
+        UpdateTrayTooltip();
+    }
+
     // ---------------------------------------------------------------- reminders and daily checklists
 
     private System.Windows.Threading.DispatcherTimer? _clockTimer;
@@ -511,8 +551,15 @@ public partial class App : Application
     /// Restoring the notes at startup: an app-linked note then only appears if its program is in front, and without
     /// taking the focus. Otherwise (a new, duplicated or restored note) the user just asked for it, so it is shown.
     /// </param>
-    private void SpawnStickyNoteWindow(NoteItem note, bool bringToFront = false, bool startup = false)
+    /// <param name="quiet">A note that arrived through the sync folder: shown without taking the focus, and an
+    /// app-linked one only over its program (like at startup).</param>
+    private void SpawnStickyNoteWindow(NoteItem note, bool bringToFront = false, bool startup = false, bool quiet = false)
     {
+        if (quiet)
+        {
+            startup = true;
+            bringToFront = false;
+        }
         if (startup && note.IsAppLinked)
         {
             bringToFront = false;
@@ -555,6 +602,14 @@ public partial class App : Application
         if (startup && note.IsAppLinked)
         {
             if (!_settingsService.Settings.HideAllNotes && AppLink.Matches(note.LinkedApp, _foregroundExe)) win.ShowWithoutFocus();
+        }
+        else if (quiet)
+        {
+            if (!_settingsService.Settings.HideAllNotes)
+            {
+                win.ShowWithoutFocus();
+                if (note.PinMode == NotePinMode.DesktopStuck) win.DesktopWindowManager.SendToDesktopBottom();
+            }
         }
         else if (!_settingsService.Settings.HideAllNotes)
         {
@@ -780,6 +835,8 @@ public partial class App : Application
         }
     }
 
+    private string _syncFolderAtOpen = "";
+
     public void OpenSettingsDialog() => OpenSettingsDialog(null);
 
     public void OpenSettingsDialog(Window? owner)
@@ -792,8 +849,10 @@ public partial class App : Application
             NotifyTransparencySettingsChanged();
             NotifyProofingSettingsChanged();
             NotifyAppearanceSettingsChanged();
+            if (_sync != null && _syncFolderAtOpen != _settingsService.Settings.SyncFolder) _sync.Restart(); // a new sync folder, or sync turned off
             MemoryOptimizer.TrimMemory();
         });
+        _syncFolderAtOpen = _settingsService.Settings.SyncFolder;
 
         var dialogOwner = owner ?? _activeNoteWindows.Values.FirstOrDefault(w => w.IsVisible);
         if (dialogOwner != null)
@@ -946,6 +1005,7 @@ public partial class App : Application
         {
             try { win.FlushPendingSave(); } catch { }
         }
+        try { _sync?.Dispose(); } catch { } // writes this PC's sync file if the last edits are not in it yet
         try { _showDesktopWatcher?.Dispose(); } catch { }
         try { _foregroundWatcher?.Dispose(); } catch { }
         try
