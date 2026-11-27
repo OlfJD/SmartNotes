@@ -20,6 +20,8 @@ public sealed class AppDriver : IDisposable
     {
         get
         {
+            // another build to compare with (perf report)
+            if (Environment.GetEnvironmentVariable("SMARTNOTES_TEST_EXE") is { Length: > 0 } other && File.Exists(other)) return other;
             var dir = new DirectoryInfo(AppContext.BaseDirectory);
             while (dir != null && !File.Exists(Path.Combine(dir.FullName, "SmartNotes.csproj"))) dir = dir.Parent;
             if (dir == null) throw new InvalidOperationException("SmartNotes.csproj not found above " + AppContext.BaseDirectory);

@@ -217,6 +217,15 @@ public partial class App : Application
 
         // Everything below is optional: one failing step must not take the others down with it
         RunStartupStep("Skin key migration", MigrateSkinKeys);
+        RunStartupStep("Living themes on", () =>
+        {
+            // they were opt-in in builds before the release; on by default now (Settings turns them off)
+            var s = _settingsService.Settings;
+            if (s.LivingThemesDefaultApplied) return;
+            s.LivingThemes = true;
+            s.LivingThemesDefaultApplied = true;
+            _settingsService.Save();
+        });
         RunStartupStep("MemoryOptimizer", () => MemoryOptimizer.Initialize(_settingsService.Settings.AutoOptimizeMemory));
         RunStartupStep("GlobalHotkeys", InitGlobalHotkeys);
         RunStartupStep("SingleInstanceListener", StartSingleInstanceListener);
@@ -453,6 +462,7 @@ public partial class App : Application
             onOpenTrashFolder: () => _storageService.OpenTrashFolderInExplorer(),
             onTrimMemory: () => Dispatcher.Invoke(() => MemoryOptimizer.TrimMemory())
         );
+        _trayManager.BuildAllNotesMenu = () => BuildAllNotesMenu();
 
         UpdateTrayTooltip();
     }
@@ -579,6 +589,56 @@ public partial class App : Application
             onClick: () => { win.ShowWithoutFocus(); win.Activate(); }, actionLabel: LocalizationService.T("Toast_ShowNote"),
             duration: TimeSpan.FromSeconds(15));
         LogStartup($"Reminder for note {win.Note.Id}.");
+    }
+
+    // ---------------------------------------------------------------- all notes (⋯ menu and tray)
+
+    /// <summary>
+    /// "All Notes": bring all forward, show / hide all, tidy up, and every note by name to jump to it. In the note's
+    /// ⋯ menu and the tray menu, so none of it needs a keyboard shortcut.
+    /// </summary>
+    public System.Windows.Controls.MenuItem BuildAllNotesMenu(Guid? current = null)
+    {
+        var sub = UI.Controls.AppMenu.Sub(LocalizationService.T("Menu_AllNotes"), "layers");
+        System.Windows.Controls.MenuItem With(System.Windows.Controls.MenuItem item, string action)
+        {
+            string key = HotkeyLabel(action);
+            if (key.Length > 0) item.ToolTip = LocalizationService.T("Tooltip_Shortcut", key);
+            return item;
+        }
+        sub.Items.Add(With(UI.Controls.AppMenu.Item(LocalizationService.T("Tray_BringAllToFront"), "layers", BringAllNotesToFront), "BringAll"));
+        bool hidden = _settingsService.Settings.HideAllNotes;
+        sub.Items.Add(With(UI.Controls.AppMenu.Item(LocalizationService.T(hidden ? "Tray_ShowAll" : "Tray_HideAll"), hidden ? "eye" : "eye-off", ToggleHideAllNotes), "ShowHide"));
+        sub.Items.Add(UI.Controls.AppMenu.Item(LocalizationService.T("Menu_TidyUp"), "monitor", ArrangeNotesOnDesktop));
+        sub.Items.Add(UI.Controls.AppMenu.Separator());
+
+        foreach (var note in _storageService.Notes.OrderBy(n => string.IsNullOrWhiteSpace(n.Title) ? 1 : 0).ThenBy(n => n.Title, StringComparer.CurrentCultureIgnoreCase))
+        {
+            string label = string.IsNullOrWhiteSpace(note.Title) ? note.SnippetPreview : note.Title;
+            label = string.Join(" ", label.Split(new[] { '\r', '\n', '\t' }, StringSplitOptions.RemoveEmptyEntries)).Trim();
+            if (label.Length > 36) label = label.Substring(0, 35).TrimEnd() + "…";
+            string icon = note.ViewMode switch
+            {
+                NoteViewMode.Checklist => "list-todo",
+                NoteViewMode.CopyCompartments => "copy",
+                NoteViewMode.Sketch => "pencil",
+                _ => "file-text",
+            };
+            Guid id = note.Id;
+            var item = UI.Controls.AppMenu.Item(label.Replace("_", "__"), icon, () => ShowNote(id), isChecked: id == current);
+            item.ToolTip = note.SnippetPreview.Length > 200 ? note.SnippetPreview.Substring(0, 200) + "…" : note.SnippetPreview;
+            sub.Items.Add(item);
+        }
+        return sub;
+    }
+
+    /// <summary>Brings one note forward (shown even while all notes are hidden or its program is not in front).</summary>
+    public void ShowNote(Guid id)
+    {
+        if (!_activeNoteWindows.TryGetValue(id, out var win)) return;
+        win.Show();
+        win.Activate();
+        win.DesktopWindowManager.BringToFront();
     }
 
     private void ApplyAppLinks()

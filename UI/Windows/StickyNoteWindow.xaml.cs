@@ -132,6 +132,7 @@ public partial class StickyNoteWindow : Window
             UpdateLiving();
         };
         IsVisibleChanged += (s, e) => UpdateLiving();
+        _desktopWindowManager.RaisedChanged += () => Dispatcher.BeginInvoke(UpdateStuckFooter);
         PreviewMouseDown += (s, e) =>
         {
             _desktopWindowManager.BringToFront();
@@ -906,6 +907,20 @@ public partial class StickyNoteWindow : Window
             ToolTipService.SetShowOnDisabled(BtnPinMode, true);
             BtnPinMode.ToolTip = LocalizationService.T("Tooltip_Pin_Linked", LinkedAppDisplayName);
         }
+        UpdateStuckFooter();
+    }
+
+    /// <summary>
+    /// A note stuck to the desktop comes in front of your programs while you work in it (or after Bring All to Front)
+    /// and goes back when another program is clicked. The footer says which of the two it is right now, instead of
+    /// "Stuck to Desktop" on a note that is plainly in front.
+    /// </summary>
+    private void UpdateStuckFooter()
+    {
+        if (TxtPinIndicator == null || _note.PinMode != NotePinMode.DesktopStuck || IsFloating) return;
+        bool inFront = _desktopWindowManager.IsRaised;
+        TxtPinIndicator.Text = LocalizationService.T(inFront ? "Pin_StuckInFront" : "Pin_StuckToDesktop");
+        TxtPinIndicator.ToolTip = inFront ? LocalizationService.T("Tooltip_StuckInFront") : null;
     }
 
     /// <summary>On top of everything without taking focus: an app-linked note, or a note whose reminder is ringing.</summary>
@@ -984,7 +999,7 @@ public partial class StickyNoteWindow : Window
             AutoReverse = true,
             RepeatBehavior = new RepeatBehavior(32),
             EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut },
-        });
+        }.AtFps(20));
 
         _desktopWindowManager.SetFloating(true, _note.PinMode);
         ShowWithoutFocus();
@@ -1125,6 +1140,7 @@ public partial class StickyNoteWindow : Window
         var sub = AppMenu.Sub(LocalizationService.T("Menu_ShowOnlyWith"), "app-window");
         sub.ToolTip = LocalizationService.T("Tooltip_ShowOnlyWith");
         sub.Items.Add(AppMenu.Item(LocalizationService.T("Menu_LinkAlways"), null, () => SetAppLink(null), isChecked: !_note.IsAppLinked));
+        sub.Items.Add(AppMenu.Item(LocalizationService.T("Menu_ChooseProgram"), "search", ChooseProgram));
         sub.Items.Add(AppMenu.Separator());
         // looking at every window takes a moment, so only when the submenu is opened
         var loading = AppMenu.Item("…", null, null, MenuTone.Muted, isEnabled: false);
@@ -1154,6 +1170,13 @@ public partial class StickyNoteWindow : Window
             }
         };
         return sub;
+    }
+
+    /// <summary>"Choose a Program…": search open and installed programs, or browse for one.</summary>
+    private void ChooseProgram()
+    {
+        var picker = new ProgramPickerDialog(_currentSkin, _note.LinkedApp) { Owner = this };
+        if (picker.ShowDialog() == true && picker.Chosen != null) SetAppLink(picker.Chosen);
     }
 
     private void SetAppLink(OpenProgram? program)
@@ -2050,6 +2073,7 @@ public partial class StickyNoteWindow : Window
                 App.Instance?.NotifyTransparencySettingsChanged();
             }, isChecked: isDimEnabled));
         menu.Items.Add(opacityMenu);
+        if (App.Instance?.BuildAllNotesMenu(_note.Id) is { } allNotes) menu.Items.Insert(0, allNotes);
         menu.Items.Add(BuildAppLinkMenu());
         menu.Items.Add(BuildReminderMenu());
         if (_note.ViewMode == NoteViewMode.Checklist)

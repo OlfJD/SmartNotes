@@ -78,7 +78,13 @@
 
     <Grid x:Name="RootGrid">
         <!-- Custom-art skins paint their whole (non-rectangular) body here; see UI/Skins/*Art.cs -->
-        <skins:DrawingHost x:Name="SkinArtHost" IsHitTestVisible="False"/>
+        <skins:DrawingHost x:Name="SkinArtHost" IsHitTestVisible="False">
+            <!-- painted once into a bitmap and reused: an animation frame or a caret blink then doesn't re-run the
+                 whole painting (grain, stars, runes) of a theme -->
+            <skins:DrawingHost.CacheMode>
+                <BitmapCache EnableClearType="False" SnapsToDevicePixels="True"/>
+            </skins:DrawingHost.CacheMode>
+        </skins:DrawingHost>
         <!-- Living themes, behind the content: shooting stars, the breathing glow of a rune or creature -->
         <Canvas x:Name="LivingLayer" IsHitTestVisible="False" ClipToBounds="True"/>
 
@@ -463,12 +469,36 @@
                             <Button x:Name="BtnSketchEraser" DockPanel.Dock="Left" Style="{StaticResource IconButton}" Width="28" Height="28" Padding="0" Click="BtnSketchTool_Click" Tag="Eraser">
                                 <controls:LucideIcon x:Name="IconSketchEraser" IconKey="eraser" Size="15" StrokeThickness="2.4" Foreground="{DynamicResource SkinMutedBrush}"/>
                             </Button>
-                            <StackPanel x:Name="SketchColorDots" DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                            <!-- thickness of the current tool: the dot shows it, a click opens the slider -->
+                            <Button x:Name="BtnSketchSize" DockPanel.Dock="Left" Style="{StaticResource IconButton}" Width="28" Height="28" Padding="0" Click="BtnSketchSize_Click">
+                                <Grid Width="18" Height="18">
+                                    <Ellipse x:Name="SketchSizeDot" Width="6" Height="6" Fill="{DynamicResource SkinMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Ellipse Stroke="{DynamicResource SkinMutedBrush}" StrokeThickness="1" Opacity="0.5"/>
+                                </Grid>
+                            </Button>
+                            <StackPanel x:Name="SketchColorDots" DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0"/>
                             <Button x:Name="BtnSketchClear" DockPanel.Dock="Right" Style="{StaticResource IconButton}" Width="28" Height="28" Padding="0" Click="BtnSketchClear_Click">
                                 <controls:LucideIcon IconKey="trash-2" Size="14" StrokeThickness="2.4" Foreground="{DynamicResource SkinPlaceholderBrush}"/>
                             </Button>
                         </DockPanel>
                     </skins:CutBorder>
+                    <!-- Size slider for the current sketch tool, in the note theme's popup look -->
+                    <Popup x:Name="SketchSizePopup" PlacementTarget="{Binding ElementName=BtnSketchSize}" Placement="Top" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade" Closed="SketchSizePopup_Closed">
+                        <Grid Margin="6">
+                            <skins:CutBorder Background="{DynamicResource MenuPanelBgBrush}" BorderBrush="{DynamicResource MenuPanelBorderBrush}" BorderThickness="{DynamicResource MenuPanelBorderThickness}" CornerRadius="{DynamicResource MenuPanelRadius}" Cut="{DynamicResource MenuPanelCut}" Padding="12,10">
+                                <skins:CutBorder.Effect>
+                                    <DropShadowEffect BlurRadius="14" ShadowDepth="3" Opacity="0.6" Color="#000000"/>
+                                </skins:CutBorder.Effect>
+                                <StackPanel Width="190">
+                                    <DockPanel Margin="0,0,0,6">
+                                        <TextBlock x:Name="TxtSketchSizeValue" DockPanel.Dock="Right" Text="3 px" FontFamily="{DynamicResource MenuLabelFont}" FontSize="12" Foreground="{DynamicResource MenuLabelMutedBrush}"/>
+                                        <TextBlock x:Name="TxtSketchSizeHeader" Text="Pen size" FontFamily="{DynamicResource MenuHeaderFont}" FontSize="{DynamicResource MenuHeaderFontSize}" FontWeight="Bold" Foreground="{DynamicResource MenuHeaderBrush}"/>
+                                    </DockPanel>
+                                    <Slider x:Name="SliderSketchSize" Style="{DynamicResource PopupSliderStyle}" Minimum="1" Maximum="12" ValueChanged="SliderSketchSize_ValueChanged"/>
+                                </StackPanel>
+                            </skins:CutBorder>
+                        </Grid>
+                    </Popup>
                 </Grid>
             </Grid>
 

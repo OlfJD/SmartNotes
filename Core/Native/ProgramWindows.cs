@@ -7,8 +7,8 @@ using System.Text;
 
 namespace SmartNotes.Core.Native;
 
-/// <summary>A program with an open window, as offered in a note's "Show Only With" menu.</summary>
-public sealed record OpenProgram(string ExeName, string DisplayName);
+/// <summary>A program, as offered in a note's "Show Only With" menu and program picker.</summary>
+public sealed record OpenProgram(string ExeName, string DisplayName, string? Path = null, bool IsOpen = false);
 
 /// <summary>Finds out which program a window belongs to, and which programs have windows open (app-linked notes).</summary>
 public static class ProgramWindows
@@ -74,7 +74,7 @@ public static class ProgramWindows
                 string? path = ExePathOf(hwnd);
                 string exe = Path.GetFileName(path ?? "");
                 if (exe.Length == 0 || found.ContainsKey(exe)) return true;
-                found[exe] = new OpenProgram(exe, DisplayNameOf(path!));
+                found[exe] = new OpenProgram(exe, DisplayNameOf(path!), path, IsOpen: true);
             }
             catch
             {
@@ -94,6 +94,63 @@ public static class ProgramWindows
         if (Win32Api.DwmGetWindowAttribute(hwnd, Win32Api.DWMWA_CLOAKED, out int cloaked, sizeof(int)) == 0 && cloaked != 0) return false;
         return !ShowDesktopWatcher.IsDesktopWindow(hwnd);
     }
+
+    /// <summary>
+    /// Programs installed for this user, from the Start menu shortcuts (all users and this user), one per exe, sorted by
+    /// name. Uninstallers, setup and help shortcuts are left out. Takes a moment: call it off the UI thread.
+    /// </summary>
+    public static List<OpenProgram> ListInstalledPrograms()
+    {
+        var found = new Dictionary<string, OpenProgram>(StringComparer.OrdinalIgnoreCase);
+        dynamic? shell = null;
+        try
+        {
+            var type = Type.GetTypeFromProgID("WScript.Shell");
+            if (type != null) shell = Activator.CreateInstance(type);
+        }
+        catch (Exception ex)
+        {
+            Services.AppLog.Error("Reading Start menu shortcuts", ex);
+        }
+        if (shell == null) return new List<OpenProgram>();
+
+        foreach (var root in new[] { Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms), Environment.GetFolderPath(Environment.SpecialFolder.Programs) })
+        {
+            if (string.IsNullOrEmpty(root) || !Directory.Exists(root)) continue;
+            IEnumerable<string> links;
+            try { links = Directory.EnumerateFiles(root, "*.lnk", SearchOption.AllDirectories).ToList(); }
+            catch { continue; }
+            foreach (var link in links)
+            {
+                try
+                {
+                    string name = System.IO.Path.GetFileNameWithoutExtension(link);
+                    if (IsNotAnApp(name)) continue;
+                    string target = (string)shell.CreateShortcut(link).TargetPath;
+                    if (string.IsNullOrEmpty(target) || !target.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || !File.Exists(target)) continue;
+                    string exe = System.IO.Path.GetFileName(target);
+                    if (IsNotAnApp(exe) || found.ContainsKey(exe)) continue;
+                    found[exe] = new OpenProgram(exe, name, target);
+                }
+                catch
+                {
+                    // a broken shortcut
+                }
+            }
+        }
+        return found.Values.OrderBy(p => p.DisplayName, StringComparer.CurrentCultureIgnoreCase).ToList();
+    }
+
+    private static bool IsNotAnApp(string name)
+    {
+        string n = name.ToLowerInvariant();
+        return n.Contains("uninstall") || n.StartsWith("unins") || n.Contains("deinstall") || n.Contains("setup") || n.Contains("readme")
+            || n.EndsWith(" help") || n.Contains("release notes") || n == "explorer.exe";
+    }
+
+    /// <summary>A program file chosen by hand ("Browse…").</summary>
+    public static OpenProgram FromFile(string path) =>
+        new(System.IO.Path.GetFileName(path), DisplayNameOf(path), path);
 
     /// <summary>The program's own name ("Visual Studio Code"), else its product name, else the exe without ".exe".</summary>
     private static string DisplayNameOf(string path)

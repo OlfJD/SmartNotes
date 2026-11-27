@@ -36,6 +36,9 @@ public class TrayManager : IDisposable
     private readonly Action _onOpenTrashFolder;
     private readonly Action _onTrimMemory;
 
+    /// <summary>The "All Notes" submenu (built by the app, shared with the note's ⋯ menu).</summary>
+    public Func<WpfMenuItem>? BuildAllNotesMenu { get; set; }
+
     // Invisible 1px window that owns the menu: a tray menu needs a foreground window of ours,
     // otherwise it would not close when the user clicks somewhere else.
     private WpfWindow? _menuHost;
@@ -180,6 +183,7 @@ public class TrayManager : IDisposable
 
         menu.Items.Add(AppMenu.Item(LocalizationService.T("Tray_NewNote"), "plus", Later(_onNewNote), MenuTone.Accent));
         menu.Items.Add(AppMenu.Item(LocalizationService.T("Tray_BringAllToFront"), "layers", Later(_onBringAllToFront)));
+        if (BuildAllNotesMenu?.Invoke() is { } allNotes) menu.Items.Add(allNotes); // every note by name, tidy up...
         menu.Items.Add(AppMenu.Separator());
 
         menu.Items.Add(AppMenu.Item(

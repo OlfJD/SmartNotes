@@ -38,6 +38,23 @@ public class DesktopWindowManager
 
     public NotePinMode PinMode => _currentPinMode;
 
+    private bool _raised;
+
+    /// <summary>A Desktop Stuck note that is in front of other programs right now (while it is used, or after Bring All
+    /// to Front); it goes back to the bottom when another program takes the focus.</summary>
+    public bool IsRaised => _raised;
+
+    /// <summary>The note went in front of the programs, or back behind them.</summary>
+    public event Action? RaisedChanged;
+
+    private void SetRaised(bool raised)
+    {
+        if (_currentPinMode != NotePinMode.DesktopStuck || _floating) raised = false;
+        if (_raised == raised) return;
+        _raised = raised;
+        RaisedChanged?.Invoke();
+    }
+
     public DesktopWindowManager(Window window)
     {
         _window = window;
@@ -221,6 +238,7 @@ public class DesktopWindowManager
         }
 
         Win32Api.SetForegroundWindow(_hwnd);
+        SetRaised(true);
 
         try
         {
@@ -239,6 +257,7 @@ public class DesktopWindowManager
         _window.Topmost = onTop;
         Win32Api.SetWindowPos(_hwnd, onTop ? Win32Api.HWND_TOPMOST : Win32Api.HWND_TOP, 0, 0, 0, 0,
             Win32Api.SWP_NOMOVE | Win32Api.SWP_NOSIZE | Win32Api.SWP_NOACTIVATE | Win32Api.SWP_SHOWWINDOW);
+        SetRaised(true);
     }
 
     private bool _floating;
@@ -256,6 +275,7 @@ public class DesktopWindowManager
     public void ApplyPinMode(NotePinMode pinMode)
     {
         _currentPinMode = pinMode;
+        SetRaised(false);
         if (_hwnd == IntPtr.Zero) return;
 
         switch (pinMode)
@@ -286,6 +306,7 @@ public class DesktopWindowManager
     public void SendToDesktopBottom()
     {
         if (_hwnd == IntPtr.Zero) return;
+        SetRaised(false);
         if (_currentPinMode == NotePinMode.DesktopStuck)
         {
             _isInteracting = false;

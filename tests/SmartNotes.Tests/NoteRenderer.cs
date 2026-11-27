@@ -112,6 +112,8 @@ public static class NoteRenderer
     {
         settings.Settings.SyncFolder = @"C:\Users\you\OneDrive";
         settings.Settings.LivingThemes = true;
+        settings.Settings.DefaultSkinKey = NoteSkin.InkWashiKey;
+        settings.Settings.DefaultColorKey = "Rose";
         var tiles = new List<(string Label, BitmapSource Image)>();
         var dialog = new SettingsDialog(settings, storage, () => { }) { ShowActivated = false, Left = -30000, Top = -30000, WindowStartupLocation = WindowStartupLocation.Manual };
         dialog.Show();
@@ -126,6 +128,8 @@ public static class NoteRenderer
             Save(image, Path.Combine(outDir, "settings-page-" + name + ".png"));
             tiles.Add(("settings-page-" + name, image));
         }
+        var preview = Render(dialog.PreviewNoteHost); // as it opens, nothing changed
+        tiles.Add(("settings-preview-on-open (default: Ink & Washi, Rose)", preview));
         dialog.Close();
         Save(Sheet(tiles), Path.Combine(outDir, "sheet-settingspages.png"));
         Console.WriteLine($"Rendered {tiles.Count} picture(s) to {outDir}");

@@ -10,6 +10,7 @@ public static class Program
         Directory.CreateDirectory(TestData.UnitDataDir);
         Environment.SetEnvironmentVariable("SMARTNOTES_DATA_DIR", TestData.UnitDataDir);
         // "--render <folder> [skins|features|menu]": draw real note windows to PNG files (see NoteRenderer)
+        if (args.Contains("--perf")) return PerfReport.Run(); // painter timings and the real app's CPU / memory
         int render = Array.IndexOf(args, "--render");
         if (render >= 0 && render + 1 < args.Length)
         {

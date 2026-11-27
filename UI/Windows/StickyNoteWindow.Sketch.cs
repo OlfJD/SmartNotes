@@ -98,17 +98,19 @@ public partial class StickyNoteWindow
         else if (_sketchTool == "Eraser")
         {
             SketchCanvas.EditingMode = InkCanvasEditingMode.EraseByPoint;
-            SketchCanvas.EraserShape = new EllipseStylusShape(12, 12);
+            double eraser = ToolSize("Eraser");
+            SketchCanvas.EraserShape = new EllipseStylusShape(eraser, eraser);
         }
         else
         {
             SketchCanvas.EditingMode = InkCanvasEditingMode.Ink;
             bool highlighter = _sketchTool == "Highlighter";
+            double size = ToolSize(_sketchTool);
             SketchCanvas.DefaultDrawingAttributes = new DrawingAttributes
             {
                 Color = color,
-                Width = highlighter ? 14 : 2.6,
-                Height = highlighter ? 5 : 2.6,
+                Width = size,
+                Height = highlighter ? Math.Max(2, size * 0.36) : size,
                 StylusTip = highlighter ? StylusTip.Rectangle : StylusTip.Ellipse,
                 IsHighlighter = highlighter,
                 FitToCurve = true,
@@ -116,6 +118,11 @@ public partial class StickyNoteWindow
             };
         }
         SketchToolbar.IsEnabled = !_note.IsLocked;
+
+        // the size button's dot grows with the tool's thickness
+        double dot = Math.Clamp(ToolSize(_sketchTool) * (_sketchTool == "Pen" ? 1.6 : 0.6), 3, 16);
+        SketchSizeDot.Width = SketchSizeDot.Height = dot;
+        BtnSketchSize.ToolTip = LocalizationService.T("Tooltip_SketchSize", LocalizationService.T("Tooltip_Sketch" + _sketchTool));
 
         IconSketchPen.Foreground = _sketchTool == "Pen" ? _inkActive : _inkMuted;
         IconSketchHighlighter.Foreground = _sketchTool == "Highlighter" ? _inkActive : _inkMuted;
@@ -155,6 +162,56 @@ public partial class StickyNoteWindow
             SketchColorDots.Children.Add(button);
         }
     }
+
+    // ---------------------------------------------------------------- thickness per tool
+
+    /// <summary>Smallest and largest thickness the slider offers for each tool.</summary>
+    private static (double Min, double Max) SizeRange(string tool) => tool switch
+    {
+        "Highlighter" => (4, 40),
+        "Eraser" => (4, 60),
+        _ => (1, 16),
+    };
+
+    private double ToolSize(string tool)
+    {
+        var s = _settingsService.Settings;
+        double size = tool switch { "Highlighter" => s.SketchHighlighterSize, "Eraser" => s.SketchEraserSize, _ => s.SketchPenSize };
+        var (min, max) = SizeRange(tool);
+        return Math.Clamp(size <= 0 ? min : size, min, max);
+    }
+
+    private bool _settingSizeSlider;
+
+    private void BtnSketchSize_Click(object sender, RoutedEventArgs e)
+    {
+        var (min, max) = SizeRange(_sketchTool);
+        _settingSizeSlider = true;
+        SliderSketchSize.Minimum = min;
+        SliderSketchSize.Maximum = max;
+        SliderSketchSize.Value = ToolSize(_sketchTool);
+        _settingSizeSlider = false;
+        TxtSketchSizeHeader.Text = LocalizationService.T("Sketch_SizeHeader", LocalizationService.T("Tooltip_Sketch" + _sketchTool));
+        TxtSketchSizeValue.Text = $"{SliderSketchSize.Value:0.#} px";
+        SketchSizePopup.IsOpen = true;
+    }
+
+    private void SliderSketchSize_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (_settingSizeSlider || TxtSketchSizeValue == null) return;
+        double size = Math.Round(e.NewValue * 2) / 2; // half pixels are enough
+        var s = _settingsService.Settings;
+        switch (_sketchTool)
+        {
+            case "Highlighter": s.SketchHighlighterSize = size; break;
+            case "Eraser": s.SketchEraserSize = size; break;
+            default: s.SketchPenSize = size; break;
+        }
+        TxtSketchSizeValue.Text = $"{size:0.#} px";
+        ApplySketchTool();
+    }
+
+    private void SketchSizePopup_Closed(object? sender, EventArgs e) => _settingsService.Save(); // remembered for every note
 
     /// <summary>The drawing as a PNG (for Export as Markdown), drawn on the note's own background.</summary>
     private void SaveSketchPng(string path)

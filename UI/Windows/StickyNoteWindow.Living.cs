@@ -6,6 +6,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using SmartNotes.Core.Models;
+using SmartNotes.UI.Controls;
 using SmartNotes.UI.Skins;
 using Path = System.Windows.Shapes.Path;
 using Image = System.Windows.Controls.Image;
@@ -14,12 +15,13 @@ using Rectangle = System.Windows.Shapes.Rectangle;
 namespace SmartNotes.UI.Windows;
 
 /// <summary>
-/// Living themes (Settings > Note Appearance, off by default): small animations that run only while the note is
-/// focused or under the mouse, so an idle desktop costs nothing.
+/// Living themes (on by default; Settings > Note Appearance turns them off): small animations that run only while the
+/// note is focused or under the mouse, so an idle desktop costs nothing. Every animation has a capped frame rate
+/// (Anim.AtFps): a note is a layered window that WPF repaints whole for each frame.
 ///   Astral: now and then a shooting star crosses the sky.
 ///   Elden Ring: the Great Rune slowly breathes.
 ///   Deep Sea: the creature's light breathes.
-///   Cyberpunk: a short glitch when an edit is saved.
+///   Cyberpunk: a short glitch now and then, and whenever an edit is saved.
 ///   Medieval: a wax seal is pressed onto the scroll when the note is locked (and stays while it is locked).
 /// </summary>
 public partial class StickyNoteWindow
@@ -40,8 +42,8 @@ public partial class StickyNoteWindow
         bool active = LivingActive;
         string skin = _currentSkin.Key;
 
-        // shooting stars (Astral)
-        if (active && skin == NoteSkin.AstralKey)
+        // now-and-then events: a shooting star (Astral), a glitch (Cyberpunk)
+        if (active && skin is NoteSkin.AstralKey or NoteSkin.CyberpunkKey)
         {
             if (_shootingStarTimer == null)
             {
@@ -49,7 +51,9 @@ public partial class StickyNoteWindow
                 _shootingStarTimer.Tick += (s, e) =>
                 {
                     _shootingStarTimer.Interval = TimeSpan.FromSeconds(3 + _livingRandom.NextDouble() * 5);
-                    if (LivingActive && _currentSkin.Key == NoteSkin.AstralKey) LaunchShootingStar();
+                    if (!LivingActive) _shootingStarTimer.Stop();
+                    else if (_currentSkin.Key == NoteSkin.AstralKey) LaunchShootingStar();
+                    else if (_currentSkin.Key == NoteSkin.CyberpunkKey) GlitchIfLiving();
                     else _shootingStarTimer.Stop();
                 };
             }
@@ -77,15 +81,40 @@ public partial class StickyNoteWindow
         UpdateWaxSeal(animate: false);
     }
 
+    private DispatcherTimer? _hoverCheck;
+
     private void Window_MouseEnter_Living()
     {
         _hovered = true;
         UpdateLiving();
+        // WPF only notices the mouse leaving when it moves: a window that slides over the note (Alt+Tab) would leave
+        // the note "hovered" and its animation running behind that window. So check what is under the cursor.
+        if (_hoverCheck == null)
+        {
+            _hoverCheck = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) };
+            _hoverCheck.Tick += (s, e) =>
+            {
+                if (_hovered && IsUnderCursor()) return;
+                _hoverCheck.Stop();
+                if (!_hovered) return;
+                _hovered = false;
+                UpdateLiving();
+            };
+        }
+        _hoverCheck.Start();
+    }
+
+    private bool IsUnderCursor()
+    {
+        if (!Core.Native.Win32Api.GetCursorPos(out var p)) return false;
+        var under = Core.Native.Win32Api.GetAncestor(Core.Native.Win32Api.WindowFromPoint(p), Core.Native.Win32Api.GA_ROOT);
+        return under == new System.Windows.Interop.WindowInteropHelper(this).Handle;
     }
 
     private void Window_MouseLeave_Living()
     {
         _hovered = false;
+        _hoverCheck?.Stop();
         UpdateLiving();
     }
 
@@ -134,9 +163,9 @@ public partial class StickyNoteWindow
         LivingLayer.Children.Add(star);
 
         var duration = TimeSpan.FromSeconds(0.75);
-        move.BeginAnimation(TranslateTransform.XProperty, new DoubleAnimation(start.X, start.X + dir.X * travel, duration) { EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseIn } });
-        move.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(start.Y, start.Y + dir.Y * travel, duration) { EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseIn } });
-        var fade = new DoubleAnimationUsingKeyFrames { Duration = duration };
+        move.BeginAnimation(TranslateTransform.XProperty, new DoubleAnimation(start.X, start.X + dir.X * travel, duration) { EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseIn } }.AtFps(30));
+        move.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(start.Y, start.Y + dir.Y * travel, duration) { EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseIn } }.AtFps(30));
+        var fade = new DoubleAnimationUsingKeyFrames { Duration = duration }.AtFps(30);
         fade.KeyFrames.Add(new LinearDoubleKeyFrame(0, KeyTime.FromPercent(0)));
         fade.KeyFrames.Add(new LinearDoubleKeyFrame(1, KeyTime.FromPercent(0.25)));
         fade.KeyFrames.Add(new LinearDoubleKeyFrame(0, KeyTime.FromPercent(1)));
@@ -174,7 +203,7 @@ public partial class StickyNoteWindow
                 AutoReverse = true,
                 RepeatBehavior = RepeatBehavior.Forever,
                 EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut },
-            });
+            }.AtFps(12)); // a slow breath needs few frames: each one repaints the whole (layered) window
         }
         _breathingGlow.Fill = new RadialGradientBrush
         {
@@ -209,7 +238,7 @@ public partial class StickyNoteWindow
         // the content jumps sideways for a few frames
         var shift = ContentGrid.RenderTransform as TranslateTransform;
         if (shift == null) ContentGrid.RenderTransform = shift = new TranslateTransform();
-        var jitter = new DoubleAnimationUsingKeyFrames { Duration = TimeSpan.FromMilliseconds(220) };
+        var jitter = new DoubleAnimationUsingKeyFrames { Duration = TimeSpan.FromMilliseconds(220) }.AtFps(30);
         foreach (var (x, t) in new[] { (0.0, 0.0), (-3.0, 0.15), (2.5, 0.35), (-1.5, 0.55), (1.0, 0.75), (0.0, 1.0) })
             jitter.KeyFrames.Add(new DiscreteDoubleKeyFrame(x, KeyTime.FromPercent(t)));
         shift.BeginAnimation(TranslateTransform.XProperty, jitter);
@@ -228,7 +257,7 @@ public partial class StickyNoteWindow
             Canvas.SetLeft(slice, _livingRandom.NextDouble() * (w - slice.Width));
             Canvas.SetTop(slice, 20 + _livingRandom.NextDouble() * (h - 40));
             LivingOverlay.Children.Add(slice);
-            var flicker = new DoubleAnimationUsingKeyFrames { Duration = TimeSpan.FromMilliseconds(180 + i * 25), BeginTime = TimeSpan.FromMilliseconds(i * 20) };
+            var flicker = new DoubleAnimationUsingKeyFrames { Duration = TimeSpan.FromMilliseconds(180 + i * 25), BeginTime = TimeSpan.FromMilliseconds(i * 20) }.AtFps(30);
             flicker.KeyFrames.Add(new DiscreteDoubleKeyFrame(1, KeyTime.FromPercent(0)));
             flicker.KeyFrames.Add(new DiscreteDoubleKeyFrame(0, KeyTime.FromPercent(0.4)));
             flicker.KeyFrames.Add(new DiscreteDoubleKeyFrame(1, KeyTime.FromPercent(0.6)));
@@ -269,9 +298,9 @@ public partial class StickyNoteWindow
                 var press = new ScaleTransform(1.7, 1.7);
                 _waxSeal.RenderTransform = new TransformGroup { Children = { press, new RotateTransform(-8 + _livingRandom.NextDouble() * 16) } };
                 var ease = new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.35 };
-                press.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(1.7, 1, TimeSpan.FromMilliseconds(260)) { EasingFunction = ease });
-                press.BeginAnimation(ScaleTransform.ScaleYProperty, new DoubleAnimation(1.7, 1, TimeSpan.FromMilliseconds(260)) { EasingFunction = ease });
-                _waxSeal.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(160)));
+                press.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(1.7, 1, TimeSpan.FromMilliseconds(260)) { EasingFunction = ease }.AtFps(40));
+                press.BeginAnimation(ScaleTransform.ScaleYProperty, new DoubleAnimation(1.7, 1, TimeSpan.FromMilliseconds(260)) { EasingFunction = ease }.AtFps(40));
+                _waxSeal.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(160)).AtFps(40));
             }
         }
         else if (_waxSeal != null)
@@ -280,7 +309,7 @@ public partial class StickyNoteWindow
             _waxSeal = null;
             if (animate)
             {
-                var lift = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(200));
+                var lift = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(200)).AtFps(30);
                 lift.Completed += (s, e) => LivingOverlay.Children.Remove(seal);
                 seal.BeginAnimation(OpacityProperty, lift);
             }

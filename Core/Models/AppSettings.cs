@@ -29,12 +29,18 @@ public class AppSettings
     public string SyncDeviceId { get; set; } = "";
     /// <summary>The sync folder the notes were last backed up before syncing with (a new folder gets a backup first).</summary>
     public string SyncBackedUpFor { get; set; } = "";
+    /// <summary>Sketch mode thickness per tool, in pixels.</summary>
+    public double SketchPenSize { get; set; } = 2.6;
+    public double SketchHighlighterSize { get; set; } = 14;
+    public double SketchEraserSize { get; set; } = 12;
     /// <summary>Minutes a reminder is snoozed for.</summary>
     public int SnoozeMinutes { get; set; } = 10;
     public bool EnableUnfocusedTransparency { get; set; } = false;
     public double UnfocusedOpacity { get; set; } = 0.55;
     /// <summary>Living themes: small animations (shooting star, glowing rune, glitch, wax seal) while a note is focused or hovered.</summary>
-    public bool LivingThemes { get; set; } = false;
+    public bool LivingThemes { get; set; } = true;
+    /// <summary>Living themes were switched on once for settings saved while they were off by default (2.7 pre-release builds).</summary>
+    public bool LivingThemesDefaultApplied { get; set; } = false;
 
     // Version 2.1: Multi-Language Localization & Text Proofing
     public string AppLanguage { get; set; } = "en";

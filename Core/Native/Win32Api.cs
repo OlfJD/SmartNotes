@@ -262,6 +262,9 @@ public static class Win32Api
     [DllImport("kernel32.dll", SetLastError = true)]
     public static extern bool CloseHandle(IntPtr hObject);
 
+    [DllImport("user32.dll")]
+    public static extern IntPtr WindowFromPoint(POINT point);
+
     public const int ASFW_ANY = -1;
 
     [DllImport("user32.dll")]
