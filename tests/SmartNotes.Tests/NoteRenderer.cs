@@ -41,6 +41,7 @@ public static class NoteRenderer
         settings.Settings.EnableSpellCheck = false; // no red squiggles in pictures
 
         if (set == "settings") return RenderSettingsPreviews(outDir, storage, settings);
+        if (set == "settingspages") return RenderSettingsPages(outDir, storage, settings);
 
         var shots = set switch
         {
@@ -102,6 +103,31 @@ public static class NoteRenderer
         }
         dialog.Close();
         Save(Sheet(tiles), Path.Combine(outDir, "sheet-settings.png"));
+        Console.WriteLine($"Rendered {tiles.Count} picture(s) to {outDir}");
+        return 0;
+    }
+
+    /// <summary>The whole Settings window on the Desktop &amp; System and Note Appearance pages.</summary>
+    private static int RenderSettingsPages(string outDir, NoteStorageService storage, SettingsService settings)
+    {
+        settings.Settings.SyncFolder = @"C:\Users\you\OneDrive";
+        settings.Settings.LivingThemes = true;
+        var tiles = new List<(string Label, BitmapSource Image)>();
+        var dialog = new SettingsDialog(settings, storage, () => { }) { ShowActivated = false, Left = -30000, Top = -30000, WindowStartupLocation = WindowStartupLocation.Manual };
+        dialog.Show();
+        Pump(400);
+        foreach (var (name, page) in new[] { ("general", (FrameworkElement)dialog.PanelGeneral), ("appearance", dialog.PanelAppearance) })
+        {
+            dialog.PanelGeneral.Visibility = Visibility.Collapsed;
+            dialog.PanelAppearance.Visibility = Visibility.Collapsed;
+            page.Visibility = Visibility.Visible;
+            Pump(300);
+            var image = Render((FrameworkElement)dialog.Content);
+            Save(image, Path.Combine(outDir, "settings-page-" + name + ".png"));
+            tiles.Add(("settings-page-" + name, image));
+        }
+        dialog.Close();
+        Save(Sheet(tiles), Path.Combine(outDir, "sheet-settingspages.png"));
         Console.WriteLine($"Rendered {tiles.Count} picture(s) to {outDir}");
         return 0;
     }
