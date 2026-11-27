@@ -229,6 +229,9 @@ public partial class App : Application
         // A note saved on a screen that is gone, or in a gap between screens, would be out of reach
         RunStartupStep("Notes onto screens", BringNotesOntoScreens);
 
+        // Reminders and "repeat daily" checklists (anything missed while the PC was off happens now)
+        RunStartupStep("Note clock", StartNoteClock);
+
         // Keep "Desktop Stuck" notes visible through Show Desktop / Win+D (GitHub issue #1)
         RunStartupStep("ShowDesktopWatcher", () => _showDesktopWatcher = new ShowDesktopWatcher(
             () => _activeNoteWindows.Values.ToList(), _foregroundWatcher ??= new ForegroundWatcher()));
@@ -399,12 +402,81 @@ public partial class App : Application
         ApplyAppLinks();
     }
 
+    // ---------------------------------------------------------------- reminders and daily checklists
+
+    private System.Windows.Threading.DispatcherTimer? _clockTimer;
+
+    private void StartNoteClock()
+    {
+        _clockTimer = new System.Windows.Threading.DispatcherTimer(System.Windows.Threading.DispatcherPriority.Background);
+        _clockTimer.Tick += (s, e) => CheckNoteClock();
+        Microsoft.Win32.SystemEvents.PowerModeChanged += OnPowerModeChanged;
+        Microsoft.Win32.SystemEvents.TimeChanged += OnSystemTimeChanged;
+        CheckNoteClock();
+    }
+
+    private void OnPowerModeChanged(object? sender, Microsoft.Win32.PowerModeChangedEventArgs e)
+    {
+        if (e.Mode == Microsoft.Win32.PowerModes.Resume) Dispatcher.BeginInvoke(CheckNoteClock); // woke up: reminders due while asleep
+    }
+
+    private void OnSystemTimeChanged(object? sender, EventArgs e) => Dispatcher.BeginInvoke(CheckNoteClock);
+
+    /// <summary>A reminder was set, changed or snoozed: check now and plan the next check from it.</summary>
+    public void NotifyScheduleChanged() => CheckNoteClock();
+
+    /// <summary>
+    /// Fires due reminders and starts new days for "Repeat Daily" checklists, then sleeps until the next thing is due,
+    /// at most a minute (a cheap tick that also catches sleep and clock changes the events missed).
+    /// </summary>
+    private void CheckNoteClock()
+    {
+        if (_clockTimer == null) return;
+        _clockTimer.Stop();
+        var now = DateTime.Now;
+        int dayStart = _settingsService.Settings.DayStartHour;
+        DateTime next = now.AddMinutes(1);
+        foreach (var win in _activeNoteWindows.Values.ToList())
+        {
+            try
+            {
+                var note = win.Note;
+                if (note.RepeatDaily)
+                {
+                    win.ApplyDailyReset(now);
+                    var dayStarts = NoteSchedule.NextDayStart(now, dayStart);
+                    if (dayStarts < next) next = dayStarts;
+                }
+                if (NoteSchedule.IsDue(note.Reminder, now)) FireReminder(win, now);
+                if (NoteSchedule.NextDue(note.Reminder) is { } due && due < next) next = due;
+                win.RefreshTimeBadges();
+            }
+            catch (Exception ex)
+            {
+                AppLog.Error($"Clock check for note {win.Note.Id}", ex);
+            }
+        }
+        var wait = next - DateTime.Now;
+        _clockTimer.Interval = wait < TimeSpan.FromSeconds(1) ? TimeSpan.FromSeconds(1) : wait;
+        _clockTimer.Start();
+    }
+
+    private void FireReminder(StickyNoteWindow win, DateTime now)
+    {
+        win.FireReminder(now); // shows the note even while all notes are hidden or its program is not in front
+        string title = string.IsNullOrWhiteSpace(win.Note.Title) ? win.Note.SnippetPreview : win.Note.Title;
+        title = string.Join(" ", title.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)).Trim();
+        if (title.Length > 40) title = title.Substring(0, 39) + "…";
+        _trayManager?.ShowBalloon("SmartNotes", LocalizationService.T("Balloon_Reminder", title), ToolTipIcon.Info);
+        LogStartup($"Reminder for note {win.Note.Id}.");
+    }
+
     private void ApplyAppLinks()
     {
         if (_settingsService.Settings.HideAllNotes) return;
         foreach (var win in _activeNoteWindows.Values.ToList())
         {
-            if (!win.Note.IsAppLinked) continue;
+            if (!win.Note.IsAppLinked || win.IsReminding) continue; // a ringing reminder stays until Done or Snooze
             if (AppLink.Matches(win.Note.LinkedApp, _foregroundExe)) win.ShowWithoutFocus();
             else if (win.IsVisible) win.Hide();
         }
@@ -876,6 +948,13 @@ public partial class App : Application
         }
         try { _showDesktopWatcher?.Dispose(); } catch { }
         try { _foregroundWatcher?.Dispose(); } catch { }
+        try
+        {
+            _clockTimer?.Stop();
+            Microsoft.Win32.SystemEvents.PowerModeChanged -= OnPowerModeChanged;
+            Microsoft.Win32.SystemEvents.TimeChanged -= OnSystemTimeChanged;
+        }
+        catch { }
         try { _trayManager?.Dispose(); } catch { }
         try { _hotKeyManager?.Dispose(); } catch { }
         try { _instanceEvent?.Dispose(); } catch { }

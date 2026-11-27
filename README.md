@@ -25,6 +25,8 @@ Notes, to-do lists and checklists right on your desktop. No account, no cloud, e
 
 - **Six themes**: Classic, Paper Sticky, Cyberpunk, Medieval, Elden Ring (nine Great Runes instead of colours) and Astral (a constellation on every note), each with its own fonts, icons and menus.
 - **Three modes**: text, checklist (drag tasks to reorder, done tasks are struck through, "3/7" shows your progress) and copy snippets.
+- **Reminders**: *Remind Me* in the **···** menu (in an hour, this evening, tomorrow morning, or any day and time, once or repeating). The note then comes forward over your apps and glows until you tick it off or snooze it.
+- **Daily checklists**: *Repeat Daily* unticks the tasks every morning, and a flame counts the days in a row you got everything done.
 - **Notes for one program**: *Show Only With* in the **···** menu links a note to a program. It then floats over that program only while it's in front (key bindings over a game, snippets over your editor) and hides otherwise. `Win + Alt + A` still brings it forward.
 - **Magnetic docking**: notes snap together and move as a stack.
 - **Lock a note** so it can't be edited, moved or deleted by accident.

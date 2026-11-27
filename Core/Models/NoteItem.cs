@@ -43,6 +43,16 @@ public class NoteItem
     [System.Text.Json.Serialization.JsonIgnore]
     public bool IsAppLinked => !string.IsNullOrWhiteSpace(LinkedApp);
     public bool IsLocked { get; set; } = false;
+
+    /// <summary>"Remind me": the note comes forward and glows at this time (see NoteSchedule). Null = no reminder.</summary>
+    public NoteReminder? Reminder { get; set; }
+
+    /// <summary>"Repeat daily" checklist: every task is unticked when a new day starts (see NoteSchedule.ResetDaily).</summary>
+    public bool RepeatDaily { get; set; } = false;
+    /// <summary>The day the current ticks belong to.</summary>
+    public DateTime? DailyDay { get; set; }
+    /// <summary>Days in a row, before <see cref="DailyDay"/>, on which every task was done.</summary>
+    public int Streak { get; set; } = 0;
     public double Opacity { get; set; } = 1.0;
     public double FontSize { get; set; } = 16.0;
 
@@ -89,6 +99,9 @@ public class NoteItem
             PinMode = PinMode,
             LinkedApp = LinkedApp,
             LinkedAppName = LinkedAppName,
+            // a copy keeps "repeat daily" but not the reminder (it would ring twice)
+            RepeatDaily = RepeatDaily,
+            DailyDay = DailyDay,
             IsLocked = false,
             Opacity = Opacity,
             FontSize = FontSize,

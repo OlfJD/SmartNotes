@@ -207,6 +207,31 @@
 
             <!-- 3. NOTE CONTENT BODY -->
             <Grid Grid.Row="2" Margin="14,4,14,4">
+                <!-- Reminder banner: shown when a reminder fires, until Done or Snooze (glows in the note colour) -->
+                <Border x:Name="ReminderBanner" Panel.ZIndex="10" VerticalAlignment="Top" Padding="10,4,4,4"
+                        CornerRadius="{DynamicResource SkinInputRadius}" BorderThickness="2" Visibility="Collapsed"
+                        Background="{DynamicResource SkinInputBgBrush}" BorderBrush="{DynamicResource SkinAccentBrush}">
+                    <Border.Effect>
+                        <DropShadowEffect x:Name="ReminderGlow" ShadowDepth="0" BlurRadius="18" Opacity="0.9" Color="#F59E0B"/>
+                    </Border.Effect>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <controls:LucideIcon x:Name="IconReminderBanner" IconKey="bell" Size="15" StrokeThickness="2.4" Foreground="{DynamicResource SkinAccentBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock x:Name="TxtReminderBanner" Grid.Column="1" Text="Reminder" Foreground="{DynamicResource SkinItemTextBrush}" FontFamily="{DynamicResource SkinMetaFont}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        <Button x:Name="BtnReminderSnooze" Grid.Column="2" Style="{StaticResource IconButton}" Height="26" Padding="7,0" Margin="6,0,0,0" Click="BtnReminderSnooze_Click">
+                            <TextBlock x:Name="TxtReminderSnooze" Text="10 min" FontFamily="{DynamicResource SkinMetaFont}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource SkinMutedBrush}"/>
+                        </Button>
+                        <Button x:Name="BtnReminderDone" Grid.Column="3" Style="{StaticResource IconButton}" Width="28" Height="26" Padding="0" Margin="2,0,0,0" Click="BtnReminderDone_Click">
+                            <controls:LucideIcon IconKey="check" Size="15" StrokeThickness="2.8" Foreground="{DynamicResource SkinEmeraldBrush}"/>
+                        </Button>
+                    </Grid>
+                </Border>
+
                 <!-- MODE A: Multiline Plain/Markdown Text Editor -->
                 <Grid x:Name="TextModeContainer" Visibility="Visible">
                     <TextBox x:Name="TxtContent"
@@ -422,6 +447,18 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,18,0">
+                    <!-- Reminder set ("14:30", "Fri 09:00"); the tooltip says when and how often -->
+                    <StackPanel x:Name="ReminderBadge" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0" Visibility="Collapsed" Background="Transparent">
+                        <controls:LucideIcon x:Name="IconReminderBadge" IconKey="bell" Size="12" StrokeThickness="2.4" Foreground="{DynamicResource SkinMutedBrush}" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtReminderBadge" Text="" FontFamily="{DynamicResource SkinMetaFont}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource SkinMutedBrush}" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Repeat daily: the streak of days with every task done -->
+                    <StackPanel x:Name="StreakBadge" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0" Visibility="Collapsed" Background="Transparent">
+                        <controls:LucideIcon x:Name="IconStreak" IconKey="repeat" Size="12" StrokeThickness="2.4" Foreground="{DynamicResource SkinMutedBrush}" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TxtStreak" Text="" FontFamily="{DynamicResource SkinMetaFont}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource SkinMutedBrush}" VerticalAlignment="Center"/>
+                    </StackPanel>
+
                     <!-- Checklist progress ("3/7"), checklist mode only -->
                     <StackPanel x:Name="ChecklistProgress" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0" Visibility="Collapsed" Background="Transparent">
                         <controls:LucideIcon IconKey="check-check" Size="13" StrokeThickness="2.4" Foreground="{DynamicResource SkinMutedBrush}" Margin="0,0,4,0" VerticalAlignment="Center"/>

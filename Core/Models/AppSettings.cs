@@ -21,6 +21,10 @@ public class AppSettings
     /// <summary>Hotkeys last reported to the user as taken by another program ("Win+Alt+N, ..."), so it is said once.</summary>
     public string ReportedHotkeyConflicts { get; set; } = "";
     public bool HideAllNotes { get; set; } = false;
+    /// <summary>Hour at which a new day starts for "Repeat daily" checklists (4 = ticks made before 4 am count for the day before).</summary>
+    public int DayStartHour { get; set; } = 4;
+    /// <summary>Minutes a reminder is snoozed for.</summary>
+    public int SnoozeMinutes { get; set; } = 10;
     public bool EnableUnfocusedTransparency { get; set; } = false;
     public double UnfocusedOpacity { get; set; } = 0.55;
 

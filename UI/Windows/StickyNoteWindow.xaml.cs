@@ -159,7 +159,7 @@ public partial class StickyNoteWindow : Window
     private void OnWindowLoaded(object sender, RoutedEventArgs e)
     {
         WindowBlurHelper.ApplyModernWindowStyles(this);
-        _desktopWindowManager.SetAppLinked(_note.IsAppLinked, _note.PinMode);
+        _desktopWindowManager.SetFloating(IsFloating, _note.PinMode);
         ApplyProofingSettings();
         ApplyLocalizedStrings();
         LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
@@ -218,6 +218,7 @@ public partial class StickyNoteWindow : Window
         UpdateViewMode(_note.ViewMode);
         UpdateLockUI(_note.IsLocked);
         UpdateModifiedTime();
+        UpdateReminderBadge();
 
         if (TxtTitlePlaceholder != null) TxtTitlePlaceholder.Text = LocalizationService.T("Placeholder_Title");
         if (TxtContentPlaceholder != null) TxtContentPlaceholder.Text = LocalizationService.T("Placeholder_Content");
@@ -788,7 +789,7 @@ public partial class StickyNoteWindow : Window
     private void UpdatePinModeUI(NotePinMode mode)
     {
         _note.PinMode = mode;
-        _desktopWindowManager.SetAppLinked(_note.IsAppLinked, mode);
+        _desktopWindowManager.SetFloating(IsFloating, mode);
 
         if (TxtPinIndicator == null || IconPin == null || BtnPinMode == null) return;
         if (IconPinFooter != null) IconPinFooter.IconKey = mode == NotePinMode.Normal ? "pin-off" : "pin";
@@ -828,6 +829,180 @@ public partial class StickyNoteWindow : Window
             ToolTipService.SetShowOnDisabled(BtnPinMode, true);
             BtnPinMode.ToolTip = LocalizationService.T("Tooltip_Pin_Linked", LinkedAppDisplayName);
         }
+    }
+
+    /// <summary>On top of everything without taking focus: an app-linked note, or a note whose reminder is ringing.</summary>
+    private bool IsFloating => _note.IsAppLinked || IsReminding;
+
+    // ---------------------------------------------------------------- reminders
+
+    /// <summary>The reminder banner is up (until Done or Snooze): the note floats on top and stays on screen.</summary>
+    public bool IsReminding { get; private set; }
+
+    /// <summary>"Remind Me" in the ⋯ menu: quick times, Pick a Time…, and Remove when one is set.</summary>
+    private MenuItem BuildReminderMenu()
+    {
+        var now = DateTime.Now;
+        var sub = AppMenu.Sub(LocalizationService.T("Menu_RemindMe"), "bell");
+        if (_note.Reminder != null && NoteSchedule.NextDue(_note.Reminder) != null)
+        {
+            sub.Items.Add(AppMenu.Item(ReminderText.Describe(_note.Reminder, now), "alarm-clock", null, MenuTone.Muted, isEnabled: false));
+            sub.Items.Add(AppMenu.Separator());
+        }
+        var inOneHour = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0).AddHours(1);
+        sub.Items.Add(AppMenu.Item(LocalizationService.T("Menu_RemindInOneHour"), null, () => SetReminder(new NoteReminder { At = inOneHour })));
+        if (now.Hour < 17)
+        {
+            var evening = now.Date.AddHours(18);
+            sub.Items.Add(AppMenu.Item(LocalizationService.T("Menu_RemindThisEvening", ReminderText.Time(evening)), null, () => SetReminder(new NoteReminder { At = evening })));
+        }
+        var morning = now.Date.AddDays(1).AddHours(9);
+        sub.Items.Add(AppMenu.Item(LocalizationService.T("Menu_RemindTomorrowMorning", ReminderText.Time(morning)), null, () => SetReminder(new NoteReminder { At = morning })));
+        sub.Items.Add(AppMenu.Item(LocalizationService.T("Menu_RemindPickTime"), "alarm-clock", PickReminderTime));
+        if (_note.Reminder != null)
+        {
+            sub.Items.Add(AppMenu.Separator());
+            sub.Items.Add(AppMenu.Item(LocalizationService.T("Reminder_Remove"), "bell-off", () => SetReminder(null)));
+        }
+        return sub;
+    }
+
+    private void PickReminderTime()
+    {
+        var dialog = new ReminderDialog(_note.Reminder, DateTime.Now) { Owner = this };
+        dialog.ShowDialog();
+        if (dialog.Result == ReminderDialog.Outcome.Set) SetReminder(dialog.Reminder);
+        else if (dialog.Result == ReminderDialog.Outcome.Removed) SetReminder(null);
+    }
+
+    private void SetReminder(NoteReminder? reminder)
+    {
+        _note.Reminder = reminder;
+        UpdateReminderBadge();
+        RequestSave(isTyping: false);
+        if (reminder != null && NoteSchedule.NextDue(reminder) is { } due)
+        {
+            ShowStatus("bell", LocalizationService.T("Status_ReminderSet", ReminderText.When(due, DateTime.Now)), _inkEmerald);
+        }
+        App.Instance?.NotifyScheduleChanged();
+    }
+
+    /// <summary>The reminder is due: move it on (or use it up), bring the note forward over everything and let it glow.</summary>
+    public void FireReminder(DateTime now)
+    {
+        if (_note.Reminder == null) return;
+        _note.Reminder = NoteSchedule.AfterFiring(_note.Reminder, now);
+        IsReminding = true;
+        TxtReminderBanner.Text = LocalizationService.T("Reminder_Banner", ReminderText.Time(now));
+        TxtReminderSnooze.Text = LocalizationService.T("Reminder_SnoozeButton", SnoozeMinutes);
+        BtnReminderSnooze.ToolTip = LocalizationService.T("Tooltip_ReminderSnooze", SnoozeMinutes);
+        BtnReminderDone.ToolTip = LocalizationService.T("Tooltip_ReminderDone");
+        ReminderGlow.Color = _currentTheme.GlowBrush.Color;
+        ReminderBanner.Visibility = Visibility.Visible;
+        // a gentle pulse for about a minute, then a steady glow (no animation keeps running after that)
+        ReminderGlow.BeginAnimation(System.Windows.Media.Effects.DropShadowEffect.OpacityProperty, new DoubleAnimation(0.25, 1.0, TimeSpan.FromSeconds(0.9))
+        {
+            AutoReverse = true,
+            RepeatBehavior = new RepeatBehavior(32),
+            EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut },
+        });
+
+        _desktopWindowManager.SetFloating(true, _note.PinMode);
+        ShowWithoutFocus();
+        UpdateReminderBadge();
+        SaveNoteState(); // right away: at startup this runs before the window has loaded, where RequestSave does nothing
+    }
+
+    private int SnoozeMinutes => Math.Clamp(_settingsService.Settings.SnoozeMinutes, 1, 240);
+
+    private void BtnReminderSnooze_Click(object sender, RoutedEventArgs e)
+    {
+        var reminder = _note.Reminder ?? new NoteReminder();
+        reminder.SnoozeUntil = DateTime.Now.AddMinutes(SnoozeMinutes);
+        _note.Reminder = reminder;
+        EndReminding();
+        App.Instance?.NotifyScheduleChanged();
+    }
+
+    private void BtnReminderDone_Click(object sender, RoutedEventArgs e) => EndReminding();
+
+    private void EndReminding()
+    {
+        IsReminding = false;
+        ReminderGlow.BeginAnimation(System.Windows.Media.Effects.DropShadowEffect.OpacityProperty, null);
+        ReminderBanner.Visibility = Visibility.Collapsed;
+        _desktopWindowManager.SetFloating(IsFloating, _note.PinMode);
+        UpdateReminderBadge();
+        RequestSave(isTyping: false);
+    }
+
+    /// <summary>Bell and time in the footer while a reminder is set.</summary>
+    private void UpdateReminderBadge()
+    {
+        if (ReminderBadge == null) return;
+        if (NoteSchedule.NextDue(_note.Reminder) is { } due)
+        {
+            var now = DateTime.Now;
+            ReminderBadge.Visibility = Visibility.Visible;
+            TxtReminderBadge.Text = ReminderText.Short(due, now);
+            ReminderBadge.ToolTip = LocalizationService.T("Tooltip_ReminderBadge", ReminderText.Describe(_note.Reminder!, now));
+        }
+        else
+        {
+            ReminderBadge.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    // ---------------------------------------------------------------- daily checklists
+
+    /// <summary>"Repeat Daily" in the ⋯ menu of a checklist.</summary>
+    private void ToggleRepeatDaily()
+    {
+        _note.RepeatDaily = !_note.RepeatDaily;
+        if (_note.RepeatDaily)
+        {
+            _note.DailyDay = NoteSchedule.DayOf(DateTime.Now, _settingsService.Settings.DayStartHour);
+            _note.Streak = 0;
+            ShowStatus("repeat", LocalizationService.T("Status_RepeatDaily", DayStartText), _inkEmerald);
+        }
+        UpdateStreakBadge();
+        RequestSave(isTyping: false);
+    }
+
+    private string DayStartText => ReminderText.Time(DateTime.Today.AddHours(Math.Clamp(_settingsService.Settings.DayStartHour, 0, 23)));
+
+    /// <summary>A new day has started: untick every task of a "Repeat Daily" checklist and carry the streak on.</summary>
+    public void ApplyDailyReset(DateTime now)
+    {
+        if (!_note.RepeatDaily) return;
+        _note.Checklist = new List<TodoCheckItem>(_checklistItems); // the ticks as they are on screen
+        if (!NoteSchedule.ResetDaily(_note, now, _settingsService.Settings.DayStartHour)) return;
+        _checklistItems.Clear();
+        foreach (var item in _note.Checklist) _checklistItems.Add(item);
+        UpdateChecklistProgress();
+        SaveNoteState(); // a real edit: after the night's pause yesterday's ticks are kept as an earlier version
+    }
+
+    /// <summary>Repeat icon, or a flame with the streak once there is one.</summary>
+    private void UpdateStreakBadge()
+    {
+        if (StreakBadge == null) return;
+        bool show = _note.RepeatDaily && _note.ViewMode == NoteViewMode.Checklist;
+        StreakBadge.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+        if (!show) return;
+        bool allDone = _checklistItems.Count > 0 && _checklistItems.All(i => i.IsDone);
+        int streak = _note.Streak + (allDone ? 1 : 0);
+        IconStreak.IconKey = streak > 0 ? "flame" : "repeat";
+        IconStreak.Foreground = streak > 0 ? _inkAmber : _inkMuted;
+        TxtStreak.Text = streak > 0 ? streak.ToString() : "";
+        StreakBadge.ToolTip = LocalizationService.T("Tooltip_Streak", DayStartText, streak);
+    }
+
+    /// <summary>Called by the app's clock: day names in the footer change at midnight.</summary>
+    public void RefreshTimeBadges()
+    {
+        UpdateReminderBadge();
+        UpdateStreakBadge();
     }
 
     private string LinkedAppDisplayName => string.IsNullOrWhiteSpace(_note.LinkedAppName)
@@ -1728,6 +1903,13 @@ public partial class StickyNoteWindow : Window
             }, isChecked: isDimEnabled));
         menu.Items.Add(opacityMenu);
         menu.Items.Add(BuildAppLinkMenu());
+        menu.Items.Add(BuildReminderMenu());
+        if (_note.ViewMode == NoteViewMode.Checklist)
+        {
+            var repeat = AppMenu.Item(LocalizationService.T("Menu_RepeatDaily"), "repeat", ToggleRepeatDaily, isChecked: _note.RepeatDaily);
+            repeat.ToolTip = LocalizationService.T("Tooltip_RepeatDaily", DayStartText);
+            menu.Items.Add(repeat);
+        }
 
         // Text proofing
         var proofingMenu = AppMenu.Sub(LocalizationService.T("Menu_Proofing"), "spell-check");
@@ -2269,6 +2451,7 @@ public partial class StickyNoteWindow : Window
         ChecklistProgress.Visibility = _note.ViewMode == NoteViewMode.Checklist && total > 0 ? Visibility.Visible : Visibility.Collapsed;
         TxtChecklistProgress.Text = $"{done}/{total}";
         ChecklistProgress.ToolTip = LocalizationService.T("Checklist_ProgressTooltip", done, total);
+        UpdateStreakBadge();
     }
 
     private void TaskText_Changed(object sender, TextChangedEventArgs e)
