@@ -24,6 +24,21 @@ public static class EldenRingArt
     private const double Notch = 9;         // radius of the concave corners
     private const double HeaderBottom = 55; // content top inset (11) + header row (44)
 
+    /// <summary>Where the Great Rune is drawn (centre and box size), or null when the note is too small for it.
+    /// Also used by the living theme, whose glow pulses over the rune.</summary>
+    public static (WpfPoint Centre, double Box)? RunePlacement(double w, double h, double bottomReserve)
+    {
+        if (w <= 200) return null;
+        double R = Math.Clamp(Math.Min(w, h) * 0.12, 30, 46);
+        double box = R / 0.29;
+        double floor = h - Math.Max(bottomReserve, M + 8);
+        double room = floor - HeaderBottom;
+        box = Math.Min(box, room / 0.9);
+        if (box < 90) return null;
+        R = box * 0.29;
+        return (new WpfPoint(w - M - 1.6 * R, floor - 0.42 * box), box);
+    }
+
     private static readonly WpfColor Soot = WpfColor.FromRgb(0x0A, 0x09, 0x05);
     private static readonly WpfColor Mist = WpfColor.FromRgb(0xC9, 0xC2, 0xA4);
 
@@ -86,20 +101,11 @@ public static class EldenRingArt
 
             // The note's Great Rune, glowing in the bottom right above the footer / input row (see RuneArt).
             // Its visible content spans about 0.42 of the box below the box centre and 0.46 above.
-            if (w > 200)
+            if (RunePlacement(w, h, bottomReserve) is { } placement)
             {
-                double R = Math.Clamp(Math.Min(w, h) * 0.12, 30, 46);
-                double box = R / 0.29;
-                double floor = h - Math.Max(bottomReserve, M + 8);
-                double room = floor - HeaderBottom;
-                box = Math.Min(box, room / 0.9);
-                if (box >= 90)
-                {
-                    R = box * 0.29;
-                    var c = new WpfPoint(w - M - 1.6 * R, floor - 0.42 * box);
-                    var rune = RuneArt.Render(runeKey, (int)Math.Round(box * Math.Max(1, pixelsPerDip)));
-                    dc.DrawImage(rune, new Rect(c.X - box / 2, c.Y - box / 2, box, box));
-                }
+                var (c, box) = placement;
+                var rune = RuneArt.Render(runeKey, (int)Math.Round(box * Math.Max(1, pixelsPerDip)));
+                dc.DrawImage(rune, new Rect(c.X - box / 2, c.Y - box / 2, box, box));
             }
 
             DrawScratches(dc, w, h, seed);

@@ -79,6 +79,8 @@
     <Grid x:Name="RootGrid">
         <!-- Custom-art skins paint their whole (non-rectangular) body here; see UI/Skins/*Art.cs -->
         <skins:DrawingHost x:Name="SkinArtHost" IsHitTestVisible="False"/>
+        <!-- Living themes, behind the content: shooting stars, the breathing glow of a rune or creature -->
+        <Canvas x:Name="LivingLayer" IsHitTestVisible="False" ClipToBounds="True"/>
 
         <!-- True Single-Border Rounded Card (Thick 5px vector border, zero black outer pixels, zero inner seams) -->
         <Border x:Name="NoteCardBorder" CornerRadius="16" Background="#1C1710" BorderBrush="#5A3E16" BorderThickness="5">
@@ -712,6 +714,9 @@
 
         </Grid>
     </Border>
+
+    <!-- Living themes, in front of the content: glitch slices, the wax seal (StickyNoteWindow.Living.cs) -->
+    <Canvas x:Name="LivingOverlay" IsHitTestVisible="False" ClipToBounds="True"/>
 
     <!-- 8-Way Multi-Directional Window Resize Hit-Zones (Top, Bottom, Left, Right, 4 Corners) -->
     <Grid x:Name="ResizeOverlayGrid" IsHitTestVisible="True">

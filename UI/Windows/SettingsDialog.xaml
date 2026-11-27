@@ -373,6 +373,21 @@
                                 </Grid>
                             </Border>
 
+                            <!-- Living Themes Card -->
+                            <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusPanel}" Padding="16,14" Margin="0,0,0,10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+                                        <TextBlock x:Name="TxtLivingThemesTitle" Text="Living Themes" FontSize="{StaticResource FontSizeLabel}" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                        <TextBlock x:Name="TxtLivingThemesDesc" Text="Small animations while a note is focused or under the mouse." FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                    </StackPanel>
+                                    <CheckBox x:Name="ChkLivingThemes" Grid.Column="1" Style="{StaticResource ModernSwitch}" VerticalAlignment="Center"/>
+                                </Grid>
+                            </Border>
+
                             <!-- Live Note Preview Card -->
                             <Border Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="{StaticResource RadiusPanel}" Padding="16,14">
                                 <StackPanel>

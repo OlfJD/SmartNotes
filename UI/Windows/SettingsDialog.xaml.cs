@@ -57,6 +57,7 @@ public partial class SettingsDialog : Window
         var s = _settingsService.Settings;
         ChkStartup.IsChecked = s.LaunchOnStartup;
         ChkDesktopStuck.IsChecked = s.DefaultPinMode == NotePinMode.DesktopStuck;
+        ChkLivingThemes.IsChecked = s.LivingThemes;
         ChkUnfocusedTransparency.IsChecked = s.EnableUnfocusedTransparency;
         ChkHotkeys.IsChecked = s.EnableGlobalHotkeys;
         ChkAutoTrimMemory.IsChecked = s.AutoOptimizeMemory;
@@ -147,6 +148,8 @@ public partial class SettingsDialog : Window
         TxtStartupDesc.Text = LocalizationService.T("General_StartupDesc");
         TxtDesktopStuckTitle.Text = LocalizationService.T("General_DesktopStuckTitle");
         TxtDesktopStuckDesc.Text = LocalizationService.T("General_DesktopStuckDesc");
+        TxtLivingThemesTitle.Text = LocalizationService.T("Appearance_LivingTitle");
+        TxtLivingThemesDesc.Text = LocalizationService.T("Appearance_LivingDesc");
         TxtTransparencyTitle.Text = LocalizationService.T("General_TransparencyTitle");
         TxtTransparencyDesc.Text = LocalizationService.T("General_TransparencyDesc");
         TxtUnfocusedOpacityTitle.Text = LocalizationService.T("General_UnfocusedOpacityTitle");
@@ -596,6 +599,7 @@ public partial class SettingsDialog : Window
         s.LaunchOnStartup = ChkStartup.IsChecked == true;
         // On: new notes start stuck to the desktop (behind your apps). Off: they start on top of other windows.
         s.DefaultPinMode = ChkDesktopStuck.IsChecked == true ? NotePinMode.DesktopStuck : NotePinMode.AlwaysOnTop;
+        s.LivingThemes = ChkLivingThemes.IsChecked == true;
         s.EnableUnfocusedTransparency = ChkUnfocusedTransparency.IsChecked == true;
         s.UnfocusedOpacity = Math.Clamp(SliderUnfocusedOpacity.Value / 100.0, 0.15, 0.90);
         s.EnableGlobalHotkeys = ChkHotkeys.IsChecked == true;

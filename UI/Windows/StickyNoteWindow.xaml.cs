@@ -120,13 +120,16 @@ public partial class StickyNoteWindow : Window
         {
             ApplyFocusOpacity(true);
             UpdateBlockCursor();
+            UpdateLiving();
         };
         Deactivated += (s, e) =>
         {
             _desktopWindowManager.SetInteracting(false);
             ApplyFocusOpacity(false);
             UpdateBlockCursor();
+            UpdateLiving();
         };
+        IsVisibleChanged += (s, e) => UpdateLiving();
         PreviewMouseDown += (s, e) =>
         {
             _desktopWindowManager.BringToFront();
@@ -542,12 +545,14 @@ public partial class StickyNoteWindow : Window
         if (!_currentSkin.CustomArt || w < 120 || h < 120)
         {
             SkinArtHost.Drawing = null;
+            UpdateLiving();
             return;
         }
 
         string tag = _note.Id.ToString("N").Substring(0, 4).ToUpperInvariant();
         SkinArtHost.Drawing = SkinArt.Build(_currentSkin, w, h, _currentTheme, tag, VisualTreeHelper.GetDpi(this).PixelsPerDip,
             RuneBottomReserve(h), _note, title: TxtTitle.Text ?? "", titleBand: TitleBand()); // the title as typed (Ink & Washi seal)
+        UpdateLiving(); // the rune / creature glow follows the new size
     }
 
     /// <summary>Where the title row is in the window (Blueprint frames it as a title block, Ink &amp; Washi stamps its seal there).</summary>
@@ -1150,6 +1155,7 @@ public partial class StickyNoteWindow : Window
     private void UpdateLockUI(bool isLocked)
     {
         _note.IsLocked = isLocked;
+        UpdateWaxSeal(animate: _isLoaded); // living Medieval notes: the seal is pressed on (or lifted off) when locking
         if (TxtTitle != null) TxtTitle.IsReadOnly = isLocked;
         if (TxtContent != null) TxtContent.IsReadOnly = isLocked;
         // checklist tasks and copy rows: text read-only, delete buttons off (ticking tasks off stays possible)
@@ -1350,7 +1356,8 @@ public partial class StickyNoteWindow : Window
         // _note.FontSize is the unscaled size; it is changed only in SetFontSize().
         // Clicking into a note and out again, or moving it, used to make it "modified just now"
         string content = ContentFingerprint();
-        if (content != _savedContent)
+        bool edited = content != _savedContent;
+        if (edited)
         {
             // The first edit after a pause: keep the note as it was before this round of edits ("Earlier Versions")
             if (_lastSavedVersion != null && DateTime.Now - _note.ModifiedAt >= NoteHistoryService.EditPause)
@@ -1366,6 +1373,7 @@ public partial class StickyNoteWindow : Window
         {
             _saveRetryTimer?.Stop();
             ShowSavedIndicator();
+            if (edited && _isLoaded) GlitchIfLiving(); // living Cyberpunk: a glitch when an edit is saved
             return true;
         }
         ShowSaveFailedIndicator();
@@ -2238,6 +2246,7 @@ public partial class StickyNoteWindow : Window
 
     private void Window_MouseEnter(object sender, MouseEventArgs e)
     {
+        Window_MouseEnter_Living();
         if (!IsActive && _settingsService.Settings.EnableUnfocusedTransparency)
         {
             double hoverOpacity = Math.Clamp(_userConfiguredOpacity * 0.85, 0.4, 1.0);
@@ -2253,6 +2262,7 @@ public partial class StickyNoteWindow : Window
 
     private void Window_MouseLeave(object sender, MouseEventArgs e)
     {
+        Window_MouseLeave_Living();
         if (!IsActive && _settingsService.Settings.EnableUnfocusedTransparency)
         {
             ApplyFocusOpacity(false);

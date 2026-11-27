@@ -46,6 +46,7 @@ public static class NoteRenderer
         {
             "features" => FeatureShots(),
             "menu" => MenuShots(),
+            "living" => LivingShots(settings),
             "creatures" => DeepSeaArt.CreatureKeys.Select((key, i) =>
             {
                 var note = Sample(NoteSkin.DeepSeaKey, new[] { "Cyan", "Violet", "Amber" }[i], key, "A short note\nwith two lines");
@@ -177,6 +178,35 @@ public static class NoteRenderer
         }
         return list;
     }
+
+    /// <summary>Living themes caught mid-animation (the hover / focus state is simulated).</summary>
+    private static List<(string, NoteItem, Func<StickyNoteWindow, BitmapSource?>?)> LivingShots(SettingsService settings)
+    {
+        settings.Settings.LivingThemes = true;
+        BitmapSource? After(StickyNoteWindow w, string method, int ms)
+        {
+            // animations only advance while WPF renders the window: put it on screen, all but invisible
+            w.Opacity = 0.01;
+            w.MoveToScreenPosition(40, 40);
+            Pump(150);
+            Call(w, "Window_MouseEnter_Living");
+            if (method.Length > 0) Call(w, method);
+            Pump(ms);
+            return Render((FrameworkElement)w.Content);
+        }
+        var sealNote = Sample("Medieval", "Rose", "Last Will", "Sealed and locked.");
+        sealNote.IsLocked = true;
+        return new()
+        {
+            ("living-medieval-seal", sealNote, w => After(w, "", 900)),
+            ("living-astral-star", Sample("Astral", "Violet", "Night watch", "Look up."), w => After(w, "LaunchShootingStar", 260)),
+            ("living-elden-rune", Sample("EldenRing", "Gold", "Grace", "The rune breathes."), w => After(w, "", 2000)),
+            ("living-cyberpunk-glitch", Sample("Cyberpunk", "Rose", "Saved!", "glitch on save"), w => After(w, "GlitchIfLiving", 50)),
+        };
+    }
+
+    private static void Call(StickyNoteWindow w, string method) =>
+        typeof(StickyNoteWindow).GetMethod(method, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.Invoke(w, null);
 
     /// <summary>Opens the note's ⋯ menu and draws it next to the note.</summary>
     private static BitmapSource? OpenMoreMenu(StickyNoteWindow win)

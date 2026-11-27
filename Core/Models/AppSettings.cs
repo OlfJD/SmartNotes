@@ -27,6 +27,8 @@ public class AppSettings
     public int SnoozeMinutes { get; set; } = 10;
     public bool EnableUnfocusedTransparency { get; set; } = false;
     public double UnfocusedOpacity { get; set; } = 0.55;
+    /// <summary>Living themes: small animations (shooting star, glowing rune, glitch, wax seal) while a note is focused or hovered.</summary>
+    public bool LivingThemes { get; set; } = false;
 
     // Version 2.1: Multi-Language Localization & Text Proofing
     public string AppLanguage { get; set; } = "en";

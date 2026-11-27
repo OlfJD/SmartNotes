@@ -52,6 +52,25 @@ public static class DeepSeaArt
         return CreatureKeys[(int)(Hash(6, Seed(tag)) * CreatureKeys.Count) % CreatureKeys.Count];
     }
 
+    /// <summary>The creature's box (top left, size), or null when the note is too small for it.</summary>
+    public static (WpfPoint Origin, double Box)? CreaturePlacement(double w, double h, double bottomReserve)
+    {
+        if (w <= 200) return null;
+        double floor = h - Math.Max(bottomReserve, M + 8);
+        double box = Math.Min(Math.Min(w, h) * 0.46, 150);
+        box = Math.Min(box, (floor - HeaderBottom) * 0.85);
+        if (box < 70) return null;
+        return (new WpfPoint(w - M - 10 - box, floor - 6 - box), box);
+    }
+
+    /// <summary>The brightest point of a creature (bell, lure, shell centre): where the living theme's glow breathes.</summary>
+    public static WpfPoint GlowPoint(string creature, WpfPoint origin, double box) => creature switch
+    {
+        "Anglerfish" => new WpfPoint(origin.X + box * 0.14, origin.Y + box * 0.21),
+        "Nautilus" => new WpfPoint(origin.X + box * 0.55, origin.Y + box * 0.52),
+        _ => new WpfPoint(origin.X + box * 0.55, origin.Y + box * 0.2),
+    };
+
     public static Drawing Build(double w, double h, NoteColorTheme theme, string tag, double bottomReserve, string? creature)
     {
         WpfColor glow = theme.GlowBrush.Color;
@@ -127,16 +146,10 @@ public static class DeepSeaArt
             }
 
             // The creature, lower right, clear of the footer / input row
-            if (w > 200)
+            if (CreaturePlacement(w, h, bottomReserve) is { } placement)
             {
-                double floor = h - Math.Max(bottomReserve, M + 8);
-                double box = Math.Min(Math.Min(w, h) * 0.46, 150);
-                box = Math.Min(box, (floor - HeaderBottom) * 0.85);
-                if (box >= 70)
-                {
-                    var origin = new WpfPoint(w - M - 10 - box, floor - 6 - box);
-                    DrawCreature(dc, Resolve(creature, tag), origin, box, glow, bg, seed);
-                }
+                var (origin, box) = placement;
+                DrawCreature(dc, Resolve(creature, tag), origin, box, glow, bg, seed);
             }
 
             // Darkness closing in at the edges
