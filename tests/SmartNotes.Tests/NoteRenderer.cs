@@ -43,6 +43,7 @@ public static class NoteRenderer
         if (set == "settings") return RenderSettingsPreviews(outDir, storage, settings);
         if (set == "settingspages") return RenderSettingsPages(outDir, storage, settings);
         if (set == "dialogs") return RenderDialogs(outDir);
+        if (set == "readme") return RenderReadme(outDir, storage, settings);
 
         var shots = set switch
         {
@@ -192,6 +193,119 @@ public static class NoteRenderer
         Save(Sheet(tiles), Path.Combine(outDir, "sheet-settingspages.png"));
         Console.WriteLine($"Rendered {tiles.Count} picture(s) to {outDir}");
         return 0;
+    }
+
+    /// <summary>
+    /// The README pictures: every theme with its own content (themes.png, the teal backdrop of the first README
+    /// picture, rows of 3 - 4 - 3) and the Deep Sea creatures as a strip like constellations.png (sea-creatures.png).
+    /// Copy both into docs/images.
+    /// </summary>
+    private static int RenderReadme(string outDir, NoteStorageService storage, SettingsService settings)
+    {
+        var shots = new List<BitmapSource>();
+        foreach (var note in ReadmeNotes())
+        {
+            storage.AddNote(note);
+            var win = new StickyNoteWindow(note, storage, settings, _ => { }, _ => { }) { ShowActivated = false };
+            win.Show();
+            win.MoveToScreenPosition(-30000, -30000);
+            Pump(400);
+            try { shots.Add(Render((FrameworkElement)win.Content)); }
+            finally { win.Close(); }
+        }
+
+        int[] rows = { 3, 4, 3 };
+        const double gap = 30, pad = 44;
+        double cellW = shots.Max(s => s.Width), cellH = shots.Max(s => s.Height);
+        double width = pad * 2 + 4 * cellW + 3 * gap, height = pad * 2 + rows.Length * cellH + (rows.Length - 1) * gap;
+        var visual = new DrawingVisual();
+        RenderOptions.SetBitmapScalingMode(visual, BitmapScalingMode.HighQuality);
+        using (var dc = visual.RenderOpen())
+        {
+            dc.DrawRectangle(new LinearGradientBrush(Color.FromRgb(0x24, 0x4A, 0x52), Color.FromRgb(0x0B, 0x17, 0x1E), new Point(0, 0), new Point(1, 1)),
+                null, new Rect(0, 0, width, height));
+            int i = 0;
+            for (int r = 0; r < rows.Length; r++)
+            {
+                double x0 = (width - (rows[r] * cellW + (rows[r] - 1) * gap)) / 2, y = pad + r * (cellH + gap);
+                for (int c = 0; c < rows[r]; c++, i++)
+                {
+                    var s = shots[i];
+                    dc.DrawImage(s, new Rect(x0 + c * (cellW + gap) + (cellW - s.Width) / 2, y + (cellH - s.Height) / 2, s.Width, s.Height));
+                }
+            }
+        }
+        Save(ToBitmap(visual, width, height, 1.25), Path.Combine(outDir, "themes.png"));
+
+        // the creatures: the theme's art alone, the name below in the creature's light
+        var sea = NoteSkin.Get(NoteSkin.DeepSeaKey);
+        string[] colors = { "Cyan", "Violet", "Amber" };
+        const double tile = 240, labelH = 44, cpad = 28;
+        double sw = cpad + DeepSeaArt.CreatureKeys.Count * (tile + cpad), sh = cpad + tile + labelH;
+        var strip = new DrawingVisual();
+        using (var dc = strip.RenderOpen())
+        {
+            dc.DrawRectangle(new SolidColorBrush(Color.FromRgb(0x0A, 0x13, 0x18)), null, new Rect(0, 0, sw, sh));
+            for (int i = 0; i < DeepSeaArt.CreatureKeys.Count; i++)
+            {
+                string key = DeepSeaArt.CreatureKeys[i];
+                var note = new NoteItem { SkinKey = NoteSkin.DeepSeaKey, ColorKey = colors[i] };
+                note.SetEmblem(NoteSkin.DeepSeaKey, key);
+                var theme = sea.Tint(NoteColorTheme.Get(colors[i]));
+                double x = cpad + i * (tile + cpad);
+                if (SkinArt.Build(sea, tile, tile, theme, "SEA" + i, 1.25, 0, note, "") is { } art)
+                {
+                    dc.PushTransform(new TranslateTransform(x, cpad));
+                    dc.DrawDrawing(art);
+                    dc.Pop();
+                }
+                var color = (Color)System.Windows.Media.ColorConverter.ConvertFromString(theme.AccentHex);
+                var label = new FormattedText(key, CultureInfo.InvariantCulture, FlowDirection.LeftToRight,
+                    new Typeface(new System.Windows.Media.FontFamily("Segoe UI"),FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal), 15, new SolidColorBrush(color), 1.25);
+                dc.DrawText(label, new Point(x + (tile - label.Width) / 2, cpad + tile + 14));
+            }
+        }
+        Save(ToBitmap(strip, sw, sh, 1.25), Path.Combine(outDir, "sea-creatures.png"));
+        Console.WriteLine($"Rendered themes.png and sea-creatures.png to {outDir}");
+        return 0;
+    }
+
+    private static BitmapSource ToBitmap(DrawingVisual visual, double width, double height, double scale)
+    {
+        var bmp = new RenderTargetBitmap((int)Math.Ceiling(width * scale), (int)Math.Ceiling(height * scale), 96 * scale, 96 * scale, PixelFormats.Pbgra32);
+        bmp.Render(visual);
+        bmp.Freeze();
+        return bmp;
+    }
+
+    /// <summary>One note per theme, each with something of its own (like the first README picture).</summary>
+    private static List<NoteItem> ReadmeNotes()
+    {
+        NoteItem N(string skin, string color, string title, string text = "", NoteViewMode mode = NoteViewMode.Text)
+        {
+            var n = Sample(skin, color, title, text, mode);
+            n.Height = 340; // 340 wide, like the first README picture
+            n.ModifiedAt = DateTime.Now; // "Just now"
+            return n;
+        }
+
+        var classic = N("Classic", "Cyan", "Weekly plan", mode: NoteViewMode.Checklist);
+        classic.Checklist = Tasks(("Ship v2.7", true), ("Answer the issues", false), ("Groceries", false), ("Call the bank", false));
+        var paper = N("Paper", "Amber", "Call Mom", "Sunday after lunch.\nAsk about the garden\nand the new kitten.");
+        var cyber = N("Cyberpunk", "Gold", "Snippets", mode: NoteViewMode.CopyCompartments);
+        cyber.CopyList = new() { new() { Text = "git pull --rebase" }, new() { Text = "dotnet run" }, new() { Text = "ssh dev@box" } };
+        var medieval = N("Medieval", "Amber", "Quest log", "Find the old map in the attic.\nReturn the borrowed sword\nbefore the full moon.");
+        var elden = N("EldenRing", "Amber", "Lands Between", mode: NoteViewMode.Checklist);
+        elden.Checklist = Tasks(("Rest at the site of grace", true), ("Three smithing stones", false), ("Ride north", false));
+        var astral = N("Astral", "Violet", "Night sky", "Clear skies after ten.\nOrion rises in the east.");
+        astral.SetEmblem(NoteSkin.AstralKey, "Orion");
+        var terminal = N("Terminal", "Emerald", "todo.txt", mode: NoteViewMode.Checklist);
+        terminal.Checklist = Tasks(("back up the server", true), ("update drivers", false), ("reboot", false));
+        var blueprint = N("Blueprint", "Cyan", "Shed plans", "Walls 2.4 x 1.8 m\nDoor on the east side\n12 boards, 2 hinges");
+        var washi = N("InkWashi", "Rose", "Garden", "Plant the maple in spring.\nRake the gravel.\nTea with Aiko on Sunday.");
+        var deep = N("DeepSea", "Cyan", "Dive log", "Saturday 9:00\nCheck the tanks\nNight dive at the reef");
+        deep.SetEmblem(NoteSkin.DeepSeaKey, "Jellyfish");
+        return new() { classic, paper, cyber, medieval, elden, astral, terminal, blueprint, washi, deep };
     }
 
     // ---------------------------------------------------------------- what to draw

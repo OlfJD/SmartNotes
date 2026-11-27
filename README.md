@@ -11,7 +11,7 @@ Notes, to-do lists and checklists right on your desktop. No account, no cloud, e
 
 <br>
 
-<img src="docs/images/themes.png" width="760" alt="SmartNotes in its six themes">
+<img src="docs/images/themes.png" width="800" alt="SmartNotes in its ten themes: Classic, Paper Sticky, Cyberpunk, Medieval, Elden Ring, Astral, Terminal, Blueprint, Ink & Washi and Deep Sea">
 
 </div>
 
@@ -38,7 +38,7 @@ Notes, to-do lists and checklists right on your desktop. No account, no cloud, e
 - **Your notes on several PCs**: pick a folder you already sync (OneDrive, Dropbox, a NAS) under Settings > Sync Folder. Each PC keeps its notes and writes its own file there; edits, new notes and deletions come over within seconds. No account.
 - **Quiet updates** in the background, **English and German**, and it **starts with Windows** (turn that off in the tray menu or Task Manager).
 
-## Runes and constellations
+## Runes, constellations and sea creatures
 
 In the Elden Ring theme the colour picker offers nine Great Runes instead of colours:
 
@@ -47,6 +47,10 @@ In the Elden Ring theme the colour picker offers nine Great Runes instead of col
 In the Astral theme every note gets its own constellation, picked automatically or chosen by you:
 
 ![The five constellations](docs/images/constellations.png)
+
+In the Deep Sea theme every note gets a glowing creature that lights up in your note colour:
+
+![The three sea creatures](docs/images/sea-creatures.png)
 
 <details>
 <summary>Themed menus</summary>
