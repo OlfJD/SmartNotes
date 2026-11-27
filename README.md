@@ -23,7 +23,7 @@ Notes, to-do lists and checklists right on your desktop. No account, no cloud, e
 
 ## Features
 
-- **Six themes**: Classic, Paper Sticky, Cyberpunk, Medieval, Elden Ring (nine Great Runes instead of colours) and Astral (a constellation on every note), each with its own fonts, icons and menus.
+- **Ten themes**: Classic, Paper Sticky, Cyberpunk, Medieval, Elden Ring (nine Great Runes instead of colours), Astral (a constellation on every note), Terminal (phosphor in your note colour, `[x]` ticks, a blinking cursor), Blueprint (the title sits in a drawing title block), Ink & Washi (rice paper and a red name seal with your title's first letter) and Deep Sea (a glowing jellyfish, anglerfish or nautilus on every note), each with its own fonts and menus.
 - **Three modes**: text, checklist (drag tasks to reorder, done tasks are struck through, "3/7" shows your progress) and copy snippets.
 - **Reminders**: *Remind Me* in the **···** menu (in an hour, this evening, tomorrow morning, or any day and time, once or repeating). The note then comes forward over your apps and glows until you tick it off or snooze it.
 - **Daily checklists**: *Repeat Daily* unticks the tasks every morning, and a flame counts the days in a row you got everything done.

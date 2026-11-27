@@ -47,6 +47,25 @@ public class NoteSkin
     public const string MedievalKey = "Medieval";
     public const string AstralKey = "Astral";
     public const string PaperKey = "Paper";
+    public const string TerminalKey = "Terminal";
+    public const string BlueprintKey = "Blueprint";
+    public const string InkWashiKey = "InkWashi";
+    public const string DeepSeaKey = "DeepSea";
+
+    /// <summary>Checklist ticks drawn as "[ ]" / "[x]" text instead of boxes (Terminal).</summary>
+    public bool TextCheckboxes { get; init; } = false;
+
+    /// <summary>A block cursor in the footer that blinks while the note has focus (Terminal).</summary>
+    public bool BlockCursor { get; init; } = false;
+
+    /// <summary>Icon and helper-text ink follows the note colour instead of the fixed *Hex values (Terminal phosphor).</summary>
+    public bool InkFromTheme { get; init; } = false;
+
+    /// <summary>The painter shows the note's title (the Ink &amp; Washi seal carries its first letter): repaint when it changes.</summary>
+    public bool ArtShowsTitle { get; init; } = false;
+
+    /// <summary>Room kept free at the right end of the title row for something the painter puts there (Blueprint drawing number, Ink &amp; Washi seal).</summary>
+    public double TitleReserveRight { get; init; } = 0;
 
     public const string DefaultFontStack = "Segoe UI, Segoe UI Variable, sans-serif";
     private static readonly Uri FontBaseUri = new("pack://application:,,,/");
@@ -475,6 +494,241 @@ public class NoteSkin
                     BorderHex = Mix("#A9B8E0", glow, 0.2),    // silver frame
                     TextPrimaryHex = "#E1E6F4",
                     TextMutedHex = "#8A93AD"
+                };
+            }
+        },
+
+        // An old CRT terminal: phosphor text in the note's colour on black glass, scanlines, a bezel,
+        // "[x]" ticks and a block cursor that blinks while the note has focus. Painted by TerminalArt.
+        new NoteSkin
+        {
+            Key = TerminalKey,
+            LocalizationKey = "Skin_Terminal",
+            CustomArt = true,
+            ArtKey = "Terminal",
+            VisualInset = new Thickness(4),
+            ContentInset = new Thickness(10, 7, 10, 9),
+            SideResizeInset = 3,
+            SideResizeWidth = 7,
+            CompartmentRadius = 0,
+            CompartmentBorder = 0,
+            ItemRadius = 0,
+            ItemBorder = 0,
+            InputRadius = 0,
+            InputBorder = 1,
+            TitleFonts = new[]
+            {
+                new SkinFontOption("VT323", "VT323", FontWeights.Normal, 1.55),
+                new SkinFontOption("ShareTechMono", "Share Tech Mono", FontWeights.Normal, 1.0),
+                new SkinFontOption("Silkscreen", "Silkscreen", FontWeights.Normal, 0.95)
+            },
+            TextFonts = new[]
+            {
+                new SkinFontOption("VT323", "VT323", FontWeights.Normal, 1.3),
+                new SkinFontOption("ShareTechMono", "Share Tech Mono", FontWeights.Normal, 1.0)
+            },
+            MetaFontStack = "./Assets/Fonts/#Share Tech Mono, Consolas, Courier New",
+            AccentTitle = true,
+            TintPanels = true,
+            TextCheckboxes = true,
+            BlockCursor = true,
+            InkFromTheme = true,
+            PanelBgHex = "#00000000",
+            Recolor = t =>
+            {
+                string p = Mix(t.GlowHex, "#FFFFFF", 0.12); // the phosphor
+                return new NoteColorTheme
+                {
+                    Key = t.Key,
+                    Name = t.Name,
+                    PrimaryHex = p,
+                    GlowHex = p,
+                    AccentHex = p,
+                    BgHex = Mix("#030503", p, 0.05),
+                    HeaderBgHex = Mix("#050805", p, 0.10),
+                    BorderHex = Mix(p, "#000000", 0.35),
+                    TextPrimaryHex = p,
+                    TextMutedHex = Mix(p, "#000000", 0.42)
+                };
+            }
+        },
+
+        // A blueprint: blue drawing paper with a fine and a coarse grid, a white double border with zone ticks,
+        // and the title row drawn as the drawing's title block, the note's id as the drawing number.
+        // Painted by BlueprintArt.
+        new NoteSkin
+        {
+            Key = BlueprintKey,
+            LocalizationKey = "Skin_Blueprint",
+            CustomArt = true,
+            ArtKey = "Blueprint",
+            TitleReserveRight = 92,
+            VisualInset = new Thickness(4),
+            ContentInset = new Thickness(15, 13, 15, 15),
+            SideResizeInset = 3,
+            SideResizeWidth = 8,
+            CompartmentRadius = 0,
+            CompartmentBorder = 1,
+            ItemRadius = 0,
+            ItemBorder = 1,
+            InputRadius = 0,
+            InputBorder = 1,
+            TitleFonts = new[]
+            {
+                new SkinFontOption("ChakraPetch", "Chakra Petch", FontWeights.Bold, 1.05),
+                new SkinFontOption("Oxanium", "Oxanium", FontWeights.Medium, 1.0),
+                new SkinFontOption("ShareTechMono", "Share Tech Mono", FontWeights.Normal, 1.0)
+            },
+            TextFonts = new[]
+            {
+                new SkinFontOption("ShareTechMono", "Share Tech Mono", FontWeights.Normal, 1.0),
+                new SkinFontOption("Tomorrow", "Tomorrow Medium", FontWeights.Normal, 1.0, "Tomorrow"),
+                new SkinFontOption("ChakraPetch", "Chakra Petch", FontWeights.Medium, 1.05)
+            },
+            MetaFontStack = "./Assets/Fonts/#Share Tech Mono, Consolas, Courier New",
+            TintPanels = true,
+            MutedHex = "#A9C7E8",
+            FaintHex = "#7FA3C9",
+            PlaceholderHex = "#86A9CF",
+            DangerHex = "#FF9A9A",
+            AmberHex = "#FFD27A",
+            EmeraldHex = "#A6F0CF",
+            CyanHex = "#BFE8FF",
+            PanelBgHex = "#12FFFFFF",
+            PanelBorderHex = "#55EAF4FF",
+            Recolor = t =>
+            {
+                string paper = Mix("#123B6B", t.PrimaryHex, 0.10); // violet notes print like a diazo blueline
+                string line = Mix("#E6F3FF", t.PrimaryHex, 0.22);
+                return new NoteColorTheme
+                {
+                    Key = t.Key,
+                    Name = t.Name,
+                    PrimaryHex = t.PrimaryHex,
+                    GlowHex = line,
+                    AccentHex = line,
+                    BgHex = paper,
+                    HeaderBgHex = Mix(paper, "#000000", 0.12),
+                    BorderHex = "#D7EAFF",
+                    TextPrimaryHex = "#F2F8FF",
+                    TextMutedHex = "#A9C7E8"
+                };
+            }
+        },
+
+        // Rice paper with fibres, a sumi brush stroke under the header and a faint ink-wash ring in the note's
+        // colour, and a red name seal (hanko) beside the title carrying its first letter. Painted by InkWashiArt.
+        new NoteSkin
+        {
+            Key = InkWashiKey,
+            LocalizationKey = "Skin_InkWashi",
+            CustomArt = true,
+            ArtKey = "InkWashi",
+            ArtShowsTitle = true,
+            TitleReserveRight = 36,
+            VisualInset = new Thickness(4, 3, 6, 8),
+            ContentInset = new Thickness(12, 7, 14, 14),
+            SideResizeInset = 2,
+            SideResizeWidth = 7,
+            CompartmentRadius = 2,
+            CompartmentBorder = 0,
+            ItemRadius = 2,
+            ItemBorder = 1,
+            InputRadius = 2,
+            InputBorder = 1,
+            TitleFonts = new[]
+            {
+                new SkinFontOption("EBGaramond", "EB Garamond", FontWeights.Medium, 1.18),
+                new SkinFontOption("IMFellEnglish", "IM FELL English", FontWeights.Normal, 1.18, "IM Fell English"),
+                new SkinFontOption("Macondo", "Macondo", FontWeights.Normal, 1.1)
+            },
+            TextFonts = new[]
+            {
+                new SkinFontOption("EBGaramond", "EB Garamond", FontWeights.Medium, 1.1),
+                new SkinFontOption("IMFellEnglish", "IM FELL English", FontWeights.Normal, 1.05, "IM Fell English")
+            },
+            MetaFontStack = "./Assets/Fonts/#EB Garamond, Palatino Linotype, Georgia, serif",
+            AccentTitle = true,
+            TintPanels = true,
+            MutedHex = "#5E574C",
+            FaintHex = "#8A8172",
+            PlaceholderHex = "#9A907F",
+            DangerHex = "#B3261E",
+            AmberHex = "#8A5A00",
+            EmeraldHex = "#2F6B4A",
+            CyanHex = "#245E73",
+            PanelBgHex = "#30FFFFFF",
+            PanelBorderHex = "#2E201C18",
+            Recolor = t =>
+            {
+                string paper = Mix("#F3EDE0", t.PrimaryHex, 0.06);
+                string accent = Mix(t.PrimaryHex, "#1F1B17", 0.55); // the note colour as a dark ink
+                return new NoteColorTheme
+                {
+                    Key = t.Key,
+                    Name = t.Name,
+                    PrimaryHex = t.PrimaryHex,
+                    GlowHex = accent,
+                    AccentHex = accent,
+                    BgHex = paper,
+                    HeaderBgHex = Mix(paper, "#1F1B17", 0.05),
+                    BorderHex = Mix(paper, "#1F1B17", 0.4),
+                    TextPrimaryHex = "#1F1B17",
+                    TextMutedHex = "#6B6358"
+                };
+            }
+        },
+
+        // The abyss: a dark teal gradient with faint light from above, drifting marine snow and bubbles, and one
+        // glowing creature per note in the lower right (jellyfish, anglerfish lure, nautilus). Painted by DeepSeaArt.
+        new NoteSkin
+        {
+            Key = DeepSeaKey,
+            LocalizationKey = "Skin_DeepSea",
+            CustomArt = true,
+            ArtKey = "DeepSea",
+            VisualInset = new Thickness(5),
+            ContentInset = new Thickness(13, 11, 13, 13),
+            SideResizeInset = 4,
+            SideResizeWidth = 7,
+            CompartmentRadius = 8,
+            CompartmentBorder = 0,
+            ItemRadius = 9,
+            ItemBorder = 1,
+            InputRadius = 9,
+            InputBorder = 1,
+            TitleFonts = new[]
+            {
+                new SkinFontOption("Audiowide", "Audiowide", FontWeights.Normal, 1.0),
+                new SkinFontOption("ZenDots", "Zen Dots", FontWeights.Normal, 0.95),
+                new SkinFontOption("Metamorphous", "Metamorphous", FontWeights.Normal, 1.05)
+            },
+            AccentTitle = true,
+            TintPanels = true,
+            MutedHex = "#86AEB8",
+            FaintHex = "#5D808A",
+            PlaceholderHex = "#6C919B",
+            DangerHex = "#FF7A8A",
+            AmberHex = "#FFD38A",
+            EmeraldHex = "#7CF2C8",
+            CyanHex = "#7FE7FF",
+            PanelBgHex = "#2E001A24",
+            PanelBorderHex = "#4D3FB6C4",
+            Recolor = t =>
+            {
+                string glow = Mix(t.PrimaryHex, "#B8FFF4", 0.35); // bioluminescence
+                return new NoteColorTheme
+                {
+                    Key = t.Key,
+                    Name = t.Name,
+                    PrimaryHex = glow,
+                    GlowHex = glow,
+                    AccentHex = glow,
+                    BgHex = Mix("#04161F", t.PrimaryHex, 0.04),
+                    HeaderBgHex = Mix("#08222E", t.PrimaryHex, 0.05),
+                    BorderHex = Mix("#3FA9B8", glow, 0.35),
+                    TextPrimaryHex = "#DDF4F5",
+                    TextMutedHex = "#86AEB8"
                 };
             }
         }

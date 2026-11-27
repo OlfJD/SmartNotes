@@ -116,11 +116,16 @@ public partial class StickyNoteWindow : Window
         Loaded += OnWindowLoaded;
         LocationChanged += OnWindowPositionChanged;
         SizeChanged += OnWindowSizeChanged;
-        Activated += (s, e) => ApplyFocusOpacity(true);
+        Activated += (s, e) =>
+        {
+            ApplyFocusOpacity(true);
+            UpdateBlockCursor();
+        };
         Deactivated += (s, e) =>
         {
             _desktopWindowManager.SetInteracting(false);
             ApplyFocusOpacity(false);
+            UpdateBlockCursor();
         };
         PreviewMouseDown += (s, e) =>
         {
@@ -189,7 +194,7 @@ public partial class StickyNoteWindow : Window
         if (TxtQuickNeonThemes != null) TxtQuickNeonThemes.Text = LocalizationService.T("ColorPopup_QuickThemes");
         if (TxtGreatRunesHeader != null) TxtGreatRunesHeader.Text = LocalizationService.T("ColorPopup_GreatRunes");
         if (RuneButtonsGrid != null) RuneButtonsGrid.Children.Clear(); // rebuilt with localized tooltips on next open
-        if (TxtConstellationHeader != null) TxtConstellationHeader.Text = LocalizationService.T("ColorPopup_Constellation");
+        if (TxtEmblemHeader != null && Emblems.For(_currentSkin) is { } emblemSet) TxtEmblemHeader.Text = LocalizationService.T(emblemSet.HeaderKey);
         if (TxtCustomPaletteCanvas != null) TxtCustomPaletteCanvas.Text = LocalizationService.T("ColorPopup_CustomCanvas");
         if (BtnApplyCustomColor != null) BtnApplyCustomColor.Content = LocalizationService.T("ColorPopup_Apply");
         if (TxtTransparencyDimming != null) TxtTransparencyDimming.Text = LocalizationService.T("ColorPopup_TransparencyDimming");
@@ -363,6 +368,7 @@ public partial class StickyNoteWindow : Window
             HeaderBorder.BorderThickness = new Thickness(0, 0, 0, skin.HeaderDivider);
         }
         HeaderBorder.Padding = new Thickness(0, skin.HeaderTopPad, 0, 0);
+        TitleRow.Padding = new Thickness(14, 8, 14 + skin.TitleReserveRight, 4);
         HeaderRow.Height = new GridLength(44 + skin.HeaderTopPad);
 
         // --- Typography & panel shape tokens ---
@@ -404,6 +410,23 @@ public partial class StickyNoteWindow : Window
         Resources["SkinEmeraldBrush"] = classic ? theme.GlowBrush : _inkEmerald;   // "add" buttons
         Resources["SkinCyanBrush"] = classic ? theme.GlowBrush : _inkCyan;         // copy-row buttons
         Resources["SkinCaretBrush"] = theme.GlowBrush;
+        if (skin.InkFromTheme)
+        {
+            // Terminal: every glyph on the glass is phosphor in the note's colour
+            _inkMuted = theme.TextMutedBrush;
+            _inkAmber = _inkEmerald = _inkCyan = theme.GlowBrush;
+            Resources["SkinMutedBrush"] = _inkMuted;
+            Resources["SkinFaintBrush"] = NoteColorTheme.CreateFrozenBrush(NoteSkin.Mix(theme.BgHex, theme.TextMutedHex, 0.75));
+            Resources["SkinPlaceholderBrush"] = NoteColorTheme.CreateFrozenBrush(NoteSkin.Mix(theme.BgHex, theme.TextMutedHex, 0.85));
+            Resources["SkinDangerBrush"] = theme.GlowBrush;
+            Resources["SkinAmberBrush"] = theme.GlowBrush;
+            Resources["SkinEmeraldBrush"] = theme.GlowBrush;
+            Resources["SkinCyanBrush"] = theme.GlowBrush;
+        }
+        // Checklist ticks: boxes, or "[ ]" / "[x]" as text (Terminal)
+        Resources["SkinBoxCheckVisibility"] = skin.TextCheckboxes ? Visibility.Collapsed : Visibility.Visible;
+        Resources["SkinTextCheckVisibility"] = skin.TextCheckboxes ? Visibility.Visible : Visibility.Collapsed;
+        UpdateBlockCursor();
 
         // --- Inner panels (header compartments, checklist / copy rows, inputs) ---
         if (skin.TintPanels)
@@ -505,6 +528,7 @@ public partial class StickyNoteWindow : Window
         if (TxtContentPlaceholder != null) TxtContentPlaceholder.FontSize = TxtContent.FontSize;
         TxtTitle.FontSize = (baseSize + 1) * _titleScale;
         if (TxtTitlePlaceholder != null) TxtTitlePlaceholder.FontSize = TxtTitle.FontSize;
+        RefreshSkinArtAfterLayout(); // the title row's height changed (Blueprint title block, Ink & Washi seal)
     }
 
     /// <summary>Repaints the body of custom-art skins for the current window size.</summary>
@@ -523,7 +547,22 @@ public partial class StickyNoteWindow : Window
 
         string tag = _note.Id.ToString("N").Substring(0, 4).ToUpperInvariant();
         SkinArtHost.Drawing = SkinArt.Build(_currentSkin, w, h, _currentTheme, tag, VisualTreeHelper.GetDpi(this).PixelsPerDip,
-            RuneBottomReserve(h), _note.RuneKey, _note.ConstellationKey);
+            RuneBottomReserve(h), _note, title: TxtTitle.Text ?? "", titleBand: TitleBand()); // the title as typed (Ink & Washi seal)
+    }
+
+    /// <summary>Where the title row is in the window (Blueprint frames it as a title block, Ink &amp; Washi stamps its seal there).</summary>
+    private Rect? TitleBand()
+    {
+        if (TitleRow == null || TitleRow.ActualHeight <= 0 || !TitleRow.IsVisible) return null;
+        try
+        {
+            var p = TitleRow.TranslatePoint(new Point(0, 0), RootGrid);
+            return new Rect(p.X, p.Y, TitleRow.ActualWidth, TitleRow.ActualHeight);
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
     }
 
     /// <summary>The note's visible body on screen, in physical pixels (shaped skins sit a few pixels inside the window).</summary>
@@ -669,27 +708,28 @@ public partial class StickyNoteWindow : Window
             else UpdateRuneButtons();
         }
 
-        bool astral = _currentSkin.ArtKey == "Astral";
-        if (ConstellationSection != null) ConstellationSection.Visibility = astral ? Visibility.Visible : Visibility.Collapsed;
-        if (astral) BuildConstellationButtons(); // tiles are tinted with the note colour, so rebuilt each time
+        var emblems = Emblems.For(_currentSkin);
+        if (EmblemSection != null) EmblemSection.Visibility = emblems != null ? Visibility.Visible : Visibility.Collapsed;
+        if (emblems != null) BuildEmblemButtons(emblems); // tiles are tinted with the note colour, so rebuilt each time
     }
 
-    /// <summary>Fills the "Constellation" picker (Astral skin): Automatic, then one tile per figure.</summary>
-    private void BuildConstellationButtons()
+    /// <summary>Fills the emblem picker (Astral: constellations, Deep Sea: creatures): Automatic, then one tile each.</summary>
+    private void BuildEmblemButtons(EmblemSet emblems)
     {
-        if (ConstellationButtonsGrid == null) return;
-        ConstellationButtonsGrid.Children.Clear();
+        if (EmblemButtonsGrid == null) return;
+        EmblemButtonsGrid.Children.Clear();
+        if (TxtEmblemHeader != null) TxtEmblemHeader.Text = LocalizationService.T(emblems.HeaderKey);
         double dpi = VisualTreeHelper.GetDpi(this).PixelsPerDip;
         string lang = LocalizationService.Instance.CurrentLanguage;
         var glow = _currentTheme.GlowBrush.Color;
         var keys = new List<string> { "" };
-        keys.AddRange(AstralArt.ConstellationKeys);
+        keys.AddRange(emblems.Keys);
         foreach (var key in keys)
         {
             // 6 columns in the 220 px popup leave ~36 px per button: 32 px tile + 2 px margin each side.
             var image = new System.Windows.Controls.Image
             {
-                Source = AstralArt.RenderTile(key, (int)Math.Round(29 * Math.Max(1, dpi)), glow),
+                Source = emblems.RenderTile(key, (int)Math.Round(29 * Math.Max(1, dpi)), glow),
                 Width = 29,
                 Height = 29,
                 Stretch = Stretch.Uniform
@@ -709,21 +749,21 @@ public partial class StickyNoteWindow : Window
                 Padding = new Thickness(0),
                 Margin = new Thickness(2),
                 Tag = key,
-                ToolTip = key.Length == 0 ? LocalizationService.T("Constellation_Auto") : AstralArt.DisplayName(key, lang),
+                ToolTip = key.Length == 0 ? LocalizationService.T("Constellation_Auto") : emblems.DisplayName(key, lang),
                 Content = tile
             };
-            button.Click += ConstellationButton_Click;
-            ConstellationButtonsGrid.Children.Add(button);
+            button.Click += EmblemButton_Click;
+            EmblemButtonsGrid.Children.Add(button);
         }
-        UpdateConstellationButtons();
+        UpdateEmblemButtons();
     }
 
-    private void UpdateConstellationButtons()
+    private void UpdateEmblemButtons()
     {
-        if (ConstellationButtonsGrid == null) return;
-        var idle = ConstellationButtonsGrid.TryFindResource("MenuTileIdleBrush") as Brush ?? NoteColorTheme.CreateFrozenBrush("#2A3752");
-        string current = _note.ConstellationKey ?? "";
-        foreach (var child in ConstellationButtonsGrid.Children)
+        if (EmblemButtonsGrid == null) return;
+        var idle = EmblemButtonsGrid.TryFindResource("MenuTileIdleBrush") as Brush ?? NoteColorTheme.CreateFrozenBrush("#2A3752");
+        string current = _note.GetEmblem(_currentSkin.Key);
+        foreach (var child in EmblemButtonsGrid.Children)
         {
             if (child is Button { Content: Border tile } btn)
             {
@@ -733,12 +773,12 @@ public partial class StickyNoteWindow : Window
         }
     }
 
-    private void ConstellationButton_Click(object sender, RoutedEventArgs e)
+    private void EmblemButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is string key)
         {
-            _note.ConstellationKey = key;
-            UpdateConstellationButtons();
+            _note.SetEmblem(_currentSkin.Key, key);
+            UpdateEmblemButtons();
             UpdateSkinGeometry();
             RequestSave(isTyping: false);
         }
@@ -1465,6 +1505,51 @@ public partial class StickyNoteWindow : Window
     {
         TxtTitlePlaceholder.Visibility = string.IsNullOrEmpty(TxtTitle.Text) ? Visibility.Visible : Visibility.Collapsed;
         RequestSave(isTyping: true);
+        if (_currentSkin.ArtShowsTitle) RepaintArtForTitle();
+    }
+
+    private DispatcherTimer? _titleArtTimer;
+
+    /// <summary>The Blueprint title block and the Ink &amp; Washi seal show the title: repaint once typing pauses.</summary>
+    private void RepaintArtForTitle()
+    {
+        if (_titleArtTimer == null)
+        {
+            _titleArtTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
+            _titleArtTimer.Tick += (s, e) =>
+            {
+                _titleArtTimer.Stop();
+                UpdateSkinGeometry();
+            };
+        }
+        _titleArtTimer.Stop();
+        _titleArtTimer.Start();
+    }
+
+    // ---------------------------------------------------------------- Terminal: blinking block cursor
+
+    private DispatcherTimer? _cursorTimer;
+
+    /// <summary>The footer's block cursor blinks only while the note has focus; otherwise it stays lit and nothing runs.</summary>
+    private void UpdateBlockCursor()
+    {
+        if (BlockCursor == null) return;
+        bool show = _currentSkin.BlockCursor;
+        BlockCursor.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+        BlockCursor.Opacity = 1;
+        if (show && IsActive)
+        {
+            if (_cursorTimer == null)
+            {
+                _cursorTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(530) };
+                _cursorTimer.Tick += (s, e) => BlockCursor.Opacity = BlockCursor.Opacity > 0.5 ? 0 : 1;
+            }
+            _cursorTimer.Start();
+        }
+        else
+        {
+            _cursorTimer?.Stop();
+        }
     }
 
     private void TxtContent_TextChanged(object sender, TextChangedEventArgs e)

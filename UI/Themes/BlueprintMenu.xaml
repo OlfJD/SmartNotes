@@ -1,0 +1,86 @@
+<!--
+    Blueprint menus: a piece of the drawing (blue paper with a faint grid), a white double frame, technical
+    lettering in Share Tech Mono and a pale band for the selection. Tokens only; templates in SkinMenuBase.xaml.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:po="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+                    mc:Ignorable="po">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="SkinMenuBase.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- Panel: blue paper with a 10 px grid -->
+    <DrawingBrush x:Key="MenuPanelBgBrush" TileMode="Tile" Viewport="0,0,10,10" ViewportUnits="Absolute" Viewbox="0,0,10,10" ViewboxUnits="Absolute" po:Freeze="True">
+        <DrawingBrush.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="#153F70">
+                    <GeometryDrawing.Geometry><RectangleGeometry Rect="0,0,10,10"/></GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing>
+                    <GeometryDrawing.Pen><Pen Brush="#16E6F3FF" Thickness="0.6"/></GeometryDrawing.Pen>
+                    <GeometryDrawing.Geometry>
+                        <GeometryGroup>
+                            <LineGeometry StartPoint="0,0" EndPoint="10,0"/>
+                            <LineGeometry StartPoint="0,0" EndPoint="0,10"/>
+                        </GeometryGroup>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingBrush.Drawing>
+    </DrawingBrush>
+    <SolidColorBrush x:Key="MenuShadowBrush" Color="#0B2440" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuPanelBorderBrush" Color="#DDD7EAFF" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuPanelInnerFrameBrush" Color="#66D7EAFF" po:Freeze="True"/>
+    <CornerRadius x:Key="MenuPanelRadius">0</CornerRadius>
+    <Thickness x:Key="MenuPanelPadding">6</Thickness>
+
+    <!-- Rows -->
+    <SolidColorBrush x:Key="MenuItemTextBrush" Color="#F2F8FF" po:Freeze="True"/>
+    <FontFamily x:Key="MenuItemFont">pack://application:,,,/Assets/Fonts/#Share Tech Mono, Consolas</FontFamily>
+    <FontWeight x:Key="MenuItemFontWeight">Normal</FontWeight>
+    <sys:Double x:Key="MenuItemFontSize">13.5</sys:Double>
+    <CornerRadius x:Key="MenuItemRadius">0</CornerRadius>
+    <SolidColorBrush x:Key="MenuItemHighlightBrush" Color="#2EE6F3FF" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuItemHighlightEdgeBrush" Color="#88E6F3FF" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuItemHighlightTextBrush" Color="#FFFFFF" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuIconBrush" Color="#BFDCF7" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuDangerBrush" Color="#FFA3A3" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuAccentBrush" Color="#E6F3FF" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuOnAccentBrush" Color="#153F70" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSeparatorBrush" Color="#77D7EAFF" po:Freeze="True"/>
+    <sys:Double x:Key="MenuToolTipFontSize">13</sys:Double>
+
+    <!-- Popup text -->
+    <SolidColorBrush x:Key="MenuHeaderBrush" Color="#BFDCF7" po:Freeze="True"/>
+    <FontFamily x:Key="MenuHeaderFont">pack://application:,,,/Assets/Fonts/#Chakra Petch, Segoe UI</FontFamily>
+    <sys:Double x:Key="MenuHeaderFontSize">12</sys:Double>
+    <SolidColorBrush x:Key="MenuLabelBrush" Color="#F2F8FF" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuLabelMutedBrush" Color="#9FC0E3" po:Freeze="True"/>
+    <FontFamily x:Key="MenuLabelFont">pack://application:,,,/Assets/Fonts/#Share Tech Mono, Consolas</FontFamily>
+    <sys:Double x:Key="MenuLabelFontSize">13</sys:Double>
+
+    <!-- Popup controls -->
+    <SolidColorBrush x:Key="MenuChoiceBgBrush" Color="Transparent" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceTextBrush" Color="#E6F3FF" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceIdleBrush" Color="#5583A8D4" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceSelectedBrush" Color="#F2F8FF" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceSelectedBgBrush" Color="#26E6F3FF" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceSelectedTextBrush" Color="#FFFFFF" po:Freeze="True"/>
+    <FontFamily x:Key="MenuChoiceFont">pack://application:,,,/Assets/Fonts/#Share Tech Mono, Consolas</FontFamily>
+    <CornerRadius x:Key="MenuChoiceRadius">0</CornerRadius>
+    <SolidColorBrush x:Key="MenuSliderTrackBrush" Color="#0E2E52" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSliderFillBrush" Color="#E6F3FF" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSliderThumbBrush" Color="#153F70" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSliderThumbBorderBrush" Color="#E6F3FF" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSwitchTrackBrush" Color="#0E2E52" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSwitchBorderBrush" Color="#83A8D4" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSwitchThumbBrush" Color="#9FC0E3" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSwitchOnTrackBrush" Color="#2B5A8E" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSwitchOnThumbBrush" Color="#FFFFFF" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuInputBgBrush" Color="#0E2E52" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuInputBorderBrush" Color="#83A8D4" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuInputTextBrush" Color="#F2F8FF" po:Freeze="True"/>
+</ResourceDictionary>

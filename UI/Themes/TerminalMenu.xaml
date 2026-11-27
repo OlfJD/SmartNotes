@@ -1,0 +1,69 @@
+<!--
+    Terminal menus: black glass, green phosphor, monospace rows, and the selection in inverse video
+    (green bar, black text) like a text-mode menu. Tokens only; templates in SkinMenuBase.xaml.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:po="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+                    mc:Ignorable="po">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="SkinMenuBase.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- Panel -->
+    <SolidColorBrush x:Key="MenuPanelBgBrush" Color="#050A06" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuShadowBrush" Color="#000000" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuPanelBorderBrush" Color="#AA4CFF7A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuPanelInnerFrameBrush" Color="#334CFF7A" po:Freeze="True"/>
+    <CornerRadius x:Key="MenuPanelRadius">0</CornerRadius>
+    <Thickness x:Key="MenuPanelPadding">5</Thickness>
+
+    <!-- Rows -->
+    <SolidColorBrush x:Key="MenuItemTextBrush" Color="#7CFF9A" po:Freeze="True"/>
+    <FontFamily x:Key="MenuItemFont">pack://application:,,,/Assets/Fonts/#Share Tech Mono, Consolas</FontFamily>
+    <FontWeight x:Key="MenuItemFontWeight">Normal</FontWeight>
+    <sys:Double x:Key="MenuItemFontSize">13.5</sys:Double>
+    <CornerRadius x:Key="MenuItemRadius">0</CornerRadius>
+    <SolidColorBrush x:Key="MenuItemHighlightBrush" Color="#4CFF7A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuItemHighlightEdgeBrush" Color="Transparent" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuItemHighlightTextBrush" Color="#031006" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuIconBrush" Color="#4CFF7A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuDangerBrush" Color="#FF6B6B" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuAccentBrush" Color="#4CFF7A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuOnAccentBrush" Color="#031006" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSeparatorBrush" Color="#554CFF7A" po:Freeze="True"/>
+    <sys:Double x:Key="MenuToolTipFontSize">13</sys:Double>
+
+    <!-- Popup text -->
+    <SolidColorBrush x:Key="MenuHeaderBrush" Color="#4CFF7A" po:Freeze="True"/>
+    <FontFamily x:Key="MenuHeaderFont">pack://application:,,,/Assets/Fonts/#VT323, Consolas</FontFamily>
+    <sys:Double x:Key="MenuHeaderFontSize">16</sys:Double>
+    <SolidColorBrush x:Key="MenuLabelBrush" Color="#7CFF9A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuLabelMutedBrush" Color="#3E8F52" po:Freeze="True"/>
+    <FontFamily x:Key="MenuLabelFont">pack://application:,,,/Assets/Fonts/#Share Tech Mono, Consolas</FontFamily>
+    <sys:Double x:Key="MenuLabelFontSize">13</sys:Double>
+
+    <!-- Popup controls -->
+    <SolidColorBrush x:Key="MenuChoiceBgBrush" Color="Transparent" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceTextBrush" Color="#7CFF9A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceIdleBrush" Color="#2A5C36" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceSelectedBrush" Color="#4CFF7A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceSelectedBgBrush" Color="#4CFF7A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuChoiceSelectedTextBrush" Color="#031006" po:Freeze="True"/>
+    <FontFamily x:Key="MenuChoiceFont">pack://application:,,,/Assets/Fonts/#Share Tech Mono, Consolas</FontFamily>
+    <CornerRadius x:Key="MenuChoiceRadius">0</CornerRadius>
+    <SolidColorBrush x:Key="MenuSliderTrackBrush" Color="#16341F" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSliderFillBrush" Color="#4CFF7A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSliderThumbBrush" Color="#050A06" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSliderThumbBorderBrush" Color="#4CFF7A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSwitchTrackBrush" Color="#050A06" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSwitchBorderBrush" Color="#2A5C36" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSwitchThumbBrush" Color="#3E8F52" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSwitchOnTrackBrush" Color="#16341F" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuSwitchOnThumbBrush" Color="#4CFF7A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuInputBgBrush" Color="#020503" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuInputBorderBrush" Color="#2A5C36" po:Freeze="True"/>
+    <SolidColorBrush x:Key="MenuInputTextBrush" Color="#7CFF9A" po:Freeze="True"/>
+</ResourceDictionary>

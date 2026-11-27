@@ -22,6 +22,10 @@ public static class SkinMenus
         [NoteSkin.MedievalKey] = "MedievalMenu.xaml",
         [NoteSkin.PaperKey] = "PaperMenu.xaml",
         [NoteSkin.AstralKey] = "AstralMenu.xaml",
+        [NoteSkin.TerminalKey] = "TerminalMenu.xaml",
+        [NoteSkin.BlueprintKey] = "BlueprintMenu.xaml",
+        [NoteSkin.InkWashiKey] = "InkWashiMenu.xaml",
+        [NoteSkin.DeepSeaKey] = "DeepSeaMenu.xaml",
     };
 
     private static readonly Dictionary<string, ResourceDictionary> Loaded = new(StringComparer.Ordinal);

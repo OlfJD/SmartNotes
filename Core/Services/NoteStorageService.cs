@@ -137,7 +137,9 @@ public class NoteStorageService
         note.ColorKey ??= "Amber";
         note.SkinKey ??= NoteSkin.ClassicKey;
         note.RuneKey ??= GreatRune.DefaultKey;
-        note.ConstellationKey ??= "";
+        note.Emblems ??= new();
+        note.LinkedApp ??= "";
+        note.LinkedAppName ??= "";
         return note;
     }
 

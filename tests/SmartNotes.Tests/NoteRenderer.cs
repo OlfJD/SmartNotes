@@ -6,6 +6,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using SmartNotes.Core.Models;
 using SmartNotes.Core.Services;
+using SmartNotes.UI.Skins;
 using SmartNotes.UI.Windows;
 using Brushes = System.Windows.Media.Brushes;
 using Color = System.Windows.Media.Color;
@@ -45,6 +46,13 @@ public static class NoteRenderer
         {
             "features" => FeatureShots(),
             "menu" => MenuShots(),
+            "creatures" => DeepSeaArt.CreatureKeys.Select((key, i) =>
+            {
+                var note = Sample(NoteSkin.DeepSeaKey, new[] { "Cyan", "Violet", "Amber" }[i], key, "A short note\nwith two lines");
+                note.SetEmblem(NoteSkin.DeepSeaKey, key);
+                note.Height = 340;
+                return ("creature-" + key, note, (Func<StickyNoteWindow, BitmapSource?>?)null);
+            }).ToList(),
             _ => SkinShots(),
         };
 
@@ -161,7 +169,7 @@ public static class NoteRenderer
     private static List<(string, NoteItem, Func<StickyNoteWindow, BitmapSource?>?)> MenuShots()
     {
         var list = new List<(string, NoteItem, Func<StickyNoteWindow, BitmapSource?>?)>();
-        foreach (var skin in new[] { "Classic", "EldenRing", "Cyberpunk" })
+        foreach (var skin in new[] { "Terminal", "Blueprint", "InkWashi", "DeepSea" })
         {
             var note = Sample(skin, "Amber", "Menu", mode: NoteViewMode.Checklist);
             note.Checklist = Tasks(("one", false));

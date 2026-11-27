@@ -33,8 +33,29 @@ public class NoteItem
     public string SkinKey { get; set; } = "Classic";
     /// <summary>Great Rune shown by the Elden Ring skin (replaces the colour there). See GreatRune.</summary>
     public string RuneKey { get; set; } = GreatRune.DefaultKey;
-    /// <summary>Constellation shown by the Astral skin; empty = picked automatically from the note's id.</summary>
-    public string ConstellationKey { get; set; } = "";
+    /// <summary>
+    /// The emblem chosen per skin in the colour popup: skin key → emblem key (Astral: a constellation, Deep Sea: a
+    /// creature). Missing = picked automatically from the note's id, so every note keeps its own.
+    /// </summary>
+    public Dictionary<string, string> Emblems { get; set; } = new();
+
+    public string GetEmblem(string skinKey) => Emblems != null && Emblems.TryGetValue(skinKey, out var key) ? key ?? "" : "";
+
+    public void SetEmblem(string skinKey, string? key)
+    {
+        Emblems ??= new();
+        if (string.IsNullOrEmpty(key)) Emblems.Remove(skinKey);
+        else Emblems[skinKey] = key;
+    }
+
+    /// <summary>Until 2.6 the Astral constellation had a field of its own: still read (into Emblems), never written.</summary>
+    [System.Text.Json.Serialization.JsonPropertyName("ConstellationKey")]
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? LegacyConstellationKey
+    {
+        get => null;
+        set { if (!string.IsNullOrEmpty(value)) SetEmblem(NoteSkin.AstralKey, value); }
+    }
     public NotePinMode PinMode { get; set; } = NotePinMode.DesktopStuck;
     /// <summary>Exe file name of the program this note is linked to ("Code.exe"); empty = not linked. See AppLink.</summary>
     public string LinkedApp { get; set; } = "";
