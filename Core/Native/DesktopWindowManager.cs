@@ -371,7 +371,10 @@ public class DesktopWindowManager
                     baseRect = currentRect;
                 }
 
-                var snapped = MagneticSnapEngine.CalculateSnap(baseRect, otherRects, screenRect, threshold: 22);
+                // snap the visible body (shaped skins draw inside their window), then move the window by the same amount
+                var inset = _window is StickyNoteWindow note ? note.VisualInsetPx : default;
+                var snapped = ScreenRects.Inflate(
+                    MagneticSnapEngine.CalculateSnap(ScreenRects.Deflate(baseRect, inset), otherRects, screenRect, threshold: 22), inset);
 
                 int deltaX = snapped.left - _dragStartWinPos.x;
                 int deltaY = snapped.top - _dragStartWinPos.y;

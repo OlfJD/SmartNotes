@@ -55,7 +55,7 @@ public partial class App : Application
             var win = kvp.Value;
             if (win.IsVisible)
             {
-                result.Add(win.GetWindowScreenRect());
+                result.Add(win.GetVisibleScreenRect()); // snapping lines up visible edges, not window edges
             }
         }
         return result;

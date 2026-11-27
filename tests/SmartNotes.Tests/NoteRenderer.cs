@@ -39,6 +39,8 @@ public static class NoteRenderer
         var settings = new SettingsService();
         settings.Settings.EnableSpellCheck = false; // no red squiggles in pictures
 
+        if (set == "settings") return RenderSettingsPreviews(outDir, storage, settings);
+
         var shots = set switch
         {
             "features" => FeatureShots(),
@@ -68,6 +70,29 @@ public static class NoteRenderer
             tiles.Add((name, image));
         }
         Save(Sheet(tiles), Path.Combine(outDir, "sheet-" + set + ".png"));
+        Console.WriteLine($"Rendered {tiles.Count} picture(s) to {outDir}");
+        return 0;
+    }
+
+    /// <summary>The Settings > Note Appearance live preview, once per skin.</summary>
+    private static int RenderSettingsPreviews(string outDir, NoteStorageService storage, SettingsService settings)
+    {
+        var tiles = new List<(string Label, BitmapSource Image)>();
+        var dialog = new SettingsDialog(settings, storage, () => { }) { ShowActivated = false, Left = -30000, Top = -30000, WindowStartupLocation = WindowStartupLocation.Manual };
+        dialog.Show();
+        dialog.PanelGeneral.Visibility = Visibility.Collapsed; // the Note Appearance page, where the preview is
+        dialog.PanelAppearance.Visibility = Visibility.Visible;
+        Pump(400);
+        foreach (var skin in NoteSkin.All)
+        {
+            dialog.CmbDefaultSkin.SelectedValue = skin.Key;
+            Pump(300);
+            var image = Render(dialog.PreviewNoteHost);
+            Save(image, Path.Combine(outDir, "settings-" + skin.Key + ".png"));
+            tiles.Add(("settings-" + skin.Key, image));
+        }
+        dialog.Close();
+        Save(Sheet(tiles), Path.Combine(outDir, "sheet-settings.png"));
         Console.WriteLine($"Rendered {tiles.Count} picture(s) to {outDir}");
         return 0;
     }
@@ -190,7 +215,14 @@ public static class NoteRenderer
         element.UpdateLayout();
         int w = (int)Math.Ceiling(element.ActualWidth * Scale), h = (int)Math.Ceiling(element.ActualHeight * Scale);
         var bmp = new RenderTargetBitmap(Math.Max(1, w), Math.Max(1, h), 96 * Scale, 96 * Scale, PixelFormats.Pbgra32);
-        bmp.Render(element);
+        // through a VisualBrush: rendering the element itself would include its offset inside its parent
+        var visual = new DrawingVisual();
+        using (var dc = visual.RenderOpen())
+        {
+            dc.DrawRectangle(new VisualBrush(element) { Stretch = Stretch.None, AlignmentX = AlignmentX.Left, AlignmentY = AlignmentY.Top },
+                null, new Rect(0, 0, element.ActualWidth, element.ActualHeight));
+        }
+        bmp.Render(visual);
         bmp.Freeze();
         return bmp;
     }

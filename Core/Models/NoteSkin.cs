@@ -72,6 +72,12 @@ public class NoteSkin
     /// <summary>Extra empty space above the header buttons (custom-art skins only).</summary>
     public double HeaderTopPad { get; init; } = 0;
 
+    /// <summary>
+    /// Distance from the window edge to the visible body on each side (custom-art skins sit inside the window to leave
+    /// room for glow or shadow). Snapping and docking line up these visible edges, and the corner resize zones sit on them.
+    /// </summary>
+    public Thickness VisualInset { get; init; } = new Thickness(0);
+
     /// <summary>Where the left/right resize zones start (distance from the window edge to the visible body) and how wide they are.</summary>
     public double SideResizeInset { get; init; } = 0;
     public double SideResizeWidth { get; init; } = 6;
@@ -172,6 +178,7 @@ public class NoteSkin
             LocalizationKey = "Skin_Paper",
             CustomArt = true,
             ArtKey = "Paper",
+            VisualInset = new Thickness(4, 3, 7, 10), // the sheet; its shadow is outside
             ContentInset = new Thickness(4, 3, 7, 10),
             SideResizeInset = 2,
             SideResizeWidth = 7,
@@ -216,6 +223,7 @@ public class NoteSkin
             ArtKey = "Cyberpunk",
             LocalizationKey = "Skin_Cyberpunk",
             CustomArt = true,
+            VisualInset = new Thickness(4),
             ContentInset = new Thickness(7, 5, 9, 6),
             SideResizeInset = 3,
             SideResizeWidth = 7,
@@ -281,6 +289,7 @@ public class NoteSkin
             ArtKey = "Scroll",
             TitleRule = true,
             CustomArt = true,
+            VisualInset = new Thickness(9, 2, 9, 2), // the rods' gold finials
             ContentInset = new Thickness(26, 25, 26, 27),
             SideResizeInset = 16,
             SideResizeWidth = 11,
@@ -351,6 +360,7 @@ public class NoteSkin
             UsesRunes = true,
             ArtKey = "Elden",
             TitleRule = true,
+            VisualInset = new Thickness(5),
             ContentInset = new Thickness(13, 11, 13, 13),
             SideResizeInset = 4,
             SideResizeWidth = 7,
@@ -414,6 +424,7 @@ public class NoteSkin
             CustomArt = true,
             ArtKey = "Astral",
             TitleRule = true,
+            VisualInset = new Thickness(5),
             ContentInset = new Thickness(13, 11, 13, 13),
             SideResizeInset = 4,
             SideResizeWidth = 7,

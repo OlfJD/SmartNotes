@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:SmartNotes.UI.Controls"
+        xmlns:skins="clr-namespace:SmartNotes.UI.Skins"
         mc:Ignorable="d"
         Title="SmartNotes Settings"
         Height="600" Width="800"
@@ -378,8 +379,11 @@
                                     <TextBlock x:Name="TxtLivePreviewTitle" Text="LIVE PREVIEW" FontSize="{StaticResource FontSizeCaption}" FontWeight="Bold" Foreground="#64748B" Margin="0,0,0,8"/>
                                     
                                     <!-- Mini Note Card Demo -->
+                                    <!-- Shaped skins paint their body into PreviewArtHost, the same painter as on a real note -->
+                                    <Grid x:Name="PreviewNoteHost" SizeChanged="PreviewNoteHost_SizeChanged">
+                                    <skins:DrawingHost x:Name="PreviewArtHost" IsHitTestVisible="False"/>
                                     <Border x:Name="PreviewNoteCard" CornerRadius="12" Background="#1C1710" BorderBrush="#614418" BorderThickness="3.5" Padding="0">
-                                        <StackPanel>
+                                        <StackPanel x:Name="PreviewNoteStack">
                                             <!-- Mini Header -->
                                             <Border x:Name="PreviewNoteHeader" Background="#281E12" BorderBrush="#614418" BorderThickness="0,0,0,2" CornerRadius="9,9,0,0" Padding="12,8">
                                                 <Grid>
@@ -396,6 +400,7 @@
                                             </Border>
                                         </StackPanel>
                                     </Border>
+                                    </Grid>
                                 </StackPanel>
                             </Border>
                         </StackPanel>

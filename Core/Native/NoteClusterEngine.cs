@@ -79,12 +79,13 @@ public static class NoteClusterEngine
         while (queue.Count > 0)
         {
             var current = queue.Dequeue();
-            var currentRect = current.GetWindowScreenRect();
+            // visible bodies: shaped skins touch with their drawn edges, a few pixels inside their windows
+            var currentRect = current.GetVisibleScreenRect();
 
             for (int i = remainingCandidates.Count - 1; i >= 0; i--)
             {
                 var candidate = remainingCandidates[i];
-                var candidateRect = candidate.GetWindowScreenRect();
+                var candidateRect = candidate.GetVisibleScreenRect();
 
                 if (AreNotesAdjacent(currentRect, candidateRect, tolerance))
                 {

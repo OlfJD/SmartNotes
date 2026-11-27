@@ -482,6 +482,15 @@ public partial class StickyNoteWindow : Window
         ResizeEdgeLeft.Margin = new Thickness(skin.SideResizeInset, 14, 0, 14);
         ResizeEdgeRight.Margin = new Thickness(0, 14, skin.SideResizeInset, 14);
         ResizeEdgeLeft.Width = ResizeEdgeRight.Width = skin.SideResizeWidth;
+        // Corners and top / bottom edges sit on the visible body. Their fill is all but invisible (alpha 1, see the XAML),
+        // so they take the mouse even where a shaped skin cuts the corner away (Cyberpunk, the folded Paper corner).
+        var v = skin.VisualInset;
+        ResizeEdgeTop.Margin = new Thickness(14 + v.Left, v.Top, 14 + v.Right, 0);
+        ResizeEdgeBottom.Margin = new Thickness(14 + v.Left, 0, 14 + v.Right, v.Bottom);
+        ResizeCornerTopLeft.Margin = new Thickness(v.Left, v.Top, 0, 0);
+        ResizeCornerTopRight.Margin = new Thickness(0, v.Top, v.Right, 0);
+        ResizeCornerBottomLeft.Margin = new Thickness(v.Left, 0, 0, v.Bottom);
+        ResizeCornerBottomRight.Margin = new Thickness(0, 0, v.Right, v.Bottom);
 
         UpdateResizeGrip();
         UpdateSkinGeometry();
@@ -513,15 +522,22 @@ public partial class StickyNoteWindow : Window
         }
 
         string tag = _note.Id.ToString("N").Substring(0, 4).ToUpperInvariant();
-        SkinArtHost.Drawing = _currentSkin.ArtKey switch
+        SkinArtHost.Drawing = SkinArt.Build(_currentSkin, w, h, _currentTheme, tag, VisualTreeHelper.GetDpi(this).PixelsPerDip,
+            RuneBottomReserve(h), _note.RuneKey, _note.ConstellationKey);
+    }
+
+    /// <summary>The note's visible body on screen, in physical pixels (shaped skins sit a few pixels inside the window).</summary>
+    public Win32Api.RECT GetVisibleScreenRect() => ScreenRects.Deflate(GetWindowScreenRect(), VisualInsetPx);
+
+    /// <summary>The skin's visible-edge inset in physical pixels.</summary>
+    public Win32Api.RECT VisualInsetPx
+    {
+        get
         {
-            "Cyberpunk" => CyberpunkArt.Build(w, h, _currentTheme, _currentSkin, tag, VisualTreeHelper.GetDpi(this).PixelsPerDip),
-            "Scroll" => EldenScrollArt.Build(w, h, _currentTheme, tag),
-            "Paper" => PaperStickyArt.Build(w, h, _currentTheme),
-            "Elden" => EldenRingArt.Build(w, h, _currentTheme, tag, _note.RuneKey, VisualTreeHelper.GetDpi(this).PixelsPerDip, RuneBottomReserve(h)),
-            "Astral" => AstralArt.Build(w, h, _currentTheme, tag, RuneBottomReserve(h), _note.ConstellationKey),
-            _ => null
-        };
+            var v = _currentSkin.VisualInset;
+            double s = VisualTreeHelper.GetDpi(this).DpiScaleX;
+            return new Win32Api.RECT((int)Math.Round(v.Left * s), (int)Math.Round(v.Top * s), (int)Math.Round(v.Right * s), (int)Math.Round(v.Bottom * s));
+        }
     }
 
     /// <summary>

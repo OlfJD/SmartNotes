@@ -92,6 +92,12 @@ Skins change the whole look of a note (silhouette, surface, fonts, icon colours)
   - `AppMenu` leaves Normal-tone icons uncoloured so they inherit the row's icon colour (and its hover colour); Danger uses `MenuDangerBrush`.
   - Cut corners (Cyberpunk) come from `CutBorder` with `MenuPanelCut` / `MenuChoiceCut`; Paper's glue strip is `MenuTopStripHeight`.
   - Define tokens as real brushes/styles, not `<StaticResource>` alias entries: those resolved to the wrong value in testing.
+- **Shaped skins: snapping, corners, Settings preview** (2026-11-27, unreleased), the last open items of 2026-11-12:
+  - `NoteSkin.VisualInset`: how far each skin's visible body sits inside its window (Paper 4/3/7/10, Cyberpunk 4, Medieval 9/2 for the rods' finials, Elden Ring and Astral 5). `StickyNoteWindow.GetVisibleScreenRect()` / `VisualInsetPx` (physical pixels, per-monitor DPI); `Core/Native/ScreenRects` deflates and inflates.
+  - **Snapping and docking** use the visible bodies: `App.GetOtherNoteRects`, `NoteClusterEngine.GetConnectedCluster`, and in `WM_MOVING` the moving note is deflated, snapped, and inflated again. Two Medieval scrolls used to stop 18 px apart (and so did not count as a stack); now their rods touch.
+  - **Corners**: Windows gives fully transparent pixels of a layered window no mouse input, which is why the cut-away corners (Cyberpunk, Paper's fold) could not be grabbed. The corner and top/bottom resize zones now sit on the visible body and are filled with `#01000000` (alpha 1, invisible but hit-testable).
+  - **Settings > Note Appearance preview**: shaped skins paint their body with the real painter behind the mini note (`UI/Skins/SkinArt.Build`, now shared with the note window), with the header row in the painted header strip.
+  - `tests/SmartNotes.Tests/NoteRenderer.cs`: `dotnet run --project tests\SmartNotes.Tests -- --render <folder> [skins|features|menu|settings]` draws real note windows (off-screen, with the unit-test data folder) to PNG files plus a contact sheet. `AssemblyInfo.cs` gives the test project access to the window's named elements (`InternalsVisibleTo`).
 - **Reminders and daily checklists** (2026-11-27, unreleased):
   - **Rules** (`Core/Models/NoteReminder.cs`, `NoteSchedule`, no UI so they test with any clock): `NoteItem.Reminder` = `At` (next time), `Repeat` (None, Daily, Mon–Fri, Weekly, Monthly), `SnoozeUntil`, `Anchor` (first time of a series; later times are counted from it, so a reminder on the 31st is on Feb 28 and back on Mar 31). When it rings: a snooze is used up, a one-off is gone, a repeat moves to its next time after now (missed repeats ring once, not one by one).
   - **Clock** (`App.CheckNoteClock`): one Background-priority `DispatcherTimer` that sleeps until the next reminder or day start, at most 60 s; also runs on wake from sleep (`SystemEvents.PowerModeChanged`), on a clock change, at startup (so reminders missed while the PC was off ring then) and when a reminder is set or snoozed.
@@ -194,8 +200,6 @@ Skins change the whole look of a note (silhouette, surface, fonts, icon colours)
 
 ### Still open
 - **Click through before a release** (what the end-to-end tests don't cover): tray menu opens at the cursor and closes on an outside click or Escape; three-dot and right-click menus in every skin; changing fonts in Settings and saving; switching skins on an open note; resizing shaped skins; Win+D with Desktop Stuck notes.
-- The settings live preview shows a skin's colours and fonts only, not its shape.
-- Shaped skins sit a few pixels inside the window bounds, so snapped notes show a small gap; the stock resize grip is hidden for them and the cut-away corners cannot be grabbed.
 - Variable fonts are not usable in WPF: only static TTFs work as skin fonts.
 
 ## Changelog & Evolution

@@ -22,6 +22,19 @@ public static class LogicTests
     }
 
     [Test]
+    public static void Snap_ShapedSkins_LineUpTheirVisibleEdges()
+    {
+        // Medieval scrolls draw 9 px inside their windows on the left and right
+        var inset = new Win32Api.RECT(9, 2, 9, 2);
+        var target = ScreenRects.Deflate(Rect(500, 100), inset);       // what the other note shows
+        var moving = Rect(200, 140);                                    // window; visible right edge at 491
+        var snapped = ScreenRects.Inflate(MagneticSnapEngine.CalculateSnap(ScreenRects.Deflate(moving, inset), new[] { target }, null, threshold: 22), inset);
+        Assert.Equal(target.left, snapped.right - inset.right, "the visible edges touch (no 18 px gap between the scrolls)");
+        Assert.Equal(300, snapped.Width, "window size unchanged");
+        Assert.True(NoteClusterEngine.AreNotesAdjacent(ScreenRects.Deflate(snapped, inset), target), "and count as docked");
+    }
+
+    [Test]
     public static void Snap_LeavesFarAwayNotesAlone()
     {
         var moving = Rect(100, 100);

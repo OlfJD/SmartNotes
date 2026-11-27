@@ -466,14 +466,56 @@ public partial class SettingsDialog : Window
         PreviewNoteCard.BorderBrush = theme.BorderBrush;
         PreviewNoteHeader.Background = theme.HeaderBgBrush;
         PreviewNoteHeader.BorderBrush = theme.BorderBrush;
+
+        // Shaped skins: no card; their own painter draws the body behind the mini note, and the header row sits in
+        // the painted header strip (same insets as on a real note)
+        _previewSkin = skin;
+        _previewTheme = theme;
+        if (skin.CustomArt)
+        {
+            PreviewNoteCard.Background = Brushes.Transparent;
+            PreviewNoteCard.BorderThickness = new Thickness(0);
+            PreviewNoteHeader.Background = Brushes.Transparent;
+            PreviewNoteHeader.BorderThickness = new Thickness(0);
+            PreviewNoteHeader.Height = 44;
+            var inset = skin.ContentInset;
+            PreviewNoteStack.Margin = new Thickness(inset.Left, inset.Top + skin.HeaderTopPad, inset.Right, inset.Bottom + 8);
+            PreviewNoteHost.MinHeight = 170;
+        }
+        else
+        {
+            PreviewNoteHeader.ClearValue(HeightProperty);
+            PreviewNoteHeader.BorderThickness = new Thickness(0, 0, 0, 2);
+            PreviewNoteStack.Margin = new Thickness(0);
+            PreviewNoteHost.MinHeight = 0;
+        }
+        DrawPreviewArt();
         PreviewNoteTitle.Foreground = skin.AccentTitle ? theme.GlowBrush : theme.TextPrimaryBrush;
         PreviewNoteBody.Foreground = theme.TextPrimaryBrush;
+        if (TxtPreviewPinned != null) TxtPreviewPinned.Foreground = theme.TextMutedBrush; // readable on parchment and paper too
         if (PreviewNoteIcon != null)
         {
             PreviewNoteIcon.Foreground = theme.PrimaryBrush;
         }
 
         PreviewNoteBody.FontSize = SelectedFontSize * (previewTextFont?.Scale ?? 1.0);
+    }
+
+    private NoteSkin? _previewSkin;
+    private NoteColorTheme? _previewTheme;
+
+    private void PreviewNoteHost_SizeChanged(object sender, SizeChangedEventArgs e) => DrawPreviewArt();
+
+    private void DrawPreviewArt()
+    {
+        if (PreviewArtHost == null || PreviewNoteHost == null) return;
+        if (_previewSkin == null || _previewTheme == null || !_previewSkin.CustomArt)
+        {
+            PreviewArtHost.Drawing = null;
+            return;
+        }
+        PreviewArtHost.Drawing = SmartNotes.UI.Skins.SkinArt.Build(_previewSkin, PreviewNoteHost.ActualWidth, PreviewNoteHost.ActualHeight,
+            _previewTheme, "PREV", System.Windows.Media.VisualTreeHelper.GetDpi(this).PixelsPerDip, bottomReserve: 34);
     }
 
     private void RefreshTrashStatus()
