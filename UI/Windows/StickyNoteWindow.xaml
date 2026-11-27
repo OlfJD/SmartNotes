@@ -432,21 +432,30 @@
             <!-- 4. BOTTOM FOOTER (Modified Time, Typing Indicator, Lock Badge) -->
             <Border Grid.Row="3" Background="Transparent" Padding="14,0,10,6" VerticalAlignment="Bottom">
                 <Grid>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <controls:LucideIcon x:Name="IconPinFooter" IconKey="pin" Size="12" StrokeThickness="2.4" Foreground="{DynamicResource SkinMutedBrush}" Margin="0,0,5,0" VerticalAlignment="Center"/>
-                        <TextBlock x:Name="TxtPinIndicator" Text="Stuck to Desktop" FontFamily="{DynamicResource SkinMetaFont}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource SkinMutedBrush}" Margin="0,0,12,0"/>
-                        
-                        <!-- Default Modified Timestamp -->
-                        <TextBlock x:Name="TxtModifiedTime" Text="Just now" FontFamily="{DynamicResource SkinMetaFont}" FontSize="12" Foreground="{DynamicResource SkinFaintBrush}" VerticalAlignment="Center"/>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <!-- Pin / link text, then the modified time. Sized to its content; when the note is narrow the pin text
+                         (the filling last child) is shortened with "…" instead of running into the badges on the right. -->
+                    <DockPanel HorizontalAlignment="Left" VerticalAlignment="Center" LastChildFill="True">
+                        <controls:LucideIcon x:Name="IconPinFooter" DockPanel.Dock="Left" IconKey="pin" Size="12" StrokeThickness="2.4" Foreground="{DynamicResource SkinMutedBrush}" Margin="0,0,5,0" VerticalAlignment="Center"/>
 
-                        <!-- Live Typing & Save Status Indicator -->
-                        <StackPanel x:Name="TypingIndicatorContainer" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
-                            <controls:LucideIcon x:Name="IconTypingStatus" IconKey="pen-line" Size="12" StrokeThickness="2.4" Foreground="#F59E0B" Margin="0,0,4,0" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="TxtTypingStatus" Text="Typing..." FontFamily="{DynamicResource SkinMetaFont}" FontSize="12" FontWeight="SemiBold" Foreground="#F59E0B" VerticalAlignment="Center"/>
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                            <!-- Default Modified Timestamp -->
+                            <TextBlock x:Name="TxtModifiedTime" Text="Just now" FontFamily="{DynamicResource SkinMetaFont}" FontSize="12" Foreground="{DynamicResource SkinFaintBrush}" VerticalAlignment="Center"/>
+
+                            <!-- Live Typing & Save Status Indicator -->
+                            <StackPanel x:Name="TypingIndicatorContainer" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
+                                <controls:LucideIcon x:Name="IconTypingStatus" IconKey="pen-line" Size="12" StrokeThickness="2.4" Foreground="#F59E0B" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TxtTypingStatus" Text="Typing..." FontFamily="{DynamicResource SkinMetaFont}" FontSize="12" FontWeight="SemiBold" Foreground="#F59E0B" VerticalAlignment="Center"/>
+                            </StackPanel>
                         </StackPanel>
-                    </StackPanel>
 
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,18,0">
+                        <TextBlock x:Name="TxtPinIndicator" Text="Stuck to Desktop" FontFamily="{DynamicResource SkinMetaFont}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource SkinMutedBrush}" Margin="0,0,12,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                    </DockPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="8,0,18,0">
                     <!-- Reminder set ("14:30", "Fri 09:00"); the tooltip says when and how often -->
                     <StackPanel x:Name="ReminderBadge" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0" Visibility="Collapsed" Background="Transparent">
                         <controls:LucideIcon x:Name="IconReminderBadge" IconKey="bell" Size="12" StrokeThickness="2.4" Foreground="{DynamicResource SkinMutedBrush}" Margin="0,0,4,0" VerticalAlignment="Center"/>

@@ -1,0 +1,246 @@
+using System.Globalization;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
+using SmartNotes.Core.Models;
+using SmartNotes.Core.Services;
+using SmartNotes.UI.Windows;
+using Brushes = System.Windows.Media.Brushes;
+using Color = System.Windows.Media.Color;
+using Point = System.Windows.Point;
+
+namespace SmartNotes.Tests;
+
+/// <summary>
+/// Draws real note windows to PNG files, for checking a look without clicking through the app:
+/// <c>dotnet run --project tests\SmartNotes.Tests -- --render &lt;folder&gt; [skins|features|menu]</c>.
+/// Uses the unit-test data folder, never your notes. The windows are moved far off-screen while they are drawn.
+/// </summary>
+public static class NoteRenderer
+{
+    public static int Run(string outDir, string set)
+    {
+        Directory.CreateDirectory(outDir);
+        TestData.ResetUnitDataDir();
+        // pack://application:,,,/ must mean the app's resources (fonts, themes), not this test program's. WPF fixes it on
+        // first use (to the entry assembly), so it is set through its field.
+        typeof(Application).GetField("_resourceAssembly", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!
+            .SetValue(null, typeof(SmartNotes.App).Assembly);
+        var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
+        foreach (var dict in new[] { "UI/Icons/LucideIcons.xaml", "UI/Icons/SkinIcons.xaml", "UI/Themes/DarkTheme.xaml" })
+        {
+            app.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("pack://application:,,,/" + dict) });
+        }
+        LocalizationService.Instance.SetLanguage(Environment.GetEnvironmentVariable("SMARTNOTES_RENDER_LANG") ?? "en");
+
+        var storage = new NoteStorageService();
+        var settings = new SettingsService();
+        settings.Settings.EnableSpellCheck = false; // no red squiggles in pictures
+
+        var shots = set switch
+        {
+            "features" => FeatureShots(),
+            "menu" => MenuShots(),
+            _ => SkinShots(),
+        };
+
+        var tiles = new List<(string Label, BitmapSource Image)>();
+        foreach (var (name, note, prepare) in shots)
+        {
+            storage.AddNote(note);
+            var win = new StickyNoteWindow(note, storage, settings, _ => { }, _ => { }) { ShowActivated = false };
+            win.Show();
+            win.MoveToScreenPosition(-30000, -30000);
+            Pump(400);
+            BitmapSource? image;
+            try
+            {
+                image = prepare?.Invoke(win) ?? Render((FrameworkElement)win.Content);
+            }
+            finally
+            {
+                win.Close();
+            }
+            if (image == null) continue;
+            Save(image, Path.Combine(outDir, name + ".png"));
+            tiles.Add((name, image));
+        }
+        Save(Sheet(tiles), Path.Combine(outDir, "sheet-" + set + ".png"));
+        Console.WriteLine($"Rendered {tiles.Count} picture(s) to {outDir}");
+        return 0;
+    }
+
+    // ---------------------------------------------------------------- what to draw
+
+    private static NoteItem Sample(string skin, string color, string title, string text = "", NoteViewMode mode = NoteViewMode.Text) => new()
+    {
+        Title = title,
+        Content = text,
+        SkinKey = skin,
+        ColorKey = color,
+        ViewMode = mode,
+        Width = 340,
+        Height = 300,
+        X = 100,
+        Y = 100,
+        ModifiedAt = DateTime.Now.AddMinutes(-12),
+    };
+
+    private static List<TodoCheckItem> Tasks(params (string Text, bool Done)[] tasks) =>
+        tasks.Select(t => new TodoCheckItem { Text = t.Text, IsDone = t.Done }).ToList();
+
+    private static List<(string, NoteItem, Func<StickyNoteWindow, BitmapSource?>?)> SkinShots()
+    {
+        var list = new List<(string, NoteItem, Func<StickyNoteWindow, BitmapSource?>?)>();
+        string[] colors = { "Amber", "Cyan", "Violet", "Emerald", "Rose", "Gold", "Mint", "Obsidian" };
+        int i = 0;
+        foreach (var skin in NoteSkin.All)
+        {
+            var note = Sample(skin.Key, colors[i++ % colors.Length], "Today's Priorities", mode: NoteViewMode.Checklist);
+            note.Checklist = Tasks(("Reply to Sam", true), ("Book the dentist", false), ("Water the plants", false));
+            list.Add(("skin-" + skin.Key, note, null));
+        }
+        return list;
+    }
+
+    private static List<(string, NoteItem, Func<StickyNoteWindow, BitmapSource?>?)> FeatureShots()
+    {
+        var reminder = Sample("Classic", "Amber", "Call the bank", "Ask about the transfer fee.\nAccount number is on the letter.");
+        reminder.Reminder = new NoteReminder { At = DateTime.Now.AddMinutes(-1) };
+
+        var daily = Sample("Classic", "Emerald", "Morning", mode: NoteViewMode.Checklist);
+        daily.RepeatDaily = true;
+        daily.Streak = 6;
+        daily.DailyDay = NoteSchedule.DayOf(DateTime.Now, 4);
+        daily.Checklist = Tasks(("Stretch", true), ("Water the plants", true), ("Vitamins", true));
+
+        var linked = Sample("Cyberpunk", "Cyan", "Build keys", "F5  run\nF9  breakpoint\nF10 step over\nCtrl+K C  comment");
+        linked.LinkedApp = "Code.exe";
+        linked.LinkedAppName = "Visual Studio Code";
+        linked.Reminder = new NoteReminder { At = DateTime.Today.AddDays(1).AddHours(9), Repeat = ReminderRepeat.Weekdays };
+
+        var paperReminder = Sample("Paper", "Rose", "Stand-up", "Notes for the team meeting");
+        paperReminder.Reminder = new NoteReminder { At = DateTime.Now.AddMinutes(-1) };
+
+        return new()
+        {
+            ("feature-reminder-ringing", reminder, w => { w.FireReminder(DateTime.Now); Pump(1200); return Render((FrameworkElement)w.Content); }),
+            ("feature-reminder-paper", paperReminder, w => { w.FireReminder(DateTime.Now); Pump(1200); return Render((FrameworkElement)w.Content); }),
+            ("feature-daily-streak", daily, null),
+            ("feature-linked-and-badge", linked, null),
+        };
+    }
+
+    private static List<(string, NoteItem, Func<StickyNoteWindow, BitmapSource?>?)> MenuShots()
+    {
+        var list = new List<(string, NoteItem, Func<StickyNoteWindow, BitmapSource?>?)>();
+        foreach (var skin in new[] { "Classic", "EldenRing", "Cyberpunk" })
+        {
+            var note = Sample(skin, "Amber", "Menu", mode: NoteViewMode.Checklist);
+            note.Checklist = Tasks(("one", false));
+            list.Add(("menu-" + skin, note, OpenMoreMenu));
+        }
+        return list;
+    }
+
+    /// <summary>Opens the note's ⋯ menu and draws it next to the note.</summary>
+    private static BitmapSource? OpenMoreMenu(StickyNoteWindow win)
+    {
+        typeof(StickyNoteWindow).GetMethod("BtnMore_Click", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .Invoke(win, new object[] { win.BtnMore, new RoutedEventArgs() });
+        Pump(500);
+        var menu = PresentationSource.CurrentSources.OfType<PresentationSource>()
+            .Select(s => s.RootVisual).OfType<FrameworkElement>()
+            .Select(FindMenu).FirstOrDefault(m => m != null);
+        if (menu == null) return null;
+        var note = Render((FrameworkElement)win.Content);
+        var menuImage = Render(menu);
+        menu.IsOpen = false;
+        return SideBySide(note, menuImage);
+    }
+
+    private static ContextMenu? FindMenu(DependencyObject root)
+    {
+        if (root is ContextMenu { IsOpen: true } cm) return cm;
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            if (FindMenu(VisualTreeHelper.GetChild(root, i)) is { } found) return found;
+        }
+        return null;
+    }
+
+    // ---------------------------------------------------------------- drawing
+
+    private static void Pump(int ms)
+    {
+        var until = DateTime.Now.AddMilliseconds(ms);
+        while (DateTime.Now < until)
+        {
+            Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.Background, new Action(() => { }));
+            Thread.Sleep(15);
+        }
+    }
+
+    private const double Scale = 2.0;
+
+    private static BitmapSource Render(FrameworkElement element)
+    {
+        element.UpdateLayout();
+        int w = (int)Math.Ceiling(element.ActualWidth * Scale), h = (int)Math.Ceiling(element.ActualHeight * Scale);
+        var bmp = new RenderTargetBitmap(Math.Max(1, w), Math.Max(1, h), 96 * Scale, 96 * Scale, PixelFormats.Pbgra32);
+        bmp.Render(element);
+        bmp.Freeze();
+        return bmp;
+    }
+
+    private static BitmapSource SideBySide(BitmapSource a, BitmapSource b)
+    {
+        var visual = new DrawingVisual();
+        using (var dc = visual.RenderOpen())
+        {
+            dc.DrawImage(a, new Rect(0, 0, a.Width, a.Height));
+            dc.DrawImage(b, new Rect(a.Width + 12, 0, b.Width, b.Height));
+        }
+        var bmp = new RenderTargetBitmap((int)((a.Width + b.Width + 12) * Scale), (int)(Math.Max(a.Height, b.Height) * Scale), 96 * Scale, 96 * Scale, PixelFormats.Pbgra32);
+        bmp.Render(visual);
+        bmp.Freeze();
+        return bmp;
+    }
+
+    /// <summary>All pictures on one dark sheet with their names, three per row.</summary>
+    private static BitmapSource Sheet(List<(string Label, BitmapSource Image)> tiles)
+    {
+        const int perRow = 3;
+        const double pad = 24, labelH = 26;
+        double cellW = tiles.Count == 0 ? 100 : tiles.Max(t => t.Image.Width), cellH = tiles.Count == 0 ? 100 : tiles.Max(t => t.Image.Height);
+        int rows = Math.Max(1, (tiles.Count + perRow - 1) / perRow);
+        double width = pad + Math.Min(perRow, Math.Max(1, tiles.Count)) * (cellW + pad), height = pad + rows * (cellH + labelH + pad);
+        var visual = new DrawingVisual();
+        using (var dc = visual.RenderOpen())
+        {
+            dc.DrawRectangle(new SolidColorBrush(Color.FromRgb(0x2B, 0x31, 0x3C)), null, new Rect(0, 0, width, height));
+            var typeface = new Typeface("Segoe UI");
+            for (int i = 0; i < tiles.Count; i++)
+            {
+                double x = pad + i % perRow * (cellW + pad), y = pad + i / perRow * (cellH + labelH + pad);
+                var label = new FormattedText(tiles[i].Label, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 14, Brushes.Gainsboro, 1.0);
+                dc.DrawText(label, new Point(x, y));
+                dc.DrawImage(tiles[i].Image, new Rect(x, y + labelH, tiles[i].Image.Width, tiles[i].Image.Height));
+            }
+        }
+        var bmp = new RenderTargetBitmap((int)(width * 1.5), (int)(height * 1.5), 96 * 1.5, 96 * 1.5, PixelFormats.Pbgra32);
+        bmp.Render(visual);
+        bmp.Freeze();
+        return bmp;
+    }
+
+    private static void Save(BitmapSource image, string path)
+    {
+        var encoder = new PngBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(image));
+        using var file = File.Create(path);
+        encoder.Save(file);
+    }
+}

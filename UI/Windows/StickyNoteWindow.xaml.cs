@@ -898,7 +898,9 @@ public partial class StickyNoteWindow : Window
         BtnReminderSnooze.ToolTip = LocalizationService.T("Tooltip_ReminderSnooze", SnoozeMinutes);
         BtnReminderDone.ToolTip = LocalizationService.T("Tooltip_ReminderDone");
         ReminderGlow.Color = _currentTheme.GlowBrush.Color;
+        ReminderBanner.Background = _currentTheme.BgBrush; // opaque: some skins' input fill is see-through
         ReminderBanner.Visibility = Visibility.Visible;
+        MakeRoomForBanner(true);
         // a gentle pulse for about a minute, then a steady glow (no animation keeps running after that)
         ReminderGlow.BeginAnimation(System.Windows.Media.Effects.DropShadowEffect.OpacityProperty, new DoubleAnimation(0.25, 1.0, TimeSpan.FromSeconds(0.9))
         {
@@ -911,6 +913,22 @@ public partial class StickyNoteWindow : Window
         ShowWithoutFocus();
         UpdateReminderBadge();
         SaveNoteState(); // right away: at startup this runs before the window has loaded, where RequestSave does nothing
+    }
+
+    /// <summary>The banner sits at the top of the note body: the text, tasks or copy rows move down below it meanwhile.</summary>
+    private void MakeRoomForBanner(bool show)
+    {
+        double top = 0;
+        if (show)
+        {
+            ReminderBanner.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            top = ReminderBanner.DesiredSize.Height + 8;
+        }
+        foreach (var container in new FrameworkElement[] { TextModeContainer, ChecklistModeContainer, CopyModeContainer })
+        {
+            container.Margin = new Thickness(0, top, 0, 0);
+        }
+        RefreshSkinArtAfterLayout();
     }
 
     private int SnoozeMinutes => Math.Clamp(_settingsService.Settings.SnoozeMinutes, 1, 240);
@@ -931,6 +949,7 @@ public partial class StickyNoteWindow : Window
         IsReminding = false;
         ReminderGlow.BeginAnimation(System.Windows.Media.Effects.DropShadowEffect.OpacityProperty, null);
         ReminderBanner.Visibility = Visibility.Collapsed;
+        MakeRoomForBanner(false);
         _desktopWindowManager.SetFloating(IsFloating, _note.PinMode);
         UpdateReminderBadge();
         RequestSave(isTyping: false);
