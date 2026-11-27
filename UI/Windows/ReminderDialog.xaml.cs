@@ -30,7 +30,8 @@ public partial class ReminderDialog : Window
         TxtDayLabel.Text = LocalizationService.T("Reminder_Day");
         TxtTimeLabel.Text = LocalizationService.T("Reminder_Time");
         TxtRepeatLabel.Text = LocalizationService.T("Reminder_Repeat");
-        TxtRemove.Text = LocalizationService.T("Reminder_Remove");
+        TxtRemove.Text = LocalizationService.T("Reminder_RemoveShort"); // short: room next to Cancel / Set in wide theme fonts
+        BtnRemove.ToolTip = LocalizationService.T("Reminder_Remove");
         BtnCancel.Content = LocalizationService.T("MsgBox_Cancel");
         BtnSet.Content = LocalizationService.T("Reminder_Set");
         BtnRemove.Visibility = current != null ? Visibility.Visible : Visibility.Collapsed;

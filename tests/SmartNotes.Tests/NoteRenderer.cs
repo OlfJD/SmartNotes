@@ -42,6 +42,7 @@ public static class NoteRenderer
 
         if (set == "settings") return RenderSettingsPreviews(outDir, storage, settings);
         if (set == "settingspages") return RenderSettingsPages(outDir, storage, settings);
+        if (set == "dialogs") return RenderDialogs(outDir);
 
         var shots = set switch
         {
@@ -103,6 +104,45 @@ public static class NoteRenderer
         }
         dialog.Close();
         Save(Sheet(tiles), Path.Combine(outDir, "sheet-settings.png"));
+        Console.WriteLine($"Rendered {tiles.Count} picture(s) to {outDir}");
+        return 0;
+    }
+
+    /// <summary>Toasts, the message box, the reminder dialog and the program picker, in the app's look and a few themes.</summary>
+    private static int RenderDialogs(string outDir)
+    {
+        var tiles = new List<(string Label, BitmapSource Image)>();
+        void Shot(string name, Window w, int wait = 500)
+        {
+            w.ShowActivated = false;
+            w.WindowStartupLocation = WindowStartupLocation.Manual;
+            w.Left = -30000;
+            w.Top = -30000;
+            w.Show();
+            Pump(wait);
+            var image = Render((FrameworkElement)w.Content);
+            w.Close();
+            Save(image, Path.Combine(outDir, name + ".png"));
+            tiles.Add((name, image));
+        }
+        Shot("toast-app", new ToastWindow("Keyboard shortcuts", "Another program already uses Win+Alt+N → Win+Alt+J, so SmartNotes switched to the key after the arrow.", "keyboard", null, ToastTone.Warning, null, null, TimeSpan.FromMinutes(1)));
+        Shot("toast-reminder-deepsea", new ToastWindow("Reminder", "Call the bank", "bell", NoteSkin.Get(NoteSkin.DeepSeaKey), ToastTone.Info, () => { }, "Show Note", TimeSpan.FromMinutes(1)));
+        Shot("toast-paper", new ToastWindow("SmartNotes", "\"Shopping\" is back from the trash.", "undo-2", NoteSkin.Get(NoteSkin.PaperKey), ToastTone.Info, null, null, TimeSpan.FromMinutes(1)));
+        Shot("toast-terminal", new ToastWindow("SmartNotes", "Notes arranged.", "layers", NoteSkin.Get(NoteSkin.TerminalKey), ToastTone.Info, null, null, TimeSpan.FromMinutes(1)));
+
+        var box = new ModernMessageBox();
+        SmartNotes.UI.Controls.SkinMenus.ApplyToPanel(box, NoteSkin.Get(NoteSkin.InkWashiKey));
+        box.TxtTitle.Text = "SmartNotes";
+        box.TxtHeading.Text = "Could not move the note to the trash";
+        box.TxtMessage.Text = "The note was kept. Try again in a moment.";
+        box.BtnPrimary.Content = "Got it";
+        Shot("messagebox-inkwashi", box);
+
+        Shot("reminder-dialog-terminal", new ReminderDialog(null, DateTime.Now, NoteSkin.Get(NoteSkin.TerminalKey)));
+        Shot("reminder-dialog-medieval", new ReminderDialog(new NoteReminder { At = DateTime.Today.AddDays(1).AddHours(9), Repeat = ReminderRepeat.Weekdays }, DateTime.Now, NoteSkin.Get(NoteSkin.MedievalKey)));
+        Shot("program-picker-blueprint", new ProgramPickerDialog(NoteSkin.Get(NoteSkin.BlueprintKey), "Code.exe"), 3500);
+
+        Save(Sheet(tiles), Path.Combine(outDir, "sheet-dialogs.png"));
         Console.WriteLine($"Rendered {tiles.Count} picture(s) to {outDir}");
         return 0;
     }
@@ -294,8 +334,15 @@ public static class NoteRenderer
         var visual = new DrawingVisual();
         using (var dc = visual.RenderOpen())
         {
-            dc.DrawRectangle(new VisualBrush(element) { Stretch = Stretch.None, AlignmentX = AlignmentX.Left, AlignmentY = AlignmentY.Top },
-                null, new Rect(0, 0, element.ActualWidth, element.ActualHeight));
+            // the element's own area exactly (an effect such as a drop shadow would otherwise widen and shift it)
+            dc.DrawRectangle(new VisualBrush(element)
+            {
+                Stretch = Stretch.None,
+                AlignmentX = AlignmentX.Left,
+                AlignmentY = AlignmentY.Top,
+                Viewbox = new Rect(0, 0, element.ActualWidth, element.ActualHeight),
+                ViewboxUnits = BrushMappingMode.Absolute,
+            }, null, new Rect(0, 0, element.ActualWidth, element.ActualHeight));
         }
         bmp.Render(visual);
         bmp.Freeze();

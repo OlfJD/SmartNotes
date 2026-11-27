@@ -4,7 +4,7 @@
         xmlns:controls="clr-namespace:SmartNotes.UI.Controls"
         xmlns:skins="clr-namespace:SmartNotes.UI.Skins"
         Title="SmartNotes"
-        Width="400"
+        Width="440"
         SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
         WindowStyle="None"
@@ -79,10 +79,10 @@
                         <ComboBox x:Name="CmbRepeat" Grid.Row="2" Grid.Column="1" Height="32" Margin="0,0,0,10" Style="{DynamicResource PopupComboBoxStyle}" SelectionChanged="Inputs_Changed"/>
 
                         <!-- "Reminds you Fri 28 Nov, 09:00" -->
-                        <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,4,0,0">
-                            <controls:LucideIcon IconKey="alarm-clock" Size="14" StrokeThickness="2.2" Foreground="{DynamicResource MenuAccentBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <DockPanel Grid.Row="3" Grid.ColumnSpan="2" Margin="0,4,0,0">
+                            <controls:LucideIcon DockPanel.Dock="Left" IconKey="alarm-clock" Size="14" StrokeThickness="2.2" Foreground="{DynamicResource MenuAccentBrush}" VerticalAlignment="Top" Margin="0,2,8,0"/>
                             <TextBlock x:Name="TxtSummary" Text="" FontFamily="{DynamicResource MenuLabelFont}" FontSize="{DynamicResource MenuLabelFontSize}" Foreground="{DynamicResource MenuLabelBrush}" TextWrapping="Wrap" VerticalAlignment="Center"/>
-                        </StackPanel>
+                        </DockPanel>
                     </Grid>
 
                     <!-- Buttons -->
