@@ -138,6 +138,7 @@ public class NoteStorageService
         note.SkinKey ??= NoteSkin.ClassicKey;
         note.RuneKey ??= GreatRune.DefaultKey;
         note.Emblems ??= new();
+        note.Sketch ??= "";
         note.LinkedApp ??= "";
         note.LinkedAppName ??= "";
         return note;

@@ -10,6 +10,9 @@ public class NoteItem
     public string Content { get; set; } = "";
     public List<TodoCheckItem> Checklist { get; set; } = new();
     public List<CopySnippetItem> CopyList { get; set; } = new();
+    /// <summary>Sketch mode drawing: the strokes in Ink Serialized Format, base64 ("" = nothing drawn). Kept in
+    /// notes.json so the trash, backups, history and exports carry it like the text.</summary>
+    public string Sketch { get; set; } = "";
     public NoteViewMode ViewMode { get; set; } = NoteViewMode.Text;
 
     public bool IsChecklistMode
@@ -96,6 +99,10 @@ public class NoteItem
             {
                 return $"Copy List ({CopyList.Count} items): {string.Join(" | ", CopyList.ConvertAll(c => c.Text))}";
             }
+            if (ViewMode == NoteViewMode.Sketch)
+            {
+                return string.IsNullOrEmpty(Sketch) ? "(Empty Drawing)" : "(Drawing)";
+            }
             return string.IsNullOrEmpty(Content) ? "(Empty Note)" : Content;
         }
     }
@@ -109,6 +116,7 @@ public class NoteItem
             Content = Content,
             Checklist = Checklist.ConvertAll(item => new TodoCheckItem { Id = Guid.NewGuid().ToString("N"), Text = item.Text, IsDone = item.IsDone }),
             CopyList = CopyList.ConvertAll(item => new CopySnippetItem { Id = Guid.NewGuid().ToString("N"), Text = item.Text }),
+            Sketch = Sketch,
             ViewMode = ViewMode,
             X = X + 30,
             Y = Y + 30,

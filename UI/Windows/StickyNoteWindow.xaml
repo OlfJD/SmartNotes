@@ -13,7 +13,7 @@
         Background="Transparent"
         ShowInTaskbar="False"
         ResizeMode="CanResizeWithGrip"
-        MinWidth="260" MinHeight="200"
+        MinWidth="280" MinHeight="200"
         Width="340" Height="360"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
@@ -141,6 +141,11 @@
                                 <!-- Copy Compartments Mode Button -->
                                 <Button x:Name="BtnCopyMode" Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnCopyMode_Click" ToolTip="Switch to Copy Compartments Mode (Quick-Copy rows)" Margin="1,0,0,0">
                                     <controls:LucideIcon x:Name="IconCopyMode" IconKey="copy" Size="15" StrokeThickness="2.6" Foreground="{DynamicResource SkinMutedBrush}"/>
+                                </Button>
+
+                                <!-- Sketch Mode Button -->
+                                <Button x:Name="BtnSketchMode" Style="{StaticResource IconButton}" Width="28" Height="28" Click="BtnSketchMode_Click" ToolTip="Switch to Sketch Mode" Margin="1,0,0,0">
+                                    <controls:LucideIcon x:Name="IconSketchMode" IconKey="pencil" Size="15" StrokeThickness="2.4" Foreground="{DynamicResource SkinMutedBrush}"/>
                                 </Button>
                             </StackPanel>
                         </skins:CutBorder>
@@ -435,6 +440,34 @@
                                 <controls:LucideIcon IconKey="plus" Size="15" StrokeThickness="2.8" Foreground="{DynamicResource SkinCyanBrush}"/>
                             </Button>
                         </Grid>
+                    </skins:CutBorder>
+                </Grid>
+
+                <!-- MODE D: Sketch (pen / mouse drawing; pressure comes with a pen). Strokes saved in NoteItem.Sketch. -->
+                <Grid x:Name="SketchModeContainer" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <InkCanvas x:Name="SketchCanvas" Grid.Row="0" Background="Transparent" Cursor="Pen" ClipToBounds="True" Margin="0,0,0,6"
+                               StrokeCollected="SketchCanvas_StrokeCollected" StrokeErased="SketchCanvas_StrokeErased"/>
+                    <!-- Tools: pen, highlighter, eraser | colours | clear -->
+                    <skins:CutBorder x:Name="SketchToolbar" Grid.Row="1" Cut="{DynamicResource SkinItemCut}" Background="{DynamicResource SkinInputBgBrush}" CornerRadius="{DynamicResource SkinInputRadius}" BorderBrush="{DynamicResource SkinInputBorderBrush}" BorderThickness="{DynamicResource SkinInputBorder}" Padding="4,2">
+                        <DockPanel LastChildFill="False">
+                            <Button x:Name="BtnSketchPen" DockPanel.Dock="Left" Style="{StaticResource IconButton}" Width="28" Height="28" Padding="0" Click="BtnSketchTool_Click" Tag="Pen">
+                                <controls:LucideIcon x:Name="IconSketchPen" IconKey="pencil" Size="15" StrokeThickness="2.4" Foreground="{DynamicResource SkinMutedBrush}"/>
+                            </Button>
+                            <Button x:Name="BtnSketchHighlighter" DockPanel.Dock="Left" Style="{StaticResource IconButton}" Width="28" Height="28" Padding="0" Click="BtnSketchTool_Click" Tag="Highlighter">
+                                <controls:LucideIcon x:Name="IconSketchHighlighter" IconKey="highlighter" Size="15" StrokeThickness="2.4" Foreground="{DynamicResource SkinMutedBrush}"/>
+                            </Button>
+                            <Button x:Name="BtnSketchEraser" DockPanel.Dock="Left" Style="{StaticResource IconButton}" Width="28" Height="28" Padding="0" Click="BtnSketchTool_Click" Tag="Eraser">
+                                <controls:LucideIcon x:Name="IconSketchEraser" IconKey="eraser" Size="15" StrokeThickness="2.4" Foreground="{DynamicResource SkinMutedBrush}"/>
+                            </Button>
+                            <StackPanel x:Name="SketchColorDots" DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                            <Button x:Name="BtnSketchClear" DockPanel.Dock="Right" Style="{StaticResource IconButton}" Width="28" Height="28" Padding="0" Click="BtnSketchClear_Click">
+                                <controls:LucideIcon IconKey="trash-2" Size="14" StrokeThickness="2.4" Foreground="{DynamicResource SkinPlaceholderBrush}"/>
+                            </Button>
+                        </DockPanel>
                     </skins:CutBorder>
                 </Grid>
             </Grid>

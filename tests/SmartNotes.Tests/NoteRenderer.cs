@@ -155,6 +155,11 @@ public static class NoteRenderer
         linked.LinkedAppName = "Visual Studio Code";
         linked.Reminder = new NoteReminder { At = DateTime.Today.AddDays(1).AddHours(9), Repeat = ReminderRepeat.Weekdays };
 
+        var sketch = Sample("Classic", "Cyan", "Doodle", mode: NoteViewMode.Sketch);
+        sketch.Sketch = SmartNotes.UI.Controls.SketchData.ToBase64(SketchTests.Doodle());
+        var sketchInk = Sample("InkWashi", "Rose", "Garden plan", mode: NoteViewMode.Sketch);
+        sketchInk.Sketch = sketch.Sketch;
+
         var paperReminder = Sample("Paper", "Rose", "Stand-up", "Notes for the team meeting");
         paperReminder.Reminder = new NoteReminder { At = DateTime.Now.AddMinutes(-1) };
 
@@ -164,6 +169,8 @@ public static class NoteRenderer
             ("feature-reminder-paper", paperReminder, w => { w.FireReminder(DateTime.Now); Pump(1200); return Render((FrameworkElement)w.Content); }),
             ("feature-daily-streak", daily, null),
             ("feature-linked-and-badge", linked, null),
+            ("feature-sketch", sketch, null),
+            ("feature-sketch-inkwashi", sketchInk, null),
         };
     }
 

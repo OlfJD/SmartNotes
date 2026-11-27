@@ -191,6 +191,10 @@ public partial class StickyNoteWindow : Window
         if (BtnMore != null) BtnMore.ToolTip = LocalizationService.T("Tooltip_MoreOptions");
         if (BtnAddTask != null) BtnAddTask.ToolTip = LocalizationService.T("Tooltip_AddTask");
         if (BtnAddCopyItem != null) BtnAddCopyItem.ToolTip = LocalizationService.T("Tooltip_AddSnippet");
+        if (BtnSketchPen != null) BtnSketchPen.ToolTip = LocalizationService.T("Tooltip_SketchPen");
+        if (BtnSketchHighlighter != null) BtnSketchHighlighter.ToolTip = LocalizationService.T("Tooltip_SketchHighlighter");
+        if (BtnSketchEraser != null) BtnSketchEraser.ToolTip = LocalizationService.T("Tooltip_SketchEraser");
+        if (BtnSketchClear != null) BtnSketchClear.ToolTip = LocalizationService.T("Tooltip_SketchClear");
 
         if (TxtNoteStyleHeader != null) TxtNoteStyleHeader.Text = LocalizationService.T("ColorPopup_NoteStyle");
         BuildSkinButtons();
@@ -258,6 +262,9 @@ public partial class StickyNoteWindow : Window
         CopyItemsControl.ItemsSource = _copyItems;
         SetupItemDrag();
 
+        // Sketch setup
+        InitSketch();
+
         // Ensure backward compatibility
         if (_note.IsChecklistMode && _note.ViewMode == NoteViewMode.Text)
         {
@@ -287,6 +294,7 @@ public partial class StickyNoteWindow : Window
         ViewMode = _note.ViewMode,
         Checklist = _checklistItems.Select(i => new TodoCheckItem { Text = i.Text, IsDone = i.IsDone }).ToList(),
         CopyList = _copyItems.Select(i => new CopySnippetItem { Text = i.Text }).ToList(),
+        Sketch = SketchData.ToBase64(SketchCanvas.Strokes),
     };
 
     private string ContentFingerprint()
@@ -295,6 +303,7 @@ public partial class StickyNoteWindow : Window
         sb.Append(TxtTitle.Text).Append('\u0001').Append(TxtContent.Text).Append('\u0001').Append((int)_note.ViewMode);
         foreach (var item in _checklistItems) sb.Append('\u0002').Append(item.IsDone ? '1' : '0').Append(item.Text);
         foreach (var item in _copyItems) sb.Append('\u0003').Append(item.Text);
+        sb.Append('\u0004').Append(_sketchRevision); // drawing counts as an edit too
         return sb.ToString();
     }
 
@@ -426,6 +435,7 @@ public partial class StickyNoteWindow : Window
             Resources["SkinEmeraldBrush"] = theme.GlowBrush;
             Resources["SkinCyanBrush"] = theme.GlowBrush;
         }
+        if (SketchCanvas != null) ApplySketchTool(); // the first pen colour is the note's own
         // Checklist ticks: boxes, or "[ ]" / "[x]" as text (Terminal)
         Resources["SkinBoxCheckVisibility"] = skin.TextCheckboxes ? Visibility.Collapsed : Visibility.Visible;
         Resources["SkinTextCheckVisibility"] = skin.TextCheckboxes ? Visibility.Visible : Visibility.Collapsed;
@@ -834,6 +844,9 @@ public partial class StickyNoteWindow : Window
         if (TextModeContainer != null) TextModeContainer.Visibility = (mode == NoteViewMode.Text) ? Visibility.Visible : Visibility.Collapsed;
         if (ChecklistModeContainer != null) ChecklistModeContainer.Visibility = (mode == NoteViewMode.Checklist) ? Visibility.Visible : Visibility.Collapsed;
         if (CopyModeContainer != null) CopyModeContainer.Visibility = (mode == NoteViewMode.CopyCompartments) ? Visibility.Visible : Visibility.Collapsed;
+        if (SketchModeContainer != null) SketchModeContainer.Visibility = (mode == NoteViewMode.Sketch) ? Visibility.Visible : Visibility.Collapsed;
+        if (IconSketchMode != null) IconSketchMode.Foreground = (mode == NoteViewMode.Sketch) ? _inkActive : _inkMuted;
+        if (BtnSketchMode != null) BtnSketchMode.ToolTip = LocalizationService.T(mode == NoteViewMode.Sketch ? "Tooltip_ActiveSketchMode" : "Tooltip_SketchMode");
 
         if (IconTextMode != null) IconTextMode.Foreground = (mode == NoteViewMode.Text) ? _inkActive : _inkMuted;
         if (IconChecklistMode != null) IconChecklistMode.Foreground = (mode == NoteViewMode.Checklist) ? _inkActive : _inkMuted;
@@ -1156,6 +1169,7 @@ public partial class StickyNoteWindow : Window
     {
         _note.IsLocked = isLocked;
         UpdateWaxSeal(animate: _isLoaded); // living Medieval notes: the seal is pressed on (or lifted off) when locking
+        if (SketchCanvas != null && _isLoaded) ApplySketchTool(); // a locked drawing can't be changed
         if (TxtTitle != null) TxtTitle.IsReadOnly = isLocked;
         if (TxtContent != null) TxtContent.IsReadOnly = isLocked;
         // checklist tasks and copy rows: text read-only, delete buttons off (ticking tasks off stays possible)
@@ -1347,6 +1361,7 @@ public partial class StickyNoteWindow : Window
         _note.Content = TxtContent.Text;
         _note.Checklist = new List<TodoCheckItem>(_checklistItems);
         _note.CopyList = new List<CopySnippetItem>(_copyItems);
+        _note.Sketch = SketchData.ToBase64(SketchCanvas.Strokes);
         _note.IsChecklistMode = (_note.ViewMode == NoteViewMode.Checklist);
         _note.X = Left;
         _note.Y = Top;
@@ -1397,6 +1412,7 @@ public partial class StickyNoteWindow : Window
         foreach (var item in version.Checklist) _checklistItems.Add(new TodoCheckItem { Text = item.Text, IsDone = item.IsDone });
         _copyItems.Clear();
         foreach (var item in version.CopyList) _copyItems.Add(new CopySnippetItem { Text = item.Text });
+        SetSketchStrokes(SketchData.FromBase64(version.Sketch));
         UpdateViewMode(version.ViewMode);
 
         if (SaveNoteState())
@@ -2293,6 +2309,11 @@ public partial class StickyNoteWindow : Window
 
     public void CopyAllContent()
     {
+        if (_note.ViewMode == NoteViewMode.Sketch)
+        {
+            CopyAsPicture(); // a drawing is copied as a picture
+            return;
+        }
         try
         {
             string bodyText;
@@ -2450,8 +2471,16 @@ public partial class StickyNoteWindow : Window
                 {
                     NoteViewMode.Checklist => GetChecklistAsText(),
                     NoteViewMode.CopyCompartments => GetCopyListAsText(),
+                    NoteViewMode.Sketch => "",
                     _ => TxtContent.Text ?? ""
                 };
+                if (_note.ViewMode == NoteViewMode.Sketch)
+                {
+                    // the drawing goes next to the Markdown file as a PNG with the same name
+                    string png = Path.ChangeExtension(sfd.FileName, ".png");
+                    SaveSketchPng(png);
+                    text = $"![{LocalizationService.T("Export_DrawingAlt")}]({Uri.EscapeDataString(Path.GetFileName(png))})\n";
+                }
                 string fullDoc = string.IsNullOrWhiteSpace(title) ? text : $"# {title.Trim()}\n\n{text}";
                 File.WriteAllText(sfd.FileName, fullDoc);
             }

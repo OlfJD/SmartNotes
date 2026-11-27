@@ -92,6 +92,7 @@ public static class NoteHistoryService
                 v.Content ??= "";
                 v.Checklist ??= new();
                 v.CopyList ??= new();
+                v.Sketch ??= "";
             }
             return list.Where(v => v != null).ToList();
         }

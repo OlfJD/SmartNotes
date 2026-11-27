@@ -14,10 +14,13 @@ public class NoteVersion
     public NoteViewMode ViewMode { get; set; } = NoteViewMode.Text;
     public List<TodoCheckItem> Checklist { get; set; } = new();
     public List<CopySnippetItem> CopyList { get; set; } = new();
+    /// <summary>The drawing (see NoteItem.Sketch).</summary>
+    public string Sketch { get; set; } = "";
 
     /// <summary>Same content? (Ignores SavedAt and item ids.)</summary>
     public bool SameContentAs(NoteVersion other) =>
         Title == other.Title &&
+        (Sketch ?? "") == (other.Sketch ?? "") &&
         Content == other.Content &&
         ViewMode == other.ViewMode &&
         Checklist.Select(i => (i.Text, i.IsDone)).SequenceEqual(other.Checklist.Select(i => (i.Text, i.IsDone))) &&
