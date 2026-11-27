@@ -224,6 +224,10 @@ Skins change the whole look of a note (silhouette, surface, fonts, icon colours)
 - New app icon and the pick-board skill (earlier).
 
 ### Still open
+- **Test status 2026-11-27** (all the unreleased work above): 77/77 unit tests. Full end-to-end run 103/108; the five failures (app-link focus, Win+Alt+A, export with a colon, reminder menu, two-PC sync) each passed when run alone, and the app-link one four times in a row. They are timing / focus interference while the PC was in use (keys typed during a run land in test notes: `History_EditsInTheSameRound` got ". ab"). Run the end-to-end tests when nobody is typing.
+- **Westeros** still waits for the picks on `docs/references/westeros-board.html`. The four new themes were built without a pick board; fonts, creatures, paper blue and seal style are easy to change.
+- **README**: `docs/images/themes.png` still shows the first six themes; `--render <folder> skins` draws all ten.
+- **Version**: still 2.6.0 in the csproj; bump before tagging a release.
 - **Click through before a release** (what the end-to-end tests don't cover): tray menu opens at the cursor and closes on an outside click or Escape; three-dot and right-click menus in every skin; changing fonts in Settings and saving; switching skins on an open note; resizing shaped skins; Win+D with Desktop Stuck notes.
 - Variable fonts are not usable in WPF: only static TTFs work as skin fonts.
 
