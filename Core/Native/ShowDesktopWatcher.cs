@@ -19,16 +19,15 @@ namespace SmartNotes.Core.Native;
 public sealed class ShowDesktopWatcher : IDisposable
 {
     private readonly Func<IEnumerable<StickyNoteWindow>> _notes;
-    private readonly Win32Api.WinEventDelegate _callback; // kept alive: the hook holds a native pointer to it
+    private readonly ForegroundWatcher _foreground;
     private readonly DispatcherTimer _retry;
-    private IntPtr _hook;
     private IntPtr _desktop;
     private int _retriesLeft;
 
-    public ShowDesktopWatcher(Func<IEnumerable<StickyNoteWindow>> notes)
+    public ShowDesktopWatcher(Func<IEnumerable<StickyNoteWindow>> notes, ForegroundWatcher foreground)
     {
         _notes = notes;
-        _callback = OnForegroundChanged;
+        _foreground = foreground;
         // The shell can re-raise the desktop a moment after the switch (animations), so place the notes again shortly after.
         _retry = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(160) };
         _retry.Tick += (_, _) =>
@@ -37,17 +36,13 @@ public sealed class ShowDesktopWatcher : IDisposable
             if (_desktop != IntPtr.Zero && Win32Api.GetForegroundWindow() is var fg && Win32Api.GetAncestor(fg, Win32Api.GA_ROOT) == _desktop)
                 PlaceAboveDesktop(_desktop);
         };
-        // Out-of-context hook: callbacks arrive on this (UI) thread through its message loop.
-        _hook = Win32Api.SetWinEventHook(Win32Api.EVENT_SYSTEM_FOREGROUND, Win32Api.EVENT_SYSTEM_FOREGROUND, IntPtr.Zero,
-            _callback, 0, 0, Win32Api.WINEVENT_OUTOFCONTEXT | Win32Api.WINEVENT_SKIPOWNPROCESS);
+        _foreground.Changed += OnForegroundChanged;
     }
 
-    private void OnForegroundChanged(IntPtr hook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint thread, uint time)
+    private void OnForegroundChanged(IntPtr root)
     {
         try
         {
-            if (hwnd == IntPtr.Zero) return;
-            var root = Win32Api.GetAncestor(hwnd, Win32Api.GA_ROOT);
             if (IsDesktopWindow(root))
             {
                 _desktop = root;
@@ -108,10 +103,6 @@ public sealed class ShowDesktopWatcher : IDisposable
     public void Dispose()
     {
         _retry.Stop();
-        if (_hook != IntPtr.Zero)
-        {
-            Win32Api.UnhookWinEvent(_hook);
-            _hook = IntPtr.Zero;
-        }
+        _foreground.Changed -= OnForegroundChanged;
     }
 }

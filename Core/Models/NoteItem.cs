@@ -36,6 +36,12 @@ public class NoteItem
     /// <summary>Constellation shown by the Astral skin; empty = picked automatically from the note's id.</summary>
     public string ConstellationKey { get; set; } = "";
     public NotePinMode PinMode { get; set; } = NotePinMode.DesktopStuck;
+    /// <summary>Exe file name of the program this note is linked to ("Code.exe"); empty = not linked. See AppLink.</summary>
+    public string LinkedApp { get; set; } = "";
+    /// <summary>The linked program's name as shown in the menu and footer ("Visual Studio Code").</summary>
+    public string LinkedAppName { get; set; } = "";
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool IsAppLinked => !string.IsNullOrWhiteSpace(LinkedApp);
     public bool IsLocked { get; set; } = false;
     public double Opacity { get; set; } = 1.0;
     public double FontSize { get; set; } = 16.0;
@@ -81,6 +87,8 @@ public class NoteItem
             SkinKey = SkinKey,
             RuneKey = RuneKey,
             PinMode = PinMode,
+            LinkedApp = LinkedApp,
+            LinkedAppName = LinkedAppName,
             IsLocked = false,
             Opacity = Opacity,
             FontSize = FontSize,

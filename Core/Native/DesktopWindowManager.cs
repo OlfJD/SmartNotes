@@ -241,6 +241,18 @@ public class DesktopWindowManager
             Win32Api.SWP_NOMOVE | Win32Api.SWP_NOSIZE | Win32Api.SWP_NOACTIVATE | Win32Api.SWP_SHOWWINDOW);
     }
 
+    private bool _appLinked;
+
+    /// <summary>
+    /// An app-linked note floats on top of its program (topmost, see AppLink) and never takes the focus from it when it
+    /// appears. Not linked: the note's own pin mode applies again.
+    /// </summary>
+    public void SetAppLinked(bool linked, NotePinMode savedMode)
+    {
+        _appLinked = linked;
+        ApplyPinMode(linked ? NotePinMode.AlwaysOnTop : savedMode);
+    }
+
     public void ApplyPinMode(NotePinMode pinMode)
     {
         _currentPinMode = pinMode;
@@ -259,7 +271,7 @@ public class DesktopWindowManager
                 _window.Topmost = true;
                 _isInteracting = true;
                 Win32Api.SetWindowPos(_hwnd, Win32Api.HWND_TOPMOST, 0, 0, 0, 0,
-                    Win32Api.SWP_NOMOVE | Win32Api.SWP_NOSIZE | Win32Api.SWP_SHOWWINDOW);
+                    Win32Api.SWP_NOMOVE | Win32Api.SWP_NOSIZE | Win32Api.SWP_SHOWWINDOW | (_appLinked ? Win32Api.SWP_NOACTIVATE : 0));
                 break;
 
             case NotePinMode.Normal:

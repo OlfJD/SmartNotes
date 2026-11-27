@@ -159,12 +159,13 @@ public partial class StickyNoteWindow : Window
     private void OnWindowLoaded(object sender, RoutedEventArgs e)
     {
         WindowBlurHelper.ApplyModernWindowStyles(this);
-        _desktopWindowManager.ApplyPinMode(_note.PinMode);
+        _desktopWindowManager.SetAppLinked(_note.IsAppLinked, _note.PinMode);
         ApplyProofingSettings();
         ApplyLocalizedStrings();
         LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
 
-        if (_startInForeground || _note.PinMode == NotePinMode.AlwaysOnTop)
+        // an app-linked note appears over its program without taking the focus from it
+        if (_startInForeground || (_note.PinMode == NotePinMode.AlwaysOnTop && !_note.IsAppLinked))
         {
             _desktopWindowManager.BringToFront();
             TxtContent.Focus();
@@ -787,10 +788,11 @@ public partial class StickyNoteWindow : Window
     private void UpdatePinModeUI(NotePinMode mode)
     {
         _note.PinMode = mode;
-        _desktopWindowManager.ApplyPinMode(mode);
+        _desktopWindowManager.SetAppLinked(_note.IsAppLinked, mode);
 
         if (TxtPinIndicator == null || IconPin == null || BtnPinMode == null) return;
         if (IconPinFooter != null) IconPinFooter.IconKey = mode == NotePinMode.Normal ? "pin-off" : "pin";
+        BtnPinMode.IsEnabled = !_note.IsAppLinked;
 
         switch (mode)
         {
@@ -814,6 +816,84 @@ public partial class StickyNoteWindow : Window
                 IconPin.Foreground = _inkMuted;
                 BtnPinMode.ToolTip = LocalizationService.T("Tooltip_Pin_Normal");
                 break;
+        }
+
+        // App-linked: the link decides when the note is on screen, so the footer names the program and the pin waits
+        if (_note.IsAppLinked)
+        {
+            string name = ShortName(LinkedAppDisplayName, 22);
+            TxtPinIndicator.Text = LocalizationService.T("Link_Footer", name);
+            if (IconPinFooter != null) IconPinFooter.IconKey = "app-window";
+            IconPin.Foreground = _inkMuted;
+            ToolTipService.SetShowOnDisabled(BtnPinMode, true);
+            BtnPinMode.ToolTip = LocalizationService.T("Tooltip_Pin_Linked", LinkedAppDisplayName);
+        }
+    }
+
+    private string LinkedAppDisplayName => string.IsNullOrWhiteSpace(_note.LinkedAppName)
+        ? Path.GetFileNameWithoutExtension(_note.LinkedApp)
+        : _note.LinkedAppName;
+
+    private static string ShortName(string text, int max) => text.Length <= max ? text : text.Substring(0, max - 1).TrimEnd() + "…";
+
+    /// <summary>Shows the note on top without taking the focus from the program in front (app-linked notes).</summary>
+    public void ShowWithoutFocus()
+    {
+        if (!IsVisible)
+        {
+            ShowActivated = false;
+            try { Show(); }
+            finally { ShowActivated = true; }
+        }
+        _desktopWindowManager.RaiseWithoutActivating();
+    }
+
+    /// <summary>"Show Only With" in the ⋯ menu: Always, then every program with an open window (filled when opened).</summary>
+    private MenuItem BuildAppLinkMenu()
+    {
+        var sub = AppMenu.Sub(LocalizationService.T("Menu_ShowOnlyWith"), "app-window");
+        sub.ToolTip = LocalizationService.T("Tooltip_ShowOnlyWith");
+        sub.Items.Add(AppMenu.Item(LocalizationService.T("Menu_LinkAlways"), null, () => SetAppLink(null), isChecked: !_note.IsAppLinked));
+        sub.Items.Add(AppMenu.Separator());
+        // looking at every window takes a moment, so only when the submenu is opened
+        var loading = AppMenu.Item("…", null, null, MenuTone.Muted, isEnabled: false);
+        sub.Items.Add(loading);
+        bool filled = false;
+        sub.SubmenuOpened += (s, e) =>
+        {
+            if (filled || !ReferenceEquals(e.OriginalSource, sub)) return;
+            filled = true;
+            sub.Items.Remove(loading);
+
+            var programs = ProgramWindows.ListOpenPrograms();
+            if (_note.IsAppLinked && !programs.Any(p => AppLink.Matches(_note.LinkedApp, p.ExeName)))
+            {
+                programs.Insert(0, new OpenProgram(AppLink.Normalize(_note.LinkedApp), LinkedAppDisplayName)); // linked, not running now
+            }
+            if (programs.Count == 0)
+            {
+                sub.Items.Add(AppMenu.Item(LocalizationService.T("Menu_NoOtherPrograms"), null, null, MenuTone.Muted, isEnabled: false));
+            }
+            foreach (var program in programs)
+            {
+                var item = AppMenu.Item(program.DisplayName.Replace("_", "__"), null, () => SetAppLink(program),
+                    isChecked: AppLink.Matches(_note.LinkedApp, program.ExeName));
+                item.ToolTip = program.ExeName;
+                sub.Items.Add(item);
+            }
+        };
+        return sub;
+    }
+
+    private void SetAppLink(OpenProgram? program)
+    {
+        _note.LinkedApp = program == null ? "" : AppLink.Normalize(program.ExeName);
+        _note.LinkedAppName = program?.DisplayName ?? "";
+        UpdatePinModeUI(_note.PinMode);
+        RequestSave(isTyping: false);
+        if (program != null)
+        {
+            ShowStatus("app-window", LocalizationService.T("Status_LinkedTo", ShortName(LinkedAppDisplayName, 22)), _inkEmerald);
         }
     }
 
@@ -1647,6 +1727,7 @@ public partial class StickyNoteWindow : Window
                 App.Instance?.NotifyTransparencySettingsChanged();
             }, isChecked: isDimEnabled));
         menu.Items.Add(opacityMenu);
+        menu.Items.Add(BuildAppLinkMenu());
 
         // Text proofing
         var proofingMenu = AppMenu.Sub(LocalizationService.T("Menu_Proofing"), "spell-check");

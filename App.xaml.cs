@@ -28,6 +28,9 @@ public partial class App : Application
     private NoteStorageService _storageService = null!;
     private TrayManager _trayManager = null!;
     private ShowDesktopWatcher? _showDesktopWatcher;
+    private ForegroundWatcher? _foregroundWatcher;
+    /// <summary>Exe name of the last program other than SmartNotes that was in front (app-linked notes).</summary>
+    private string? _foregroundExe;
     private GlobalHotKeyManager? _hotKeyManager;
     private Window? _dummyHwndHost;
 
@@ -218,13 +221,17 @@ public partial class App : Application
         RunStartupStep("GlobalHotkeys", InitGlobalHotkeys);
         RunStartupStep("SingleInstanceListener", StartSingleInstanceListener);
 
+        // Which program is in front: app-linked notes show only over theirs (before the notes are restored)
+        RunStartupStep("Foreground tracking", StartForegroundTracking);
+
         // Restore active notes on the desktop at their exact saved coordinates
         RunStartupStep("Desktop notes restore", RestoreAllDesktopNotes);
         // A note saved on a screen that is gone, or in a gap between screens, would be out of reach
         RunStartupStep("Notes onto screens", BringNotesOntoScreens);
 
         // Keep "Desktop Stuck" notes visible through Show Desktop / Win+D (GitHub issue #1)
-        RunStartupStep("ShowDesktopWatcher", () => _showDesktopWatcher = new ShowDesktopWatcher(() => _activeNoteWindows.Values.ToList()));
+        RunStartupStep("ShowDesktopWatcher", () => _showDesktopWatcher = new ShowDesktopWatcher(
+            () => _activeNoteWindows.Values.ToList(), _foregroundWatcher ??= new ForegroundWatcher()));
 
         // Silent updates: download in the background, restart into the new version only while the
         // user is away (3 min without input) and no note has focus. No dialogs.
@@ -376,6 +383,33 @@ public partial class App : Application
         UpdateTrayTooltip();
     }
 
+    private void StartForegroundTracking()
+    {
+        IntPtr fg = Win32Api.GetForegroundWindow();
+        Win32Api.GetWindowThreadProcessId(fg, out uint pid);
+        if (pid != (uint)Environment.ProcessId) _foregroundExe = ProgramWindows.ExeNameOf(Win32Api.GetAncestor(fg, Win32Api.GA_ROOT));
+        _foregroundWatcher = new ForegroundWatcher();
+        _foregroundWatcher.Changed += OnForegroundChanged;
+    }
+
+    /// <summary>Another program came to the front: app-linked notes appear over their program and hide over any other.</summary>
+    private void OnForegroundChanged(IntPtr window)
+    {
+        _foregroundExe = ProgramWindows.ExeNameOf(window);
+        ApplyAppLinks();
+    }
+
+    private void ApplyAppLinks()
+    {
+        if (_settingsService.Settings.HideAllNotes) return;
+        foreach (var win in _activeNoteWindows.Values.ToList())
+        {
+            if (!win.Note.IsAppLinked) continue;
+            if (AppLink.Matches(win.Note.LinkedApp, _foregroundExe)) win.ShowWithoutFocus();
+            else if (win.IsVisible) win.Hide();
+        }
+    }
+
     private void RestoreAllDesktopNotes()
     {
         var activeNotes = _storageService.Notes.Where(n => !n.IsDeleted).ToList();
@@ -389,7 +423,7 @@ public partial class App : Application
         {
             try
             {
-                SpawnStickyNoteWindow(note, bringToFront: true);
+                SpawnStickyNoteWindow(note, bringToFront: true, startup: true);
             }
             catch (Exception ex)
             {
@@ -401,8 +435,16 @@ public partial class App : Application
         UpdateTrayTooltip();
     }
 
-    private void SpawnStickyNoteWindow(NoteItem note, bool bringToFront = false)
+    /// <param name="startup">
+    /// Restoring the notes at startup: an app-linked note then only appears if its program is in front, and without
+    /// taking the focus. Otherwise (a new, duplicated or restored note) the user just asked for it, so it is shown.
+    /// </param>
+    private void SpawnStickyNoteWindow(NoteItem note, bool bringToFront = false, bool startup = false)
     {
+        if (startup && note.IsAppLinked)
+        {
+            bringToFront = false;
+        }
         if (_activeNoteWindows.ContainsKey(note.Id))
         {
             var existingWin = _activeNoteWindows[note.Id];
@@ -438,7 +480,11 @@ public partial class App : Application
 
         _activeNoteWindows[note.Id] = win;
 
-        if (!_settingsService.Settings.HideAllNotes)
+        if (startup && note.IsAppLinked)
+        {
+            if (!_settingsService.Settings.HideAllNotes && AppLink.Matches(note.LinkedApp, _foregroundExe)) win.ShowWithoutFocus();
+        }
+        else if (!_settingsService.Settings.HideAllNotes)
         {
             win.Show();
             if (bringToFront)
@@ -549,6 +595,11 @@ public partial class App : Application
             if (hide)
             {
                 win.Hide();
+            }
+            else if (win.Note.IsAppLinked)
+            {
+                // back only over its own program
+                if (AppLink.Matches(win.Note.LinkedApp, _foregroundExe)) win.ShowWithoutFocus();
             }
             else
             {
@@ -824,6 +875,7 @@ public partial class App : Application
             try { win.FlushPendingSave(); } catch { }
         }
         try { _showDesktopWatcher?.Dispose(); } catch { }
+        try { _foregroundWatcher?.Dispose(); } catch { }
         try { _trayManager?.Dispose(); } catch { }
         try { _hotKeyManager?.Dispose(); } catch { }
         try { _instanceEvent?.Dispose(); } catch { }

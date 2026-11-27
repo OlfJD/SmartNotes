@@ -133,6 +133,23 @@
     <!-- Chevron Down -->
     <StreamGeometry x:Key="LucideIcon_chevron-down">M 6 9 L 12 15 L 18 9</StreamGeometry>
 
+    <!-- App Window (app-linked notes) -->
+    <StreamGeometry x:Key="LucideIcon_app-window">M 4 4 H 20 A 2 2 0 0 1 22 6 V 18 A 2 2 0 0 1 20 20 H 4 A 2 2 0 0 1 2 18 V 6 A 2 2 0 0 1 4 4 Z M 10 4 V 8 M 2 8 H 22 M 6 4 V 8</StreamGeometry>
+
+    <!-- Bell / Bell Ring (reminders) -->
+    <StreamGeometry x:Key="LucideIcon_bell">M 6 8 A 6 6 0 0 1 18 8 C 18 15 21 17 21 17 H 3 C 3 17 6 15 6 8 Z M 10.3 21 A 1.94 1.94 0 0 0 13.7 21</StreamGeometry>
+    <StreamGeometry x:Key="LucideIcon_bell-off">M 8.7 3 A 6 6 0 0 1 18 8 C 18 10.5 18.4 12.4 18.9 13.8 M 17 17 H 3 C 3 17 6 15 6 8 A 6 6 0 0 1 6.3 6.2 M 10.3 21 A 1.94 1.94 0 0 0 13.7 21 M 2 2 L 22 22</StreamGeometry>
+    <StreamGeometry x:Key="LucideIcon_alarm-clock">M 12 21 A 8 8 0 1 0 12 5 A 8 8 0 1 0 12 21 Z M 12 9 V 13 L 14 15 M 5 3 L 2 6 M 22 6 L 19 3</StreamGeometry>
+
+    <!-- Repeat / Flame (daily checklists) -->
+    <StreamGeometry x:Key="LucideIcon_repeat">M 17 2 L 21 6 L 17 10 M 3 11 V 10 A 4 4 0 0 1 7 6 H 21 M 7 22 L 3 18 L 7 14 M 21 13 V 14 A 4 4 0 0 1 17 18 H 3</StreamGeometry>
+    <StreamGeometry x:Key="LucideIcon_flame">M 8.5 14.5 A 2.5 2.5 0 0 0 11 12 C 11 10.62 10.5 10 10 9 C 8.93 6.86 9.78 4.95 12 3 C 12.5 5.5 14 7.9 16 9.5 C 18 11.1 19 13 19 15 A 7 7 0 1 1 5 15 C 5 13.85 5.43 12.71 6 12 A 2.5 2.5 0 0 0 8.5 14.5 Z</StreamGeometry>
+
+    <!-- Pencil / Eraser (sketch mode) -->
+    <StreamGeometry x:Key="LucideIcon_pencil">M 21.17 6.81 A 1 1 0 0 0 17.19 2.83 L 3.84 16.17 A 2 2 0 0 0 3.34 17 L 2.02 21.35 A 0.5 0.5 0 0 0 2.65 21.98 L 7 20.66 A 2 2 0 0 0 7.83 20.17 Z M 15 5 L 19 9</StreamGeometry>
+    <StreamGeometry x:Key="LucideIcon_eraser">M 7 21 L 2.7 16.7 A 1 1 0 0 1 2.7 15.3 L 12.3 5.7 A 1 1 0 0 1 13.7 5.7 L 21.3 13.3 A 1 1 0 0 1 21.3 14.7 L 15 21 Z M 22 21 H 7 M 5 11 L 14 20</StreamGeometry>
+    <StreamGeometry x:Key="LucideIcon_highlighter">M 9 11 L 3 17 V 20 H 12 L 15 17 M 22 12 L 17.4 16.6 A 2 2 0 0 1 14.6 16.6 L 9.4 11.4 A 2 2 0 0 1 9.4 8.6 L 14 4</StreamGeometry>
+
     <!-- Chevron Right -->
     <StreamGeometry x:Key="LucideIcon_chevron-right">M 9 18 L 15 12 L 9 6</StreamGeometry>
 
