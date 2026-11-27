@@ -30,7 +30,7 @@ public static class NoteRenderer
         typeof(Application).GetField("_resourceAssembly", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!
             .SetValue(null, typeof(SmartNotes.App).Assembly);
         var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
-        foreach (var dict in new[] { "UI/Icons/LucideIcons.xaml", "UI/Icons/SkinIcons.xaml", "UI/Themes/DarkTheme.xaml" })
+        foreach (var dict in new[] { "UI/Icons/LucideIcons.xaml", "UI/Icons/SkinIcons.xaml", "UI/Themes/DarkTheme.xaml", "UI/Themes/ThemedControls.xaml" })
         {
             app.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("pack://application:,,,/" + dict) });
         }

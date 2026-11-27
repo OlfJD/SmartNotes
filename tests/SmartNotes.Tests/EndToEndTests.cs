@@ -400,21 +400,25 @@ public static class EndToEndTests
     }
 
     [Test(E2E = true)]
-    public static void TakenHotkey_IsLoggedInsteadOfIgnored()
+    public static void TakenHotkey_ByAnotherSmartNotes_IsQuiet_AndTakenOverLater()
     {
         // Two copies with separate data folders run side by side; only the first can own Win+Alt+N
         using var first = Start("HotkeyOwner", new[] { Note("A") }, new() { ["EnableGlobalHotkeys"] = true });
         first.WaitForNoteWindows(1);
+        Assert.Eventually(() => File.ReadAllText(first.PathIn("startup.log")).Contains("Shortcut NewNote is on Win+Alt+N"), "the first copy owns Win+Alt+N");
         using var second = Start("HotkeyLate", new[] { Note("B") }, new() { ["EnableGlobalHotkeys"] = true }, alongsideOthers: true);
         second.WaitForNoteWindows(1);
-        Assert.Eventually(() => File.ReadAllText(second.PathIn("startup.log")).Contains("Win+Alt+N is already taken"),
-            "the second copy logs that the hotkey is taken");
-        Assert.Eventually(() => File.ReadAllText(second.PathIn("startup.log")).Contains("Told the user that Win+Alt+N"),
-            "the second copy tells the user (tray message)");
-        Assert.Eventually(() => ReportedConflicts(second).Contains("Win+Alt+N"),
-            "it remembers what it reported, so it is not repeated on every start");
-        Assert.False(File.ReadAllText(first.PathIn("startup.log")).Contains("Told the user"), "the copy that owns the shortcuts says nothing");
-        Assert.Equal("", ReportedConflicts(first), "nothing taken for the first copy: all three shortcuts are free on Windows");
+        Assert.Eventually(() => File.ReadAllText(second.PathIn("startup.log")).Contains("Win+Alt+N is already taken (another SmartNotes is running)"),
+            "the second copy logs that another SmartNotes holds it");
+        string log = File.ReadAllText(second.PathIn("startup.log"));
+        Assert.False(log.Contains("Told the user"), "and says nothing: the other copy is SmartNotes, not some program");
+        Assert.False(log.Contains("Shortcut NewNote is on Win+Alt+J"), "it does not grab the spare key either");
+
+        // once the first copy is gone, the second takes the shortcuts over (it checks every 20 s)
+        first.Exit();
+        Assert.Eventually(() => File.ReadAllText(second.PathIn("startup.log")).Contains("Shortcut NewNote is on Win+Alt+N"),
+            "the second copy took Win+Alt+N over", 35000);
+        Assert.Equal("", ReportedConflicts(second), "nothing to report");
     }
 
     private static string ReportedConflicts(AppDriver app)

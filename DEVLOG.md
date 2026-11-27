@@ -12,7 +12,7 @@ The quick wins from the same list and **note history** are done (see the changel
 **Bigger features (a few days each)**
 - **Reminders** *(done, unreleased)*. "Remind me…" on a note (time, optional repeat). At that time the note comes forward over the open apps and glows.
 - **Daily checklists** *(done, unreleased)*. "Repeat daily" on a checklist: the ticks reset each morning, with a small streak count.
-- **Finish the Westeros theme.** Planned below ("Skins"); the reference board `docs/references/westeros-board.html` is waiting for picks (surface, house colours, title font). Sigils drawn in code, no show logo or artwork.
+- ~~Westeros theme~~: dropped by the user on 2026-11-27, board deleted.
 - **A sync folder of your choice** *(done, unreleased)*. Settings option to keep the notes the same through OneDrive / Dropbox / a NAS, watching it for changes made on another PC. Keeps "no account, no cloud": it is the user's own folder.
 
 **Bold ideas and new themes**
@@ -211,7 +211,6 @@ Skins change the whole look of a note (silhouette, surface, fonts, icon colours)
 - **Elden Ring** (`EldenRing`, `EldenRingArt` + `RuneArt`) – the game's menu look, roughened 2026-11-13: murky olive panel with two-scale grain, dark mottling, mist banks, scratches and dust, grime along the edge, a chipped pale-gold double frame with notched corners, motes. A parchment variant was tried and rejected the same day: the user found it lost the Elden Ring feel (parchment lives on in **Medieval**).
 - **Great Runes** (2026-11-13): in the Elden Ring skin the colour popup shows nine Great Runes instead of colours (Godrick, Radahn, Rykard, Morgott, Mohg, Malenia, Unborn/Rennala, Miquella, and the title-screen Elden Ring emblem). The choice is stored per note in `NoteItem.RuneKey`; `ColorKey` is kept for the other skins. `GreatRune` (Core/Models) holds the list and builds the note theme from the rune colour; `NoteSkin.UsesRunes` switches this on. `RuneArt` draws each rune as glowing embers into a cached bitmap with additive blending, bottom right of the note and on the picker buttons. It is a C# port of the renderer in `docs/references/great-runes-board.html`, where every shape and detail (petals, flames, star flares, thick/thin regions) was tuned with the user against in-game references; change both together. The runes are our own drawings; the user decided not to ship the game's images (2026-11-13) because the repository and releases are public.
 - **Astral** (`Astral`, `AstralArt`) – started as the clean, pre-roughening dark Elden Ring look; themed in 2.3.0 (night sky, one constellation per note, its own `Astral` icon pack).
-- **Westeros** (planned): reference board `docs/references/westeros-board.html` (surface direction, house colours for the picker, title font). Waiting for the user's picks; sigils to be drawn in code, no show logo or artwork.
 - **Medieval** (`Medieval`, `EldenScrollArt`) – the parchment scroll that used to be called "Elden Ring". `App.MigrateSkinKeys()` renames stored `EldenRing` keys to `Medieval` once (`AppSettings.SkinDataVersion`).
 - Painters are chosen by `NoteSkin.ArtKey`; the popup's style buttons are generated from `NoteSkin.All`; `SideResizeInset` / `SideResizeWidth` put the side resize zones on visible pixels of shaped skins.
 - Franchise themes: build the look (shapes, palette, type, ornaments) from references, but do not ship a franchise's logo, artwork, screenshots or paid fonts — the repository and releases are public.
@@ -225,7 +224,7 @@ Skins change the whole look of a note (silhouette, surface, fonts, icon colours)
 
 ### Still open
 - **Test status 2026-11-27** (all the unreleased work above): 77/77 unit tests. Full end-to-end run 103/108; the five failures (app-link focus, Win+Alt+A, export with a colon, reminder menu, two-PC sync) each passed when run alone, and the app-link one four times in a row. They are timing / focus interference while the PC was in use (keys typed during a run land in test notes: `History_EditsInTheSameRound` got ". ab"). Run the end-to-end tests when nobody is typing.
-- **Westeros** still waits for the picks on `docs/references/westeros-board.html`. The four new themes were built without a pick board; fonts, creatures, paper blue and seal style are easy to change.
+- The four new themes were built without a pick board; fonts, creatures, paper blue and seal style are easy to change. The user wants the Deep Sea creatures reworked and more animations later.
 - **README**: `docs/images/themes.png` still shows the first six themes; `--render <folder> skins` draws all ten.
 - **Version**: still 2.6.0 in the csproj; bump before tagging a release.
 - **Click through before a release** (what the end-to-end tests don't cover): tray menu opens at the cursor and closes on an outside click or Escape; three-dot and right-click menus in every skin; changing fonts in Settings and saving; switching skins on an open note; resizing shaped skins; Win+D with Desktop Stuck notes.

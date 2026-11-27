@@ -229,7 +229,7 @@ public class TrayManager : IDisposable
         menu.Items.Add(AppMenu.Item(LocalizationService.T("Tray_OptimizeRam"), "cpu", Later(() =>
         {
             var (before, after, freed) = MemoryOptimizer.TrimMemory();
-            ShowBalloon("SmartNotes", LocalizationService.T("Tray_RamOptimizedBalloon", after, freed), ToolTipIcon.Info);
+            ShowBalloon("SmartNotes", LocalizationService.T("Tray_RamOptimizedBalloon", after, freed), ToolTipIcon.Info, "cpu");
         })));
         menu.Items.Add(AppMenu.Item(LocalizationService.T("Tray_CheckUpdates", UpdateService.CurrentVersion), "refresh-cw", Later(() =>
         {
@@ -252,13 +252,10 @@ public class TrayManager : IDisposable
         catch { }
     }
 
-    public void ShowBalloon(string title, string text, ToolTipIcon icon = ToolTipIcon.Info)
+    /// <summary>A short message: SmartNotes' own toast in the app's look (no Windows balloon any more).</summary>
+    public void ShowBalloon(string title, string text, ToolTipIcon icon = ToolTipIcon.Info, string iconKey = "sparkles")
     {
-        try
-        {
-            _notifyIcon.ShowBalloonTip(3000, title, text, icon);
-        }
-        catch { }
+        UI.Windows.Toasts.Show(title, text, iconKey, tone: icon == ToolTipIcon.Warning ? UI.Windows.ToastTone.Warning : UI.Windows.ToastTone.Info);
     }
 
     public void Dispose()

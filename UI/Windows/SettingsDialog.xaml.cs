@@ -58,6 +58,12 @@ public partial class SettingsDialog : Window
         ChkStartup.IsChecked = s.LaunchOnStartup;
         ChkDesktopStuck.IsChecked = s.DefaultPinMode == NotePinMode.DesktopStuck;
         ChkLivingThemes.IsChecked = s.LivingThemes;
+        // the keys the shortcuts are really on (one may have moved to its spare key, see App.RegisterMissingHotkeys)
+        foreach (var (label, action) in new[] { (TxtKeyNewNote, "NewNote"), (TxtKeyBringAll, "BringAll"), (TxtKeyShowHide, "ShowHide") })
+        {
+            string key = App.Instance?.HotkeyLabel(action) ?? "";
+            if (key.Length > 0) label.Text = key;
+        }
         _pendingSyncFolder = s.SyncFolder ?? "";
         UpdateSyncCard();
         ChkUnfocusedTransparency.IsChecked = s.EnableUnfocusedTransparency;

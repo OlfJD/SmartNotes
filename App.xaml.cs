@@ -315,31 +315,58 @@ public partial class App : Application
         _dummyHwndHost.Hide();
     }
 
+    /// <summary>
+    /// The global shortcuts, each with a spare key. Windows itself owns Win+Alt+D (date and time), B, F, G, K, M, R, T,
+    /// W and Y (HDR, Game Bar, microphone...), so none of these is used.
+    /// </summary>
+    private static readonly (string Action, Keys[] Keys)[] HotkeyPlan =
+    {
+        ("NewNote", new[] { Keys.N, Keys.J }),
+        ("BringAll", new[] { Keys.A, Keys.Q }),
+        ("ShowHide", new[] { Keys.S, Keys.H }),
+    };
+
+    private readonly Dictionary<string, Keys> _hotkeysInUse = new();
+    private System.Windows.Threading.DispatcherTimer? _hotkeyRetry;
+
+    /// <summary>The key a shortcut is on right now ("Win + Alt + N"), for menus and Settings; "" when it has none.</summary>
+    public string HotkeyLabel(string action)
+    {
+        if (!_settingsService.Settings.EnableGlobalHotkeys) return "";
+        return _hotkeysInUse.TryGetValue(action, out var key) ? $"Win + Alt + {key}" : "";
+    }
+
+    private Action HotkeyHandler(string action) => action switch
+    {
+        "NewNote" => CreateNewStickyNote,
+        "BringAll" => BringAllNotesToFront,
+        _ => ToggleHideAllNotes,
+    };
+
+    /// <summary>Another copy of SmartNotes is running (a test copy, or one being restarted): it is probably the one holding a shortcut.</summary>
+    private static bool AnotherSmartNotesRuns()
+    {
+        try
+        {
+            return System.Diagnostics.Process.GetProcessesByName("SmartNotes").Any(p => p.Id != Environment.ProcessId);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     private void InitGlobalHotkeys()
     {
+        _hotkeyRetry?.Stop();
+        _hotkeysInUse.Clear();
         if (_dummyHwndHost == null || !_settingsService.Settings.EnableGlobalHotkeys) return;
 
         try
         {
             IntPtr hwnd = new WindowInteropHelper(_dummyHwndHost).EnsureHandle();
             _hotKeyManager = new GlobalHotKeyManager(hwnd);
-            var taken = new List<string>();
-
-            void Register(Keys key, Action action)
-            {
-                if (_hotKeyManager.Register(Win32Api.MOD_WIN | Win32Api.MOD_ALT, key, () => Dispatcher.Invoke(action)) < 0)
-                {
-                    taken.Add($"Win+Alt+{key}");
-                }
-            }
-
-            // Windows itself owns Win+Alt+D (date and time), B, G, K, M, R and T (HDR, Game Bar, microphone), so the
-            // show/hide shortcut moved from D, which could never be registered, to S.
-            Register(Keys.N, CreateNewStickyNote);   // new note
-            Register(Keys.S, ToggleHideAllNotes);    // show / hide all notes
-            Register(Keys.A, BringAllNotesToFront);  // all notes in front of the open windows (they sit behind them otherwise)
-
-            ReportTakenHotkeys(taken);
+            RegisterMissingHotkeys();
         }
         catch (Exception ex)
         {
@@ -348,24 +375,65 @@ public partial class App : Application
     }
 
     /// <summary>
-    /// A shortcut another program already uses can't be ours. Say so once in a tray message (it used to be only in
-    /// the log, so the shortcut just seemed broken); the same taken keys are not reported again on every start.
+    /// Registers every shortcut that has no key yet. While another SmartNotes copy runs, only the usual keys are tried
+    /// and nobody is told: that copy probably holds them, so this one waits and takes them over once they are free
+    /// (checked every 20 s). Otherwise a shortcut that some other program holds moves to its spare key, and that is
+    /// said once in a message; test copies (own data folder) never show it.
     /// </summary>
-    private void ReportTakenHotkeys(List<string> taken)
+    private void RegisterMissingHotkeys()
     {
-        foreach (var key in taken) LogStartup($"[Warning] {key} is already taken by another program; that shortcut is not available.");
+        if (_hotKeyManager == null) return;
+        bool sibling = AnotherSmartNotesRuns();
+        var moved = new List<string>();
+        var lost = new List<string>();
+        foreach (var (action, keys) in HotkeyPlan)
+        {
+            if (_hotkeysInUse.ContainsKey(action)) continue;
+            foreach (var key in sibling ? keys.Take(1) : keys)
+            {
+                var handler = HotkeyHandler(action);
+                if (_hotKeyManager.Register(Win32Api.MOD_WIN | Win32Api.MOD_ALT, key, () => Dispatcher.Invoke(handler)) >= 0)
+                {
+                    _hotkeysInUse[action] = key;
+                    if (key != keys[0]) moved.Add($"Win+Alt+{keys[0]} → Win+Alt+{key}");
+                    LogStartup($"Shortcut {action} is on Win+Alt+{key}.");
+                    break;
+                }
+                LogStartup($"[Warning] Win+Alt+{key} is already taken{(sibling ? " (another SmartNotes is running)" : "")}.");
+            }
+            if (!_hotkeysInUse.ContainsKey(action)) lost.Add($"Win+Alt+{keys[0]}");
+        }
 
-        string current = string.Join(", ", taken);
+        if (lost.Count > 0 && sibling)
+        {
+            // wait for the other copy to let go
+            if (_hotkeyRetry == null)
+            {
+                _hotkeyRetry = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(20) };
+                _hotkeyRetry.Tick += (s, e) => RegisterMissingHotkeys();
+            }
+            _hotkeyRetry.Start();
+            return;
+        }
+        _hotkeyRetry?.Stop();
+        ReportHotkeyChanges(moved, lost);
+    }
+
+    /// <summary>Tells the user once (not again on every start) which shortcuts moved to their spare key or are unavailable.</summary>
+    private void ReportHotkeyChanges(List<string> moved, List<string> lost)
+    {
+        string current = string.Join(", ", moved.Concat(lost));
         var settings = _settingsService.Settings;
         if (current == settings.ReportedHotkeyConflicts) return;
         settings.ReportedHotkeyConflicts = current;
         _settingsService.Save();
+        if (current.Length == 0 || AppPaths.IsOverridden) return; // a test copy's shortcuts are nobody's business
 
-        if (taken.Count > 0)
-        {
-            _trayManager?.ShowBalloon("SmartNotes", LocalizationService.T("Hotkeys_TakenBalloon", current), ToolTipIcon.Warning);
-            LogStartup($"Told the user that {current} is taken.");
-        }
+        string message = lost.Count > 0
+            ? LocalizationService.T("Hotkeys_TakenBalloon", string.Join(", ", lost))
+            : LocalizationService.T("Hotkeys_MovedBalloon", string.Join(", ", moved));
+        Toasts.Show(LocalizationService.T("Hotkeys_ToastTitle"), message, "keyboard", tone: ToastTone.Warning);
+        LogStartup($"Told the user about the shortcuts: {current}.");
     }
 
     private void InitTrayManager()
@@ -507,7 +575,9 @@ public partial class App : Application
         string title = string.IsNullOrWhiteSpace(win.Note.Title) ? win.Note.SnippetPreview : win.Note.Title;
         title = string.Join(" ", title.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)).Trim();
         if (title.Length > 40) title = title.Substring(0, 39) + "…";
-        _trayManager?.ShowBalloon("SmartNotes", LocalizationService.T("Balloon_Reminder", title), ToolTipIcon.Info);
+        Toasts.Show(LocalizationService.T("Toast_ReminderTitle"), title, "bell", NoteSkin.Get(win.Note.SkinKey),
+            onClick: () => { win.ShowWithoutFocus(); win.Activate(); }, actionLabel: LocalizationService.T("Toast_ShowNote"),
+            duration: TimeSpan.FromSeconds(15));
         LogStartup($"Reminder for note {win.Note.Id}.");
     }
 
@@ -774,7 +844,7 @@ public partial class App : Application
             }
         }
 
-        _trayManager.ShowBalloon("SmartNotes", LocalizationService.T("Balloon_NotesArranged"), ToolTipIcon.Info);
+        _trayManager.ShowBalloon("SmartNotes", LocalizationService.T("Balloon_NotesArranged"), ToolTipIcon.Info, "layers");
     }
 
     /// <summary>Notes whose title strip is on no screen are moved onto the nearest one (see ScreenPlacement).</summary>
@@ -921,7 +991,7 @@ public partial class App : Application
             SpawnStickyNoteWindow(restored, bringToFront: true);
             string title = string.IsNullOrWhiteSpace(restored.Title) ? restored.SnippetPreview : restored.Title;
             if (title.Length > 25) title = title.Substring(0, 22) + "...";
-            _trayManager.ShowBalloon("SmartNotes", LocalizationService.T("Balloon_NoteRestored", title), ToolTipIcon.Info);
+            Toasts.Show("SmartNotes", LocalizationService.T("Balloon_NoteRestored", title), "undo-2", NoteSkin.Get(restored.SkinKey));
         }
     }
 
@@ -936,14 +1006,14 @@ public partial class App : Application
         if (restored.Count > 0)
         {
             string suffix = LocalizationService.PluralSuffix(restored.Count);
-            _trayManager.ShowBalloon("SmartNotes", LocalizationService.T("Balloon_NotesRestoredCount", restored.Count, suffix), ToolTipIcon.Info);
+            _trayManager.ShowBalloon("SmartNotes", LocalizationService.T("Balloon_NotesRestoredCount", restored.Count, suffix), ToolTipIcon.Info, "undo-2");
         }
     }
 
     public void EmptyTrash()
     {
         _storageService.ClearTrash();
-        _trayManager.ShowBalloon("SmartNotes", LocalizationService.T("Balloon_TrashEmptied"), ToolTipIcon.Info);
+        _trayManager.ShowBalloon("SmartNotes", LocalizationService.T("Balloon_TrashEmptied"), ToolTipIcon.Info, "trash-2");
     }
 
     private void UpdateTrayTooltip()
@@ -975,7 +1045,7 @@ public partial class App : Application
                             {
                                 BringAllNotesToFront();
                             }
-                            _trayManager?.ShowBalloon("SmartNotes", LocalizationService.T("Balloon_BroughtToFront"), ToolTipIcon.Info);
+                            _trayManager?.ShowBalloon("SmartNotes", LocalizationService.T("Balloon_BroughtToFront"), ToolTipIcon.Info, "layers");
                         });
                     }
                 }

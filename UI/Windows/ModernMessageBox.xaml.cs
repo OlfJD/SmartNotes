@@ -114,48 +114,26 @@ public partial class ModernMessageBox : Window
             box.Owner = owner;
             box.WindowStartupLocation = WindowStartupLocation.CenterOwner;
         }
+        // a message about a note looks like that note's theme; anything else like the app
+        Controls.SkinMenus.ApplyToPanel(box, (owner as StickyNoteWindow)?.CurrentSkin);
 
         box.TxtTitle.Text = title;
         box.TxtMessage.Text = message;
         box.TxtHeading.Text = heading ?? title;
 
-        // Configure Icon & Palette
-        switch (icon)
+        // Icon: the theme's accent, or its warning colour for problems
+        box.MainIcon.IconKey = icon switch
         {
-            case ModernMessageIcon.Success:
-                box.MainIcon.IconKey = "check-check";
-                box.MainIcon.Foreground = new SolidColorBrush(Color.FromRgb(16, 185, 129)); // Emerald
-                box.IconBadge.Background = new SolidColorBrush(Color.FromArgb(40, 16, 185, 129));
-                box.IconBadge.BorderBrush = new SolidColorBrush(Color.FromArgb(80, 16, 185, 129));
-                break;
-
-            case ModernMessageIcon.Update:
-                box.MainIcon.IconKey = "sparkles";
-                box.MainIcon.Foreground = new SolidColorBrush(Color.FromRgb(245, 158, 11)); // Amber
-                box.IconBadge.Background = new SolidColorBrush(Color.FromArgb(40, 245, 158, 11));
-                box.IconBadge.BorderBrush = new SolidColorBrush(Color.FromArgb(80, 245, 158, 11));
-                break;
-
-            case ModernMessageIcon.Warning:
-                box.MainIcon.IconKey = "eye-off";
-                box.MainIcon.Foreground = new SolidColorBrush(Color.FromRgb(251, 113, 133)); // Rose
-                box.IconBadge.Background = new SolidColorBrush(Color.FromArgb(40, 251, 113, 133));
-                box.IconBadge.BorderBrush = new SolidColorBrush(Color.FromArgb(80, 251, 113, 133));
-                break;
-
-            case ModernMessageIcon.Error:
-                box.MainIcon.IconKey = "x";
-                box.MainIcon.Foreground = new SolidColorBrush(Color.FromRgb(239, 68, 68)); // Red
-                box.IconBadge.Background = new SolidColorBrush(Color.FromArgb(40, 239, 68, 68));
-                box.IconBadge.BorderBrush = new SolidColorBrush(Color.FromArgb(80, 239, 68, 68));
-                break;
-
-            default: // Info
-                box.MainIcon.IconKey = "zap";
-                box.MainIcon.Foreground = new SolidColorBrush(Color.FromRgb(56, 189, 248)); // Cyan
-                box.IconBadge.Background = new SolidColorBrush(Color.FromArgb(40, 56, 189, 248));
-                box.IconBadge.BorderBrush = new SolidColorBrush(Color.FromArgb(80, 56, 189, 248));
-                break;
+            ModernMessageIcon.Success => "check-check",
+            ModernMessageIcon.Update => "sparkles",
+            ModernMessageIcon.Warning => "eye-off",
+            ModernMessageIcon.Error => "x",
+            _ => "zap",
+        };
+        if (icon is ModernMessageIcon.Warning or ModernMessageIcon.Error)
+        {
+            box.MainIcon.SetResourceReference(Controls.LucideIcon.ForegroundProperty, "MenuDangerBrush");
+            box.HeaderIcon.SetResourceReference(Controls.LucideIcon.ForegroundProperty, "MenuDangerBrush");
         }
 
         // Configure Buttons with Localization

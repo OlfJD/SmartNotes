@@ -76,6 +76,8 @@ public partial class StickyNoteWindow : Window
     private readonly bool _startInForeground;
 
     public NoteItem Note => _note;
+    /// <summary>The note's theme, for dialogs and messages it opens (they take its look).</summary>
+    public NoteSkin CurrentSkin => _currentSkin;
     public DesktopWindowManager DesktopWindowManager => _desktopWindowManager;
 
     public StickyNoteWindow(
@@ -944,7 +946,7 @@ public partial class StickyNoteWindow : Window
 
     private void PickReminderTime()
     {
-        var dialog = new ReminderDialog(_note.Reminder, DateTime.Now) { Owner = this };
+        var dialog = new ReminderDialog(_note.Reminder, DateTime.Now, _currentSkin) { Owner = this };
         dialog.ShowDialog();
         if (dialog.Result == ReminderDialog.Outcome.Set) SetReminder(dialog.Reminder);
         else if (dialog.Result == ReminderDialog.Outcome.Removed) SetReminder(null);

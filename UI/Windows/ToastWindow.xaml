@@ -1,0 +1,53 @@
+<Window x:Class="SmartNotes.UI.Windows.ToastWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:SmartNotes.UI.Controls"
+        xmlns:skins="clr-namespace:SmartNotes.UI.Skins"
+        Title="SmartNotes"
+        Width="360"
+        SizeToContent="Height"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ShowInTaskbar="False"
+        ShowActivated="False"
+        Topmost="True"
+        ResizeMode="NoResize"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType">
+
+    <!-- SmartNotes' own message in place of a Windows tray balloon. Every colour and font is a Menu* token, so the
+         app look (DarkTheme.xaml) or a note theme's menu dictionary (SkinMenus) styles it like that theme's menus. -->
+    <Grid x:Name="Root" Margin="10" Cursor="Hand" MouseLeftButtonUp="Root_MouseLeftButtonUp">
+        <skins:CutBorder Background="{DynamicResource MenuShadowBrush}" CornerRadius="{DynamicResource MenuPanelRadius}" Cut="{DynamicResource MenuPanelCut}">
+            <skins:CutBorder.Effect>
+                <DropShadowEffect BlurRadius="18" ShadowDepth="5" Opacity="0.6" Color="#000000"/>
+            </skins:CutBorder.Effect>
+        </skins:CutBorder>
+        <skins:CutBorder Background="{DynamicResource MenuPanelBgBrush}" BorderBrush="{DynamicResource MenuPanelBorderBrush}" BorderThickness="{DynamicResource MenuPanelBorderThickness}" CornerRadius="{DynamicResource MenuPanelRadius}" Cut="{DynamicResource MenuPanelCut}">
+            <DockPanel>
+                <Border DockPanel.Dock="Top" Height="{DynamicResource MenuTopStripHeight}" Background="{DynamicResource MenuTopStripBrush}" CornerRadius="{DynamicResource MenuTopStripRadius}"/>
+                <!-- a thin bar in the tone colour along the left edge -->
+                <Border x:Name="ToneBar" DockPanel.Dock="Left" Width="3" Margin="6,10,0,10" CornerRadius="1.5" Background="{DynamicResource MenuAccentBrush}"/>
+                <Grid Margin="12,10,8,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <controls:LucideIcon x:Name="ToastIcon" Grid.Column="0" IconKey="sparkles" Size="18" StrokeThickness="2.2" Foreground="{DynamicResource MenuAccentBrush}" VerticalAlignment="Top" Margin="0,2,12,0"/>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock x:Name="TxtTitle" Text="SmartNotes" FontFamily="{DynamicResource MenuHeaderFont}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource MenuHeaderBrush}" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock x:Name="TxtMessage" Text="" FontFamily="{DynamicResource MenuLabelFont}" FontSize="{DynamicResource MenuLabelFontSize}" Foreground="{DynamicResource MenuLabelBrush}" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                        <Button x:Name="BtnAction" Style="{DynamicResource PopupPrimaryButtonStyle}" HorizontalAlignment="Left" Margin="0,10,0,0" Padding="12,5" Visibility="Collapsed" Click="BtnAction_Click"/>
+                    </StackPanel>
+                    <Button x:Name="BtnClose" Grid.Column="2" Style="{StaticResource IconButton}" Width="24" Height="24" Padding="0" VerticalAlignment="Top" Click="BtnClose_Click">
+                        <controls:LucideIcon IconKey="x" Size="12" StrokeThickness="2.2" Foreground="{DynamicResource MenuLabelMutedBrush}"/>
+                    </Button>
+                </Grid>
+            </DockPanel>
+        </skins:CutBorder>
+    </Grid>
+</Window>

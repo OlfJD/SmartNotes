@@ -20,9 +20,10 @@ public partial class ReminderDialog : Window
     private readonly DateTime _now;
     private bool _ready;
 
-    public ReminderDialog(NoteReminder? current, DateTime now)
+    public ReminderDialog(NoteReminder? current, DateTime now, NoteSkin? skin = null)
     {
         InitializeComponent();
+        Controls.SkinMenus.ApplyToPanel(this, skin); // in the note's theme
         _now = now;
 
         TxtTitle.Text = LocalizationService.T("Reminder_Title");

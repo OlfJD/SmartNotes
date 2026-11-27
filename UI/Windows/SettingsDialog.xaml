@@ -495,7 +495,7 @@
                                                 <TextBlock x:Name="TxtShortcut1Desc" Text="Instantly spawns a new note at your cursor location" FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" Margin="0,2,0,0"/>
                                             </StackPanel>
                                             <Border Grid.Column="1" Background="#1E273C" BorderBrush="#3B4C6F" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="10,5" VerticalAlignment="Center">
-                                                <TextBlock Text="Win + Alt + N" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold" Foreground="#93C5FD"/>
+                                                <TextBlock x:Name="TxtKeyNewNote" Text="Win + Alt + N" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold" Foreground="#93C5FD"/>
                                             </Border>
                                         </Grid>
                                     </Border>
@@ -512,7 +512,7 @@
                                                 <TextBlock x:Name="TxtShortcutFrontDesc" Text="Shows every note above your open windows" FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" Margin="0,2,0,0" TextWrapping="Wrap"/>
                                             </StackPanel>
                                             <Border Grid.Column="1" Background="#1E273C" BorderBrush="#3B4C6F" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="10,5" VerticalAlignment="Center">
-                                                <TextBlock Text="Win + Alt + A" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold" Foreground="#93C5FD"/>
+                                                <TextBlock x:Name="TxtKeyBringAll" Text="Win + Alt + A" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold" Foreground="#93C5FD"/>
                                             </Border>
                                         </Grid>
                                     </Border>
@@ -529,7 +529,7 @@
                                                 <TextBlock x:Name="TxtShortcut3Desc" Text="Quickly toggle visibility for clean desktop presentations" FontSize="{StaticResource FontSizeCaption}" Foreground="#7888A4" Margin="0,2,0,0"/>
                                             </StackPanel>
                                             <Border Grid.Column="1" Background="#1E273C" BorderBrush="#3B4C6F" BorderThickness="1" CornerRadius="{StaticResource RadiusControl}" Padding="10,5" VerticalAlignment="Center">
-                                                <TextBlock Text="Win + Alt + S" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold" Foreground="#93C5FD"/>
+                                                <TextBlock x:Name="TxtKeyShowHide" Text="Win + Alt + S" FontSize="{StaticResource FontSizeBody}" FontWeight="Bold" Foreground="#93C5FD"/>
                                             </Border>
                                         </Grid>
                                     </Border>
