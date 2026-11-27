@@ -24,8 +24,8 @@ public static class UiTests
 
         // the message is SmartNotes' own toast (a window of the app), no Windows balloon
         AutomationElement? toast = null;
-        Assert.Eventually(() => (toast = app.WindowContaining("TxtMessage")) != null, "a SmartNotes toast appears");
-        Assert.Contains("arranged", Find(toast!, "TxtMessage").Current.Name, "saying the notes were arranged");
+        Assert.Eventually(() => (toast = app.WindowContaining("TxtToastMessage")) != null, "a SmartNotes toast appears");
+        Assert.Contains("arranged", Find(toast!, "TxtToastMessage").Current.Name, "saying the notes were arranged");
     }
 
     [Test(E2E = true)]

@@ -27,7 +27,8 @@ public partial class ProgramPickerDialog : Window
     private readonly List<OpenProgram> _all = new();
     private readonly string? _current;
 
-    public ProgramPickerDialog(NoteSkin? skin, string? currentExe)
+    /// <param name="programs">A fixed list instead of this PC's programs (pictures for the docs show no one's real PC).</param>
+    public ProgramPickerDialog(NoteSkin? skin, string? currentExe, IReadOnlyList<OpenProgram>? programs = null)
     {
         InitializeComponent();
         SkinMenus.ApplyToPanel(this, skin);
@@ -39,13 +40,14 @@ public partial class ProgramPickerDialog : Window
         BtnChoose.Content = LocalizationService.T("Picker_Link");
         KeyDown += (s, e) => { if (e.Key == Key.Escape) Close(); };
 
-        _all.AddRange(ProgramWindows.ListOpenPrograms());
-        TxtStatus.Text = LocalizationService.T("Picker_Loading");
+        _all.AddRange(programs ?? ProgramWindows.ListOpenPrograms());
+        TxtStatus.Text = programs != null ? LocalizationService.T("Picker_Count", _all.Count) : LocalizationService.T("Picker_Loading");
         Fill();
         Loaded += async (s, e) =>
         {
             WindowBlurHelper.ApplyModernWindowStyles(this);
             TxtSearch.Focus();
+            if (programs != null) return;
             var installed = await Task.Run(ProgramWindows.ListInstalledPrograms);
             foreach (var p in installed)
             {
@@ -75,8 +77,20 @@ public partial class ProgramPickerDialog : Window
     private ListBoxItem Row(OpenProgram p)
     {
         var panel = new DockPanel { LastChildFill = true };
-        var icon = new Image { Width = 20, Height = 20, Margin = new Thickness(0, 0, 10, 0), Source = IconOf(p.Path) };
-        RenderOptions.SetBitmapScalingMode(icon, BitmapScalingMode.HighQuality);
+        FrameworkElement icon;
+        if (IconOf(p.Path) is { } source)
+        {
+            icon = new Image { Width = 20, Height = 20, Source = source };
+            RenderOptions.SetBitmapScalingMode(icon, BitmapScalingMode.HighQuality);
+        }
+        else
+        {
+            // no file to take an icon from (a linked program that isn't installed here, a Store app): a window glyph in the theme
+            var glyph = new LucideIcon { IconKey = "app-window", Size = 16, StrokeThickness = 2, Width = 20, Height = 20 };
+            glyph.SetResourceReference(LucideIcon.ForegroundProperty, "MenuLabelMutedBrush");
+            icon = glyph;
+        }
+        icon.Margin = new Thickness(0, 0, 10, 0);
         DockPanel.SetDock(icon, Dock.Left);
         panel.Children.Add(icon);
         if (p.IsOpen)

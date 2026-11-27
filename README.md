@@ -18,16 +18,17 @@ Notes, to-do lists and checklists right on your desktop. No account, no cloud, e
 ## How it works
 
 - **Extract the zip and run `SmartNotes.exe`**. Your notes stick to the desktop, behind your apps, and stay visible after `Win + D`.
-- **Top of a note**: **+** for a new note, the pin to keep it on top, text / checklist / copy-snippet mode, colours and themes, the lock, and **···** for font size, transparency, spell check, export and settings.
-- **Tray icon**: click it (or press `Win + Alt + A`) to bring all notes to the front, right-click for new note, show / hide all, arrange, the 48-hour trash, settings and exit.
+- **Top of a note**: **+** for a new note, the pin to keep it on top, text / checklist / copy-snippet / sketch mode, colours and themes, the lock, and **···** for all your notes, reminders, font size, transparency, spell check, export and settings.
+- **Tray icon**: click it (or press `Win + Alt + A`) to bring all notes to the front, right-click for new note, all notes, show / hide all, tidy up, the 48-hour trash, settings and exit.
 
 ## Features
 
-- **Ten themes**: Classic, Paper Sticky, Cyberpunk, Medieval, Elden Ring (nine Great Runes instead of colours), Astral (a constellation on every note), Terminal (phosphor in your note colour, `[x]` ticks, a blinking cursor), Blueprint (the title sits in a drawing title block), Ink & Washi (rice paper and a red name seal with your title's first letter) and Deep Sea (a glowing jellyfish, anglerfish or nautilus on every note), each with its own fonts and menus. Switch on **Living Themes** in Settings for small animations while you work in a note: shooting stars, a breathing rune, a glitch on save, a wax seal on locked scrolls.
-- **Four modes**: text, checklist (drag tasks to reorder, done tasks are struck through, "3/7" shows your progress), copy snippets, and sketch (draw with a pen or the mouse: pen, highlighter, eraser, five colours).
+- **Ten themes**: Classic, Paper Sticky, Cyberpunk, Medieval, Elden Ring (nine Great Runes instead of colours), Astral (a constellation on every note), Terminal (phosphor in your note colour, `[x]` ticks, a blinking cursor), Blueprint (the title sits in a drawing title block), Ink & Washi (rice paper and a red name seal with your title's first letter) and Deep Sea (a glowing jellyfish, anglerfish or nautilus on every note), each with its own fonts, menus, dialogs and messages. **Living Themes** add small animations while you work in a note: shooting stars, a breathing rune, a glitch now and then, a wax seal on locked scrolls. They rest when you're not using the note (turn them off in Settings).
+- **Four modes**: text, checklist (drag tasks to reorder, done tasks are struck through, "3/7" shows your progress), copy snippets, and sketch (draw with a pen or the mouse: pen, highlighter and eraser in any size, five colours).
+- **All your notes in one menu**: **···** > *All Notes* lists every note and brings them all to the front, hides them or tidies them up. Every shortcut has a menu item too.
 - **Reminders**: *Remind Me* in the **···** menu (in an hour, this evening, tomorrow morning, or any day and time, once or repeating). The note then comes forward over your apps and glows until you tick it off or snooze it.
 - **Daily checklists**: *Repeat Daily* unticks the tasks every morning, and a flame counts the days in a row you got everything done.
-- **Notes for one program**: *Show Only With* in the **···** menu links a note to a program. It then floats over that program only while it's in front (key bindings over a game, snippets over your editor) and hides otherwise. `Win + Alt + A` still brings it forward.
+- **Notes for one program**: *Show Only With* in the **···** menu links a note to a program. It then floats over that program only while it's in front (key bindings over a game, snippets over your editor) and hides otherwise. Pick from the open programs, or *Choose a Program…* to search everything installed. `Win + Alt + A` still brings it forward.
 - **Magnetic docking**: notes snap together and move as a stack.
 - **Lock a note** so it can't be edited, moved or deleted by accident.
 - **Export** a note as Markdown, copy all of it with `Ctrl + Shift + C`, or **copy it as a picture** to share it in a chat.
@@ -63,6 +64,8 @@ In the Astral theme every note gets its own constellation, picked automatically 
 | `Win + Alt + S` | Show / hide all notes |
 | `Ctrl + Shift + C` | Copy the note's content |
 | `Alt` / `Ctrl` + drag | Move one note out of a stack |
+
+If another program already uses one of the `Win + Alt` keys, SmartNotes takes `J`, `Q` or `H` instead and Settings shows the key in use.
 
 ## Where are my notes?
 

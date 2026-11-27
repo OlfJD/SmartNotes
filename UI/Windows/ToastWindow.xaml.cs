@@ -86,8 +86,8 @@ public partial class ToastWindow : Window
     {
         InitializeComponent();
         SkinMenus.ApplyToPanel(this, skin);
-        TxtTitle.Text = title;
-        TxtMessage.Text = message;
+        TxtToastTitle.Text = title;
+        TxtToastMessage.Text = message;
         ToastIcon.IconKey = icon;
         _onClick = onClick;
         if (tone == ToastTone.Warning)

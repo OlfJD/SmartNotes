@@ -56,6 +56,14 @@ public static class NoteRenderer
                 note.Height = 340;
                 return ("creature-" + key, note, (Func<StickyNoteWindow, BitmapSource?>?)null);
             }).ToList(),
+            // every theme at the smallest note width: all header buttons (More and Close too) must stay visible
+            "narrow" => NoteSkin.All.Select(skin =>
+            {
+                var note = Sample(skin.Key, "Cyan", "Narrow", "The smallest a note gets");
+                note.Width = 280;
+                note.Height = 200;
+                return ("narrow-" + skin.Key, note, (Func<StickyNoteWindow, BitmapSource?>?)null);
+            }).ToList(),
             _ => SkinShots(),
         };
 
@@ -140,7 +148,19 @@ public static class NoteRenderer
 
         Shot("reminder-dialog-terminal", new ReminderDialog(null, DateTime.Now, NoteSkin.Get(NoteSkin.TerminalKey)));
         Shot("reminder-dialog-medieval", new ReminderDialog(new NoteReminder { At = DateTime.Today.AddDays(1).AddHours(9), Repeat = ReminderRepeat.Weekdays }, DateTime.Now, NoteSkin.Get(NoteSkin.MedievalKey)));
-        Shot("program-picker-blueprint", new ProgramPickerDialog(NoteSkin.Get(NoteSkin.BlueprintKey), "Code.exe"), 3500);
+        // a made-up list (with Windows' own programs for the icons), so the picture shows no one's real PC
+        string win = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+        var demo = new List<SmartNotes.Core.Native.OpenProgram>
+        {
+            new("Code.exe", "Visual Studio Code", null, true),
+            new("notepad.exe", "Notepad", Path.Combine(win, "System32", "notepad.exe"), true),
+            new("explorer.exe", "File Explorer", Path.Combine(win, "explorer.exe"), true),
+            new("mspaint.exe", "Paint", Path.Combine(win, "System32", "mspaint.exe")),
+            new("calc.exe", "Calculator", Path.Combine(win, "System32", "calc.exe")),
+            new("Game.exe", "Your favourite game"),
+            new("TaxSoftware.exe", "Tax software"),
+        };
+        Shot("program-picker-blueprint", new ProgramPickerDialog(NoteSkin.Get(NoteSkin.BlueprintKey), "Code.exe", demo), 1500);
 
         Save(Sheet(tiles), Path.Combine(outDir, "sheet-dialogs.png"));
         Console.WriteLine($"Rendered {tiles.Count} picture(s) to {outDir}");
@@ -158,11 +178,9 @@ public static class NoteRenderer
         var dialog = new SettingsDialog(settings, storage, () => { }) { ShowActivated = false, Left = -30000, Top = -30000, WindowStartupLocation = WindowStartupLocation.Manual };
         dialog.Show();
         Pump(400);
-        foreach (var (name, page) in new[] { ("general", (FrameworkElement)dialog.PanelGeneral), ("appearance", dialog.PanelAppearance) })
+        foreach (var (name, nav) in new[] { ("general", dialog.NavGeneral), ("appearance", dialog.NavAppearance) })
         {
-            dialog.PanelGeneral.Visibility = Visibility.Collapsed;
-            dialog.PanelAppearance.Visibility = Visibility.Collapsed;
-            page.Visibility = Visibility.Visible;
+            nav.IsChecked = true; // the real navigation: highlight and page together
             Pump(300);
             var image = Render((FrameworkElement)dialog.Content);
             Save(image, Path.Combine(outDir, "settings-page-" + name + ".png"));

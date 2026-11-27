@@ -108,10 +108,8 @@
                     <Grid.ColumnDefinitions>
                         <!-- Left: Pin Status & New Note -->
                         <ColumnDefinition Width="Auto"/>
-                        <!-- Center Spacer (Clean Drag Area) -->
+                        <!-- Right: Modes, Tools, More, Close, right-aligned; the free space before them is the drag area -->
                         <ColumnDefinition Width="*"/>
-                        <!-- Right: Modes, Tools, More, Close -->
-                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <!-- Left Action Buttons (New Note & Pin Mode Compartment) -->
@@ -129,8 +127,10 @@
                         </StackPanel>
                     </skins:CutBorder>
 
-                    <!-- Right Action Buttons -->
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Right Action Buttons. The Viewbox only ever scales down: on a narrow note, or a theme with a wide
+                         frame (Medieval, Blueprint), the buttons get a little smaller instead of More and Close being cut off. -->
+                    <Viewbox Grid.Column="1" Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="4,0,0,0">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <!-- Mode Switcher Compartment (Text, Checklist, Copy Compartments) -->
                         <skins:CutBorder Cut="{DynamicResource SkinCompartmentCut}" x:Name="ModeCompartmentBorder" Background="#141A28" BorderBrush="#26334D" BorderThickness="{DynamicResource SkinCompartmentBorder}" CornerRadius="{DynamicResource SkinCompartmentRadius}" Margin="0,0,5,0" Padding="1">
                             <StackPanel Orientation="Horizontal">
@@ -184,6 +184,7 @@
                             </Button>
                         </StackPanel>
                     </StackPanel>
+                    </Viewbox>
                 </Grid>
             </Border>
 
